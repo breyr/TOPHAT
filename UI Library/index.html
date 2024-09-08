@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bootstrap Theme</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/css/bootstrap.min.css"
+    integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+  <link rel="stylesheet" href="red.css">
+</head>
+
+<body>
+  <p>m-btn</p>
+  <h1>Sharp</h1>
+  <div class="r-container">
+    <div class="r-navigation">
+      <a class="r-tab active" style="padding-top: 0px;">
+        <h4>Repository</h4>
+      </a>
+      <a class="r-tab" style="padding-top: 0px;">
+        <h4>Staging</h4>
+      </a>
+      <a class="r-tab" style="padding-top: 0px;">
+        <h4>Finalize</h4>
+      </a>
+    </div>
+    <hr>
+    <div class="r-navigation-content">
+      <div class="r-tab-content" id="hello" style="display: block;">
+
+        <div class="r-card-header">
+          Current clients
+          <div class="r-card-subheading">
+            <p class="r-chip">3 connected</p>
+          </div>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <div>
+            <input type="text" class="r-input medium" placeholder="Search">
+            <button class="r-btn tertiary">Filters</button>
+          </div>
+          <button class="r-btn secondary">Download</button>
+        </div>
+
+        <table>
+          <thead>
+            <tr>
+              <th><input type="checkbox"></th>
+              <th>#</th>
+              <th>Status</th>
+              <th>Name</th>
+              <th>MAC address</th>
+              <th>Connectivity</th>
+              <th>Serial number</th>
+              <th>Local IP</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><input type="checkbox"></td>
+              <td>1</td>
+              <td>OK</td>
+              <td><button class="r-btn tertiary">Meraki Sydney Site</button></td>
+              <td>6D:DF:GH:JK:KL:NM</td>
+              <td>
+                <div style="background-color: rgb(83, 168, 40); width: 140px; height: 10px;"></div>
+              </td>
+              <td>Q2CX-YIOP-RFGH</td>
+              <td>192.168.1.10</td>
+            </tr>
+            <tr>
+              <td><input type="checkbox"></td>
+              <td>2</td>
+              <td>Error</td>
+              <td><button class="r-btn tertiary">Meraki Chicago Site</button></td>
+              <td>QW:ER:TY:UI:OP:CV</td>
+              <td>
+                <div style="background-color: rgb(83, 168, 40); width: 140px; height: 10px;"></div>
+              </td>
+              <td>Q7CX-96GH-I7BN</td>
+              <td>10.0.0.1</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="r-tab-content" id="world" style="display: none;">
+        <p>World</p>
+      </div>
+      <div class="r-tab-content" id="!" style="display: none;">
+        <p>!</p>
+      </div>
+    </div>
+  </div>
+
+  <br>
+
+  <div class="r-card">
+
+    <p class="r-card-header">Constructive</p>
+
+    <h4>ENABLED</h4>
+    <button class="r-btn">None</button>
+    <button class="r-btn primary">Primary</button>
+    <button class="r-btn secondary">Secondary</button>
+    <button class="r-btn tertiary">Tertiary</button>
+
+    <h4>DISABLED</h4>
+    <button class="r-btn" disabled>None</button>
+    <button class="r-btn primary" disabled>Primary</button>
+    <button class="r-btn secondary" disabled>Secondary</button>
+    <button class="r-btn tertiary" disabled>Tertiary</button>
+
+    <hr>
+
+    <p class="r-card-header">Destructive</p>
+
+    <h4>ENABLED</h4>
+    <button class="r-btn primary danger">Primary</button>
+    <button class="r-btn secondary danger">Secondary</button>
+
+    <h4>DISABLED</h4>
+    <button class="r-btn primary danger" disabled>Primary</button>
+    <button class="r-btn secondary danger" disabled>Secondary</button>
+
+  </div>
+
+  <br>
+
+  <div class="r-container">
+
+    <p class="r-card-header">Inputs</p>
+    <br>
+
+    <h4>CHECKBOXES</h4>
+
+    <label class="r-checkbox">
+      <input type="checkbox">
+      <span>Option 1</span>
+    </label>
+    <label class="r-checkbox">
+      <input type="checkbox">
+      <span>Option 2</span>
+    </label>
+
+    <h4>TEXT INPUT</h4>
+
+    <input type="text" class="r-input large" placeholder="Large">
+    <input type="text" class="r-input medium" placeholder="Medium">
+    <input type="text" class="r-input medium error" placeholder="Medium Error">
+    <input type="text" class="r-input medium" disabled placeholder="Medium Disabled">
+    <input type="text" class="r-input small" placeholder="Small">
+
+  </div>
+  <br>
+
+  <div class="r-card">
+
+    <p class="r-card-header">Modals</p>
+
+    <div class="modal-content">
+      <div class="image-container">
+        <img class="modal-image" style="width: 500px;"
+          src="https://networkethics.net/wp-content/uploads/2023/01/network_ethics_2023-5.png">
+      </div>
+      <div class="title-container">
+        <h2>Announcement Title</h2>
+      </div>
+      <div class="description-container">
+        <p>Commodo sed egestas egestas fringilla phasellus faucibus scelerisque eleifend.</p>
+      </div>
+      <div class="indicator-container">
+        <div class="indicator active"></div>
+        <div class="indicator"></div>
+        <div class="indicator"></div>
+      </div>
+      <div class="button-container">
+        <button class="r-btn tertiary">Close</button>
+        <button class="r-btn primary">Next</button>
+      </div>
+    </div>
+
+  </div>
+
+  <footer>
+    <span>© 2024 Adam Spera.</span>
+    <div>
+      <button class="r-btn tertiary">Privacy Policy</button>
+      <button class="r-btn tertiary">Terms of Service</button>
+    </div>
+  </footer>
+
+
+  <!-- Scripts -->
+
+  <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+    integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+    crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/popper.js@1.14.7/dist/umd/popper.min.js"
+    integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1"
+    crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/js/bootstrap.min.js"
+    integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
+    crossorigin="anonymous"></script>
+</body>
+
+</html>
