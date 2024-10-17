@@ -1,0 +1,562 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* RED UI CSS */
+
+/* ==== FONTS ==== */
+
+/* Be Vietnam Pro */
+@font-face {
+    font-family: "BeVietnamPro";
+    font-style: normal;
+    font-weight: 700;
+
+    src: url("fonts/Be_Vietnam_Pro/BeVietnamPro-Bold.ttf") format("truetype");
+}
+
+/* Intern */
+@font-face {
+    font-family: "Inter";
+    font-style: normal;
+    font-weight: 100;
+    font-stretch: normal;
+
+    src: url("fonts/Inter/Inter-Thin.ttf") format("truetype");
+}
+
+@font-face {
+    font-family: "Inter";
+    font-style: normal;
+    font-weight: 200;
+    font-stretch: normal;
+
+    src: url("Fonts/Inter/Inter-ExtraLight.ttf") format("truetype");
+}
+
+@font-face {
+    font-family: "Inter";
+    font-style: normal;
+    font-weight: 300;
+    font-stretch: normal;
+
+    src: url("fonts/Inter/Inter-Light.ttf") format("truetype");
+}
+
+@font-face {
+    font-family: "Inter";
+    font-style: normal;
+    font-weight: 400;
+
+    src: url("fonts/Inter/Inter-Regular.ttf") format("truetype");
+}
+
+@font-face {
+    font-family: "Inter";
+    font-style: normal;
+    font-weight: 500;
+
+    src: url("Fonts/Inter/Inter-Medium.ttf") format("truetype");
+}
+
+@font-face {
+    font-family: "Inter";
+    font-style: normal;
+    font-weight: 600;
+
+    src: url("fonts/Inter/Inter-SemiBold.ttf") format("truetype");
+}
+
+@font-face {
+    font-family: "Inter";
+    font-style: normal;
+    font-weight: 700;
+
+    src: url("fonts/Inter/Inter-Bold.ttf") format("truetype");
+}
+
+@font-face {
+    font-family: "Inter";
+    font-style: normal;
+    font-weight: 800;
+
+    src: url("Fonts/Inter/Inter-ExtraBold.ttf") format("truetype");
+}
+
+@font-face {
+    font-family: "Inter";
+    font-style: normal;
+    font-weight: 900;
+
+    src: url("fonts/Inter/Inter-Black.ttf") format("truetype");
+}
+
+/* Roboto */
+@font-face {
+    font-family: "Roboto Mono";
+    font-style: normal;
+    font-weight: 400;
+
+    src: url("fonts/RobotoMono/RobotoMono-Regular.ttf") format("truetype");
+}
+
+/* ==== VARIABLES ==== */
+/* trying to keep similar naming convention to tailwindcss */
+:root {
+    --font-heading: "BeVietnamPro", -apple-system, BlinkMacSystemFont, "Segoe UI",
+        Roboto, Helvetica, Arial, sans-serif;
+    --font-body: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+        Helvetica, Arial, sans-serif;
+    --font-mono: "Roboto Mono", ui-monospace, Menlo, monospace;
+
+    --color-blue-600: rgb(41, 90, 183);
+    --color-blue-500: rgb(29, 105, 204);
+    --color-blue-400: rgb(19, 155, 235);
+    --color-blue-300: rgb(171, 199, 250);
+    --color-blue-200: rgb(208, 224, 252);
+
+    --color-blue-gray-400: rgb(101, 108, 117);
+    --color-blue-gray-100: rgb(225, 228, 232);
+
+    --color-red-600: rgb(163, 50, 51);
+    --color-red-500: rgb(204, 45, 55);
+    --color-red-200: rgb(244, 182, 182);
+
+    --color-grey-700: rgb(89, 96, 105);
+    --color-grey-500: rgb(136, 144, 153);
+    --color-grey-200: rgb(225, 228, 232);
+    --color-grey-100: rgb(247, 247, 247);
+
+    --color-black: rgb(0, 0, 0);
+    --color-white: rgb(255, 255, 255);
+
+    --color-transparent: rgba(0, 0, 0, 0);
+    --color-shadow-100: rgba(0, 0, 0, 0.12);
+}
+
+/* ==== ELEMENTS ==== */
+* {
+    margin: 0;
+    padding: 0;
+}
+
+/* 1rem = 16px */
+body {
+    /* background-color: var(--color-grey-100); */
+    /* padding: 1.875rem; */
+}
+
+h1 {
+    font-family: var(--font-heading);
+    font-size: 2.5rem;
+    line-height: 3.563rem;
+    margin-bottom: 1.25rem;
+}
+
+h2 {
+    font-family: var(--font-heading);
+    margin-top: 3rem;
+    margin-bottom: 1.5rem;
+    line-height: 2;
+}
+
+h4 {
+    font-family: var(--font-heading);
+    font-size: 0.875rem;
+    font-weight: 700;
+    line-height: 1.25rem;
+    margin-top: 1rem;
+    margin-bottom: 0.875rem;
+    margin-right: 1.5rem;
+}
+
+p {
+    font-family: var(--font-body);
+    font-weight: 600;
+    font-size: 0.875rem;
+    color: var(--color-grey-700);
+    padding: 0;
+    margin: 0;
+}
+
+/* ==== BUTTONS ==== */
+.r-btn {
+    font-family: var(--font-body);
+    font-size: 0.875rem;
+    font-weight: 700;
+    padding: 0 0.625rem;
+    border: 2px solid var(--color-transparent);
+    border-radius: 0.375rem;
+    height: 2.125rem;
+}
+
+/* Primary Button */
+.r-btn.primary {
+    color: var(--color-white);
+    background-color: var(--color-blue-500);
+}
+
+.r-btn.primary:hover {
+    background-color: var(--color-blue-600);
+}
+
+.r-btn.primary:disabled {
+    background-color: var(--color-blue-300);
+}
+
+/* Secondary Button */
+.r-btn.secondary {
+    color: var(--color-blue-500);
+    background-color: var(--color-white);
+    border-color: var(--color-blue-500);
+}
+
+.r-btn.secondary:hover {
+    background-color: var(--color-blue-200);
+}
+
+.r-btn.secondary:disabled {
+    color: var(--color-blue-300);
+    background-color: var(--color-transparent);
+    border-color: vaR(--color-blue-300);
+}
+
+/* Tertiary Buttton */
+.r-btn.tertiary {
+    background-color: var(--color-transparent);
+    color: var(--color-blue-500);
+}
+
+.r-btn.tertiary:hover {
+    color: var(--color-blue-600);
+}
+
+.r-btn.tertiary:disabled {
+    color: var(--color-blue-300);
+}
+
+/* Primary Danger */
+.r-btn.primary.danger {
+    background-color: var(--color-red-500);
+    color: var(--color-white);
+    border-color: var(--color-red-500);
+}
+
+.r-btn.primary.danger:hover {
+    background-color: var(--color-red-600);
+    border-color: var(--color-red-600);
+}
+
+.r-btn.primary.danger:disabled {
+    background-color: var(--color-red-200);
+    border-color: var(--color-red-200);
+    color: var(--color-white);
+}
+
+/* Secondary Danger */
+.r-btn.secondary.danger {
+    background-color: var(--color-white);
+    color: var(--color-red-500);
+    border-color: var(--color-red-500);
+}
+
+.r-btn.secondary.danger:hover {
+    background-color: var(--color-red-200);
+    color: var(--color-red-600);
+}
+
+.r-btn.secondary.danger:disabled {
+    background-color: var(--color-white);
+    color: var(--color-red-200);
+    border-color: var(--color-red-200);
+}
+
+/* ==== CARDS & CONTAINERS ==== */
+.r-card {
+    padding: 1rem;
+    border: 2px solid var(--color-grey-200);
+    border-radius: 0.5rem;
+}
+
+.r-card-header {
+    font-family: var(--font-heading);
+    font-size: 1.5rem;
+    color: var(--color-black);
+    margin-bottom: 1.5rem;
+}
+
+.r-card-subheading {
+    display: flex;
+    flex-direction: row;
+    margin-top: 0.25rem;
+    gap: 0.75rem;
+    font-weight: 500;
+}
+
+.r-container {
+    padding: 1.5rem;
+    border-radius: 0.75rem;
+    box-shadow: var(--color-shadow-100) 0px 3px 8px 0px;
+    background-color: var(--color-white);
+}
+
+/* ==== INPUTS ==== */
+.r-checkbox {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+}
+
+.r-checkbox input[type="checkbox"] {
+    appearance: none;
+    background: var(--color-transparent);
+    border: 2px solid var(--color-grey-100);
+    border-radius: 0.25rem;
+    cursor: pointer;
+    height: 1.25rem;
+    margin-right: 0.625rem;
+    width: 1.25rem;
+}
+
+.r-checkbox input[type="checkbox"]:hover {
+    background-color: var(--color-blue-500);
+    border-color: var(--color-blue-500);
+}
+
+.r-checkbox input[type="checkbox"]:checked {
+    background-color: var(--color-blue-500);
+    border-color: var(--color-blue-500);
+}
+
+.r-checkbox input[type="checkbox"]:checked:after {
+    content: "";
+    position: absolute;
+    left: 0.313rem;
+    top: 0.563rem;
+    width: 0.375rem;
+    height: 0.688rem;
+    border: solid white;
+    border-width: 0 3px 3px 0;
+    transform: rotate(45deg);
+}
+
+.r-input {
+    margin-bottom: 0.5rem;
+    padding-left: 0.875rem;
+    padding-right: 0.875rem;
+    border: 2px solid var(--color-grey-500);
+    border-radius: 0.375rem;
+}
+
+.r-input:disabled {
+    background-color: var(--color-grey-100);
+    border-color: var(--color-grey-200);
+}
+
+.r-input:disabled::placeholder {
+    color: var(--color-grey-200)
+}
+
+.r-input.large {
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+    height: 2.25rem;
+    font-size: 1rem;
+}
+
+.r-input.medium {
+    padding-top: 0.875rem;
+    padding-bottom: 0.875rem;
+    height: 1.875rem;
+    font-size: 0.875rem;
+}
+
+.r-input.small {
+    padding-top: 0.75rem;
+    padding-bottom: 0.75rem;
+    height: 1.5rem;
+    font-size: 0.75rem;
+}
+
+.r-input.error {
+    border-color: var(--color-red-500);
+}
+
+/* ==== NAVIGATION ==== */
+.r-navigation {
+    display: flex;
+    align-items: center;
+}
+
+.r-navigation-content {
+    padding-top: 0.313rem;
+}
+
+.r-tab {
+    padding-top: 0.5rem;
+    padding-left: 0.063rem;
+    padding-right: 0.063rem;
+    padding-bottom: 0.688rem;
+    margin-right: 2rem;
+    margin-right: 2rem;
+    border: none;
+    border-bottom: 0.188rem solid var(--color-transparent);
+}
+
+.r-tab h4 {
+    color: var(--color-grey-700);
+    padding: 0;
+    margin: 0;
+}
+
+.r-tab.active {
+    border-bottom: 3px solid var(--color-blue-400);
+}
+
+.r-tab.active h4 {
+    color: black !important;
+}
+
+.r-tab:hover {
+    cursor: pointer;
+}
+
+/* ==== TABLES ==== */
+table {
+    width: 100%;
+}
+
+thead {
+    border-bottom: 2px solid var(--color-blue-gray-400);
+}
+
+td,
+th {
+    padding: 0.5rem;
+    text-align: left;
+}
+
+th {
+    font-weight: 700;
+    font-size: 0.875rem;
+}
+
+tbody tr {
+    border-bottom: 1px solid var(--color-blue-gray-100);
+}
+
+td {
+    font-family: var(--font-mono);
+    font-size: 14px;
+    color: rgb(73, 74, 74);
+}
+
+table input[type="checkbox"] {
+    border: 2px solid var(--color-grey-100);
+    border-radius: 0.375rem;
+}
+
+table input[type="checkbox"]:hover {
+    border-color: var(--color-blue-500);
+}
+
+table input[type="checkbox"]:checked {
+    background-color: var(--color-blue-500);
+    border-color: var(--color-blue-500);
+}
+
+/* ==== CHIPS ==== */
+.r-chip {
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+    padding-top: 0.25rem;
+    padding-bottom: 0.25rem;
+    font-size: 0.75rem;
+    background-color: var(--color-blue-gray-100);
+    border-radius: 9999px;
+}
+
+/* ==== MODAL ==== */
+.modal-content {
+    border-radius: 0.5rem;
+    box-shadow: var(--color-shadow-100) 0px 4px 12px;
+    padding: 1.5rem;
+    background-color: #fefefe;
+    margin: 10vh auto;
+    border: 1px solid var(--color-transparent);
+    width: 50%;
+    min-width: 300px;
+}
+
+.modal-content .image-container,
+.modal-content .title-container,
+.modal-content .description-container {
+    text-align: center;
+    width: 100%;
+}
+
+.modal-content .title-container h2 {
+    margin-top: 0.625rem !important;
+}
+
+.modal-content .description-container {
+    padding-left: 1.25rem;
+    padding-right: 1.25rem;
+}
+
+.modal-content .image-container {
+    height: auto;
+    margin-bottom: 2.188rem;
+}
+
+.modal-content .image-container img {
+    width: 100%;
+}
+
+.modal-content .indicator-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 1.5rem;
+}
+
+.modal-content .indicator {
+    width: 0.75rem;
+    height: 0.75rem;
+    background-color: var(--color-grey-200);
+    border-radius: 0.375rem;
+    margin-right: 0.75rem;
+}
+
+.modal-content .indicator.active {
+    background-color: var(--color-blue-500);
+}
+
+.modal-content .indicator:last-child {
+    margin-right: 0;
+}
+
+.modal-content .button-container {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 0.938rem;
+}
+
+.modal-content .modal-image {
+    border: 1.5px solid #f4f4f4;
+    box-shadow: 0 4px 8px var(--color-shadow-100);
+    max-width: 100%;
+    height: auto;
+    border-radius: 0.5rem;
+}
+
+/* ==== FOOTER ==== */
+footer {
+    margin-top: 1.25rem;
+    margin-bottom: 1.25rem;
+    padding: 0.25rem;
+    border-top: 0.125rem solid var(--color-grey-200);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}

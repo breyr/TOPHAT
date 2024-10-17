@@ -12,21 +12,25 @@ const router = Router();
 router.post('/login', async (req, res) => {
     const { username, password } = req.body;
 
+    // find user
     const user: UserModel | null = await prisma.user.findFirst({
         where: { username }
     });
 
+    // check if the user exists and the password matches
     if (!user || !bcrypt.compareSync(password, user.password)) {
         res.status(400).json({ detail: 'Invalid credentials' });
         return;
     }
 
+    // create JWT token and send to client
     const token = createJwtToken(user.id, user.username, user.email);
     res.json({ access_token: token, token_type: 'bearer' });
 });
 router.post('/register', async (req, res) => {
     const { username, email, password } = req.body;
 
+    // check to see if a user exists with the provided username or email
     const existingUser: UserModel | null = await prisma.user.findFirst({
         where: {
             OR: [
@@ -36,11 +40,13 @@ router.post('/register', async (req, res) => {
         }
     });
 
+    // if the user exists return 400
     if (existingUser) {
         res.status(400).json({ detail: 'User already exists' });
         return;
     }
 
+    // otherwise hash the password and add them to the table
     const hashedPassword = bcrypt.hashSync(password, 10);
     await prisma.user.create({
         data: {
@@ -56,6 +62,7 @@ router.post('/register', async (req, res) => {
     res.json({ message: 'User created successfully' });
 });
 router.post('/refresh', authenticateToken, async (req: AuthenticatedRequest, res) => {
+    // this endpoint is protected
     if (!req.user) {
         res.status(401).json({ message: 'Unauthorized' });
         return;
