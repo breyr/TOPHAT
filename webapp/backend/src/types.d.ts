@@ -4,7 +4,7 @@ import { JwtPayload } from "jsonwebtoken";
 
 
 // interfaces when dealing with authenticated requests
-export type UserJwtPayload = Pick<UserModel, 'id' | 'username' | 'email'>;
+export type UserJwtPayload = Pick<UserModel, 'id' | 'username' | 'email' | 'account_type'>;
 export interface CustomJwtPayload extends JwtPayload {
     user: UserJwtPayload
 }

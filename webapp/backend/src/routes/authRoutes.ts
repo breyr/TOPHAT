@@ -19,12 +19,12 @@ router.post('/login', async (req, res) => {
 
     // check if the user exists and the password matches
     if (!user || !bcrypt.compareSync(password, user.password)) {
-        res.status(400).json({ detail: 'Invalid credentials' });
+        res.status(400).json({ message: 'Invalid credentials' });
         return;
     }
 
     // create JWT token and send to client
-    const token = createJwtToken(user.id, user.username, user.email);
+    const token = createJwtToken(user.id, user.username, user.email, user.account_type);
     res.json({ access_token: token, token_type: 'bearer' });
 });
 router.post('/register', async (req, res) => {
@@ -42,7 +42,7 @@ router.post('/register', async (req, res) => {
 
     // if the user exists return 400
     if (existingUser) {
-        res.status(400).json({ detail: 'User already exists' });
+        res.status(400).json({ message: 'User already exists' });
         return;
     }
 
@@ -68,9 +68,9 @@ router.post('/refresh', authenticateToken, async (req: AuthenticatedRequest, res
         return;
     }
     // get information from user in request provided via authTokenMiddleware
-    const { id, username, email } = req.user;
+    const { id, username, email, account_type } = req.user;
     // create a new token
-    const token = createJwtToken(id, username, email);
+    const token = createJwtToken(id, username, email, account_type);
     res.json({ access_token: token, token_type: 'bearer' });
 });
 
