@@ -17,7 +17,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const [decodedToken, setDecodedToken] = useState<UserJwtPaylod | null>(null);
 
     const setToken = (newToken: string | null) => {
-        // sets to be string or null
+        console.log('Setting token:', newToken); // Debug log
         setTokenState(newToken);
         if (newToken) {
             sessionStorage.setItem('token', newToken);
@@ -33,7 +33,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         }
     };
 
-    // on mount
     useEffect(() => {
         const storedToken = sessionStorage.getItem('token');
         if (storedToken) {

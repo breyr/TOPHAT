@@ -1,5 +1,5 @@
 import { ArrowRight } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import { AuthApiResponse } from "../types/types";
@@ -9,7 +9,12 @@ export default function IndexPage() {
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
     const [message, setMessage] = useState("");
-    const { setToken } = useAuth();
+    const { setToken, token } = useAuth();
+
+    // on mount if the token exists redirect to the dashboard
+    useEffect(() => {
+        if (token) navigateTo('/dashboard/')
+    }, [token, navigateTo])
 
     // handle login
     const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {

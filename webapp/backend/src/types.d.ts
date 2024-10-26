@@ -7,6 +7,7 @@ import { JwtPayload } from "jsonwebtoken";
 export type UserJwtPayload = Pick<UserModel, 'id' | 'username' | 'email' | 'account_type'>;
 export interface CustomJwtPayload extends JwtPayload {
     user: UserJwtPayload
+    exp: number
 }
 export interface AuthenticatedRequest extends Request {
     user?: CustomJwtPayload

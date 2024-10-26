@@ -1,12 +1,14 @@
 import { ChartNetwork } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../hooks/useAuth";
 
 export default function DashboardNav() {
 
+    const { setToken } = useAuth();
     const navigateTo = useNavigate();
     const signout = () => {
-        sessionStorage.removeItem('token');
-        navigateTo('/')
+        setToken(null);
+        navigateTo('/');
     }
 
     return (

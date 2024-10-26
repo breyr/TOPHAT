@@ -13,18 +13,18 @@ router.post('/', authenticateToken, async (req: AuthenticatedRequest, res) => {
         return;
     }
 
-    const { id } = req.user;
-    const { name, thumbnail, react_flow_state, expires_on, archived } = req.body;
+    const { userId } = req.user;
+    const { name } = req.body;
 
     try {
         const newTopology = await prisma.topology.create({
             data: {
-                user_id: id,
+                user_id: userId,
                 name,
-                thumbnail: Buffer.from(thumbnail, 'base64'), // assuming thumbnail is sent as a base64 string
-                react_flow_state,
-                expires_on: new Date(expires_on),
-                archived: archived || false,
+                thumbnail: Buffer.from([0]), // default to empty buffer
+                react_flow_state: JSON.stringify({}),
+                expires_on: new Date(Date.now() + 6 * 60 * 60 * 1000), // default to 6 hours from now
+                archived: false,
             },
         });
         res.status(201).json(newTopology);

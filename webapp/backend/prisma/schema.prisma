@@ -8,14 +8,13 @@ datasource db {
 }
 
 model user {
-  id           Int        @id @default(autoincrement())
-  username     String     @db.VarChar
-  email        String     @unique @db.VarChar
-  password     String     @db.VarChar
-  account_type String     @db.VarChar
-  created_at   DateTime   @db.Timestamp(6)
-  updated_at   DateTime   @db.Timestamp(6)
-  topology     topology[]
+  id           Int      @id @default(autoincrement())
+  username     String   @db.VarChar
+  email        String   @unique @db.VarChar
+  password     String   @db.VarChar
+  account_type String   @db.VarChar
+  created_at   DateTime @db.Timestamp(6)
+  updated_at   DateTime @db.Timestamp(6)
 
   @@index([username], map: "ix_user_username")
 }
@@ -28,7 +27,6 @@ model topology {
   react_flow_state Json
   expires_on       DateTime @db.Timestamp(6)
   archived         Boolean  @default(false)
-  user             user     @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
   @@index([user_id], map: "ix_topology_user_id")
 }
