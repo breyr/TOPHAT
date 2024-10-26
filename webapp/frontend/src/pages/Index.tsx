@@ -1,6 +1,7 @@
 import { ArrowRight } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../hooks/useAuth";
 import { AuthApiResponse } from "../types/types";
 
 export default function IndexPage() {
@@ -8,6 +9,7 @@ export default function IndexPage() {
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
     const [message, setMessage] = useState("");
+    const { setToken } = useAuth();
 
     // handle login
     const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -22,8 +24,8 @@ export default function IndexPage() {
         const data: AuthApiResponse = await response.json();
         if (response.ok) {
             // store token
-            sessionStorage.setItem('token', data.access_token!)
-            navigateTo('/dashboard')
+            setToken(data.access_token!)
+            navigateTo('/dashboard/')
         } else {
             setMessage(`${data.message}`)
         }
@@ -31,7 +33,7 @@ export default function IndexPage() {
 
     // handle navigating to onboarding
     function handleNext() {
-        navigateTo('/onboard');
+        navigateTo('/onboard/');
     }
 
     return (

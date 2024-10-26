@@ -1,42 +1,49 @@
-import { createContext, ReactNode, useContext, useEffect, useState } from 'react';
+import { jwtDecode } from 'jwt-decode';
+import { createContext, ReactNode, useEffect, useState } from 'react';
+import { UserJwtPaylod } from "../types/types";
 
 interface AuthContextType {
     token: string | null;
+    decodedToken: UserJwtPaylod | null;
     setToken: (token: string | null) => void;
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+export const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-    const [token, setTokenState] = useState<string | null>(() => sessionStorage.getItem('token'));
+    const [token, setTokenState] = useState<string | null>(() => {
+        return sessionStorage.getItem('token');
+    });
+    const [decodedToken, setDecodedToken] = useState<UserJwtPaylod | null>(null);
 
     const setToken = (newToken: string | null) => {
+        // sets to be string or null
         setTokenState(newToken);
         if (newToken) {
             sessionStorage.setItem('token', newToken);
+            try {
+                const decoded = jwtDecode<UserJwtPaylod>(newToken);
+                setDecodedToken(decoded);
+            } catch {
+                setDecodedToken(null);
+            }
         } else {
             sessionStorage.removeItem('token');
+            setDecodedToken(null);
         }
     };
 
+    // on mount
     useEffect(() => {
         const storedToken = sessionStorage.getItem('token');
         if (storedToken) {
-            setTokenState(storedToken);
+            setToken(storedToken);
         }
     }, []);
 
     return (
-        <AuthContext.Provider value={{ token, setToken }}>
+        <AuthContext.Provider value={{ token, setToken, decodedToken }}>
             {children}
         </AuthContext.Provider>
     );
-};
-
-export const useAuth = () => {
-    const context = useContext(AuthContext);
-    if (!context) {
-        throw new Error('useAuth must be used within an AuthProvider');
-    }
-    return context;
 };
