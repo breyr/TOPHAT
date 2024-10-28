@@ -2,12 +2,17 @@ import { user as UserModel } from '@prisma/client';
 import { Request } from 'express';
 import { JwtPayload } from "jsonwebtoken";
 
+// type for api responses
+export interface ApiResponse<T> {
+    success: boolean;
+    message: string;
+    data?: T;
+    error?: Error;
+}
 
 // interfaces when dealing with authenticated requests
-export type UserJwtPayload = Pick<UserModel, 'id' | 'username' | 'email' | 'account_type'>;
 export interface CustomJwtPayload extends JwtPayload {
-    user: UserJwtPayload
-    exp: number
+    user: Pick<UserModel, 'id' | 'username' | 'email' | 'account_type'>;
 }
 export interface AuthenticatedRequest extends Request {
     user?: CustomJwtPayload
