@@ -8,6 +8,8 @@ interface AuthContextType {
     setToken: (token: string | null) => void;
 }
 
+// TODO set up jwt token refreshing
+
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
