@@ -29,6 +29,23 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         if (token) {
             const user = jwtDecode<UserJwtPayload>(token);
             setAuthState({ token, user });
+
+            // check token expiration
+            const expirationTime = user.exp * 1000;
+            const currentTime = Date.now();
+
+            if (expirationTime < currentTime) {
+                logout();
+            } else {
+                // set timeout to log out before the token expires
+                const timeout = expirationTime - currentTime - 60 * 1000;
+                const timerId = setTimeout(() => {
+                    logout();
+                }, timeout);
+
+                // cleanup
+                return () => clearTimeout(timerId);
+            }
         }
     }, []);
 
