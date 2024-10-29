@@ -27,6 +27,8 @@ model topology {
   react_flow_state Json
   expires_on       DateTime @db.Timestamp(6)
   archived         Boolean  @default(false)
+  created_at       DateTime @default(now())
+  updated_at       DateTime @updatedAt
 
   @@index([user_id], map: "ix_topology_user_id")
 }

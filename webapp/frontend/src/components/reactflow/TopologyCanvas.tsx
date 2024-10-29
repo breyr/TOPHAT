@@ -4,7 +4,6 @@ import {
     BackgroundVariant,
     Controls,
     Panel,
-    Position,
     ReactFlow,
     ReactFlowProvider,
     SelectionMode,
@@ -15,42 +14,15 @@ import {
 } from "@xyflow/react";
 import "@xyflow/react/dist/base.css"; // use to make custom node css
 import { TerminalSquare } from "lucide-react";
-import React, { useCallback, useMemo, useState } from "react";
+import React, {useCallback, useEffect, useMemo, useState} from "react";
 import TextUpdaterNode from "./nodes/TextUpdaterNode";
 import NodePicker from "./overlayui/NodePicker";
+import {useAuth} from "../../hooks/useAuth.ts";
+import {useParams} from "react-router-dom";
+import {Topology} from "../../types/types";
 
-const initialNodes = [
-    {
-        id: "1",
-        data: { label: "Hello" },
-        position: { x: 0, y: 0 },
-        targetPosition: Position.Top,
-    },
-    {
-        id: "2",
-        data: { label: "World" },
-        position: { x: 100, y: 100 },
-        targetPosition: Position.Top,
-    },
-    {
-        id: "3",
-        type: "textUpdater",
-        position: { x: 50, y: 50 },
-        data: {},
-    },
-] satisfies Node[];
-
-// have to specify source handle when using handles for custom nodes
-const initialEdges = [
-    {
-        id: "3-1",
-        source: "3",
-        target: "1",
-        sourceHandle: "a",
-        type: "smoothstep",
-        animated: true,
-    },
-] satisfies Edge[];
+const initialNodes = [] satisfies Node[];
+const initialEdges = [] satisfies Edge[];
 
 // required for drag and drop objects
 let id = 0;
@@ -62,6 +34,30 @@ const proOptions = { hideAttribution: true };
 const TopologyCanvas = () => {
     const [nodes, setNodes] = useState(initialNodes);
     const [edges, setEdges] = useState(initialEdges);
+    const [topologyData, setTopologyData] = useState<Topology | null>(null);
+    const { token } = useAuth();
+    const { id } = useParams();
+
+    useEffect(() => {
+        (async () => {
+            try {
+                const response = await fetch(`/api/topology/${id}`, {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Error ${response.status}: ${response.statusText}`);
+                }
+
+                const data = await response.json();
+                setTopologyData(data);
+            } catch (error) {
+                console.error("Failed to fetch topology data:", error);
+            }
+        })();
+    }, [id, token]);
 
     const onNodesChange = useCallback(
         // @ts-expect-error changes is implicit any

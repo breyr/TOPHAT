@@ -1,8 +1,11 @@
 import { PlusCircle } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
+import {useNavigate} from "react-router-dom";
+import {Topology} from "../types/types";
 
 const CreateTopology = () => {
     const { token } = useAuth();
+    const navigateTo = useNavigate();
 
     const handleCreateTopology = async () => {
         if (!token) {
@@ -25,8 +28,9 @@ const CreateTopology = () => {
                 throw new Error('Failed to create topology');
             }
 
-            const data = await response.json();
-            
+            const data: Topology = await response.json();
+
+            navigateTo(`/topology/${data.id}`);
         } catch (error) {
             console.error('Error creating topology:', error);
         }

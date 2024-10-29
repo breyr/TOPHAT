@@ -51,7 +51,7 @@ const router = createBrowserRouter([
     ]
   },
   {
-    path: "/topology",
+    path: "/topology/:id",
     element: <TopologyPage />
   }
 ])

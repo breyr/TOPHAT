@@ -1,11 +1,38 @@
+import React from 'react';
 import { CircleCheck } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import {useAuth} from "../../../hooks/useAuth.ts";
+import {useParams} from "react-router-dom";
+import {Topology} from "../../../types/types";
 
 export default function TopologyName() {
     const [topologyName, setTopologyName] = useState("Topology Name");
     const [isEditing, setIsEditing] = useState(false);
     const [inputWidth, setInputWidth] = useState(0);
     const spanRef = useRef<HTMLSpanElement>(null);
+    const { token } = useAuth();
+    const { id } = useParams();
+
+    useEffect(() => {
+        (async () => {
+            try {
+                const response = await fetch(`/api/topology/${id}`, {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Error ${response.status}: ${response.statusText}`);
+                }
+
+                const data: Topology = await response.json();
+                setTopologyName(data.name);
+            } catch (error) {
+                console.error("Failed to fetch topology data:", error);
+            }
+        })();
+    }, [id, token]);
 
     useEffect(() => {
         if (spanRef.current) {
