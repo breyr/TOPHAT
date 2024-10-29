@@ -39,8 +39,30 @@ export default function UserTopologiesPage() {
         })();
     }, [token]);
 
+    const handleDelete = async (topologyId: number) => {
+        if (!token) {
+            return;
+        }
+        try {
+            const response = await fetch(`/api/topology/${topologyId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                },
+            });
+            if (!response.ok) {
+                throw new Error('Failed to delete topology');
+            }
+            // update topologies list
+            setTopologies((prevTopologies) => prevTopologies.filter(topology => topology.id !== topologyId));
+        } catch (error) {
+            console.error('Error creating topology:', error);
+        }
+    }
+
     return (
-        <section className="pt-4 flex flex-row gap-8">
+        <section className="pt-4 flex flex-row flex-wrap gap-x-8">
             <CreateTopology/>
             {isLoading ? (
                 <div className="flex items-center justify-center min-h-[200px]">
@@ -49,7 +71,7 @@ export default function UserTopologiesPage() {
             ) : (
                 topologies.length !== 0 && (
                     topologies.map((topology) => (
-                        <TopologyCard key={topology.id} {...topology} />
+                        <TopologyCard key={topology.id} {...topology} onDelete={() => handleDelete(topology.id)} />
                     ))
                 )
             )}
