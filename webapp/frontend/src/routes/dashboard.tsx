@@ -6,13 +6,13 @@ import { useAuth } from "../hooks/useAuth";
 export default function DashboardLayout() {
     const location = useLocation();
     const navigateTo = useNavigate();
-    const { decodedToken } = useAuth();
+    const { user } = useAuth();
 
     useEffect(() => {
-        if (!decodedToken) {
+        if (!user) {
             navigateTo("/");
         }
-    }, [decodedToken, navigateTo]);
+    }, [user, navigateTo]); // useNavigate is a stable reference so this is okay
 
     const getTabClass = (path: string) => {
         return location.pathname === `/dashboard${path}` ? "border-b-2 border-b-blue-400" : "border-b-2";
@@ -22,14 +22,14 @@ export default function DashboardLayout() {
         <section className="flex flex-col h-lvh">
             <DashboardNav />
             <section className="p-[1.875rem]">
-                <h1>Welcome, {decodedToken?.username}.</h1>
+                <h1>Welcome, {user?.username}.</h1>
                 {/* tabs */}
                 <div className="flex flex-row items-center gap-5">
                     <Link to="/dashboard/" className={getTabClass("/")}>
                         Topologies
                     </Link>
                     {
-                        decodedToken?.account_type == 'admin'
+                        user?.account_type == 'admin'
                         &&
                         <>
                             <Link to="/dashboard/inventory" className={getTabClass("/inventory")}>

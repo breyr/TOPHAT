@@ -6,10 +6,9 @@ import { JwtPayload } from "jsonwebtoken";
 export interface ApiResponse<T> {
     success: boolean;
     message: string;
-    data?: T;
+    payload?: T;
     error?: Error;
 }
-
 // interfaces when dealing with authenticated requests
 export interface CustomJwtPayload extends JwtPayload {
     user: Pick<UserModel, 'id' | 'username' | 'email' | 'account_type'>;

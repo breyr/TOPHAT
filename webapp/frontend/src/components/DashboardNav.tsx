@@ -4,10 +4,10 @@ import { useAuth } from "../hooks/useAuth";
 
 export default function DashboardNav() {
 
-    const { setToken } = useAuth();
+    const { logout } = useAuth();
     const navigateTo = useNavigate();
-    const signout = () => {
-        setToken(null);
+    const logoutAndRedirect = () => {
+        logout();
         navigateTo('/');
     }
 
@@ -19,7 +19,7 @@ export default function DashboardNav() {
             </div>
             <div className="flex flex-row items-center gap-2">
                 <h4 className="hover:cursor-pointer hover:text-blue-400">Settings</h4>
-                <h4 onClick={signout} className="hover:cursor-pointer hover:text-blue-400">Log Out</h4>
+                <h4 onClick={logoutAndRedirect} className="hover:cursor-pointer hover:text-blue-400">Log Out</h4>
             </div>
         </nav>
     )

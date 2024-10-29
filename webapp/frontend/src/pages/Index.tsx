@@ -1,38 +1,32 @@
+import React from 'react';
 import { ArrowRight } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
-import { AuthApiResponse } from "../types/types";
 
 export default function IndexPage() {
     const navigateTo = useNavigate();
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
     const [message, setMessage] = useState("");
-    const { setToken, token } = useAuth();
+    const { user, login } = useAuth();
 
     // on mount if the token exists redirect to the dashboard
     useEffect(() => {
-        if (token) navigateTo('/dashboard/')
-    }, [token, navigateTo])
+        if (user) {
+            navigateTo("/dashboard/");
+        }
+    }, [user, navigateTo]);
 
     // handle login
     const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        const response = await fetch('/api/auth/login', {
-            method: "POST",
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ username, password })
-        });
-        const data: AuthApiResponse = await response.json();
-        if (response.ok) {
-            // store token
-            setToken(data.access_token!)
+        const { success, message } = await login(username, password);
+        if (success) {
             navigateTo('/dashboard/')
         } else {
-            setMessage(`${data.message}`)
+            // if not successful there will be a message returned from the backend that we can use
+            setMessage(message!);
         }
     }
 

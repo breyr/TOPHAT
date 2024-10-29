@@ -8,7 +8,7 @@ import { createJwtToken } from '../utils/jwt';
 const prisma = new PrismaClient();
 const router = Router();
 
-router.post('/login', async (req: Request, res: Response<ApiResponse<string>>): Promise<void> => {
+router.post('/login', async (req: Request, res: Response<ApiResponse<{ token: string }>>): Promise<void> => {
     const { username, password } = req.body;
     // find user
     const user: UserModel | null = await prisma.user.findFirst({
@@ -16,12 +16,12 @@ router.post('/login', async (req: Request, res: Response<ApiResponse<string>>): 
     });
     // check if the user exists and the password matches
     if (!user || !bcrypt.compareSync(password, user.password)) {
-        res.json({success: true, message: 'Invalid credentials'});
+        res.json({success: false, message: 'Invalid credentials'});
         return;
     }
     // create JWT token and send to client
     const token = createJwtToken(user.id, user.username, user.email, user.account_type);
-    res.json({success: true, message: 'Login successful', data: token });
+    res.json({success: true, message: 'Login successful', payload: { token } });
 });
 router.post('/register', async (req: Request, res: Response<ApiResponse<null>>): Promise<void> => {
     const { username, email, password } = req.body;
@@ -57,7 +57,7 @@ router.post('/register', async (req: Request, res: Response<ApiResponse<null>>):
 
     res.json({ success: true, message: 'User created successfully'});
 });
-router.post('/refresh', authenticateToken, async (req: AuthenticatedRequest, res: Response<ApiResponse<string>>): Promise<void> => {
+router.post('/refresh', authenticateToken, async (req: AuthenticatedRequest, res: Response<ApiResponse<{ token: string }>>): Promise<void> => {
     // this endpoint is protected
     if (!req.user) {
         res.status(401).json({ success: false, message: 'Unauthorized' });
@@ -67,7 +67,7 @@ router.post('/refresh', authenticateToken, async (req: AuthenticatedRequest, res
     const { id, username, email, account_type } = req.user;
     // create a new token
     const token = createJwtToken(id, username, email, account_type);
-    res.json({ success: true, message: 'Token refreshed successfully', data: token });
+    res.json({ success: true, message: 'Token refreshed successfully', payload: { token } });
 });
 
 export default router;

@@ -1,16 +1,19 @@
 export type Model = 'multi-tenant' | 'single-user' | null
 export type AccountType = 'admin' | 'user'
-export interface UserJwtPaylod {
+
+// reference from backend response type
+export interface ApiResponse<T> {
+    success: boolean;
+    message: string;
+    data?: T;
+    error?: Error;
+}
+export interface UserJwtPayload {
     id: number
     username: string
     email: string
     account_type: AccountType
     exp: number
-}
-export interface AuthApiResponse {
-    message?: string
-    access_token?: string
-    token_type?: string
 }
 export interface Topology {
     id: number;
@@ -20,4 +23,6 @@ export interface Topology {
     react_flow_state: any; // Use a more specific type if you know the structure of the JSON
     expires_on: Date;
     archived: boolean;
+    created_at: Date;
+    updated_at: Date;
 }
