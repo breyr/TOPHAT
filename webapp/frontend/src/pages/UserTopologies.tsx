@@ -25,7 +25,7 @@ export default function UserTopologiesPage() {
                     }
                 });
                 if (!response.ok) {
-                    setError('Failed to create topology');
+                    setError('Failed to get topologies');
                     return;
                 }
                 const data = await response.json();
@@ -53,9 +53,10 @@ export default function UserTopologiesPage() {
             });
             if (!response.ok) {
                 throw new Error('Failed to delete topology');
+            } else {
+                // update topologies list on success
+                setTopologies((prevTopologies) => prevTopologies.filter(topology => topology.id !== topologyId));
             }
-            // update topologies list
-            setTopologies((prevTopologies) => prevTopologies.filter(topology => topology.id !== topologyId));
         } catch (error) {
             console.error('Error creating topology:', error);
         }

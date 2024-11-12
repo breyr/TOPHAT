@@ -1,7 +1,7 @@
-import { PrismaClient } from '@prisma/client';
+import { Prisma, PrismaClient } from '@prisma/client';
 import { Router } from 'express';
 import { authenticateToken } from '../middleware/authTokenMiddleware';
-import { AuthenticatedRequest } from '../types';
+import { AuthenticatedRequest, Topology } from '../types';
 
 const prisma = new PrismaClient();
 const router = Router();
@@ -40,12 +40,12 @@ router.get('/', authenticateToken, async (req: AuthenticatedRequest, res) => {
         return;
     }
 
-    const { id } = req.user;
+    const { userId } = req.user;
 
     try {
         const topologies = await prisma.topology.findMany({
             where: {
-                user_id: id,
+                user_id: userId,
             },
         });
         res.status(200).json(topologies);
@@ -81,23 +81,29 @@ router.get('/:id', authenticateToken, async (req: AuthenticatedRequest, res) => 
 
 // update a topology by ID
 router.put('/:id', authenticateToken, async (req: AuthenticatedRequest, res) => {
+    // check if we are authenticated
     if (!req.user) {
         res.status(401).json({ message: 'Unauthorized' });
         return;
     }
-
+    // check to make sure the id is numeric
     const { id } = req.params;
-    const { name, thumbnail, react_flow_state, expires_on, archived } = req.body;
+    if (isNaN(Number(id))) {
+        res.status(400).json({ message: 'Invalid ID format' });
+        return;
+    }
+
+    const { name, thumbnail, react_flow_state, expires_on, archived } = req.body as Topology;
 
     try {
         const updatedTopology = await prisma.topology.update({
             where: { id: parseInt(id) },
             data: {
-                name,
-                thumbnail: Buffer.from(thumbnail, 'base64'), // Assuming thumbnail is sent as a base64 string
-                react_flow_state,
-                expires_on: new Date(expires_on),
-                archived,
+                name: name ?? Prisma.skip,
+                thumbnail: thumbnail ? Buffer.from(thumbnail, 'base64') : Prisma.skip, // Assuming thumbnail is sent as a base64 string
+                react_flow_state: react_flow_state ?? Prisma.skip,
+                expires_on: expires_on ?  new Date(expires_on) : Prisma.skip,
+                archived: archived ?? Prisma.skip,
             },
         });
 

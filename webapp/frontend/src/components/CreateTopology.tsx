@@ -1,7 +1,7 @@
 import { PlusCircle } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
-import {useNavigate} from "react-router-dom";
-import {Topology} from "../types/types";
+import { useNavigate } from "react-router-dom";
+import { Topology } from "../types/types";
 
 const CreateTopology = () => {
     const { token } = useAuth();

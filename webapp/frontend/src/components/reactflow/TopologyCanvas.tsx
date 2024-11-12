@@ -1,4 +1,4 @@
-import type { Connection, Edge, Node } from "@xyflow/react";
+import type {Connection, Edge, Node, ReactFlowInstance} from "@xyflow/react";
 import {
     Background,
     BackgroundVariant,
@@ -25,19 +25,20 @@ const initialNodes = [] satisfies Node[];
 const initialEdges = [] satisfies Edge[];
 
 // required for drag and drop objects
-let id = 0;
+let id = 0; // TODO BUG HERE, we have to know what the last id used when returning state or just come up with a better naming scheme
 const getId = () => `dndnode_${id++}`;
 
 // options to remove branding
 const proOptions = { hideAttribution: true };
 
 const TopologyCanvas = () => {
-    const [nodes, setNodes] = useState(initialNodes);
-    const [edges, setEdges] = useState(initialEdges);
-    const [topologyData, setTopologyData] = useState<Topology | null>(null);
+    const [rfInstance, setRfInstance] = useState<ReactFlowInstance | null>(null); // reference to react flow instance
+    const [nodes, setNodes] = useState<Node[]>(initialNodes);
+    const [edges, setEdges] = useState<Edge[]>(initialEdges);
     const { token } = useAuth();
     const { id } = useParams();
 
+    // load information from db on mount
     useEffect(() => {
         (async () => {
             try {
@@ -51,13 +52,39 @@ const TopologyCanvas = () => {
                     throw new Error(`Error ${response.status}: ${response.statusText}`);
                 }
 
-                const data = await response.json();
-                setTopologyData(data);
+                const data = await response.json() as Topology;
+                setNodes(data.react_flow_state.nodes ?? []);
+                setEdges(data.react_flow_state.edges ?? []);
             } catch (error) {
                 console.error("Failed to fetch topology data:", error);
             }
         })();
     }, [id, token]);
+
+    // logic to save a topology's react-flow state into the database
+    const saveTopology = useCallback(async () => {
+        if (rfInstance) {
+            const flow = rfInstance.toObject();
+            try {
+                const response = await fetch(`/api/topology/${id}`, {
+                    method: "PUT",
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`,
+                    },
+                    body: JSON.stringify({
+                        react_flow_state: flow
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Error ${response.status}: ${response.statusText}`);
+                }
+            } catch (error) {
+                console.error("Failed to save topology state:", error);
+            }
+        }
+    }, [id, token, rfInstance])
 
     const onNodesChange = useCallback(
         // @ts-expect-error changes is implicit any
@@ -116,13 +143,11 @@ const TopologyCanvas = () => {
                 data: { label: `${type} node` },
             };
 
-            // @ts-expect-error something wrong
             setNodes((oldNodes) => oldNodes.concat(newNode));
         },
         [screenToFlowPosition]
     );
     // https://reactflow.dev/examples/misc/download-image
-    // https://reactflow.dev/examples/interaction/save-and-restore
 
     return (
         <div className="h-full w-lvw">
@@ -136,6 +161,7 @@ const TopologyCanvas = () => {
                 onConnect={onConnect}
                 onDrop={onDrop}
                 onDragOver={onDragOver}
+                onInit={setRfInstance}
                 fitView
                 panOnScroll
                 selectionOnDrag
@@ -144,6 +170,9 @@ const TopologyCanvas = () => {
             >
                 <Background color="rgb(247, 247, 247)" variant={BackgroundVariant.Lines} />
                 <Controls position="bottom-right" />
+                <Panel position={"top-left"}>
+                    <button onClick={saveTopology}>save</button>
+                </Panel>
                 {/* Node Picker */}
                 <Panel position="top-right">
                     <NodePicker />

@@ -4,7 +4,7 @@ import {useNavigate} from "react-router-dom";
 import useContextMenu from "../hooks/useContextMenu.ts";
 import { Trash2, Archive } from "lucide-react";
 
-// TODO add delete mechanism
+// TODO add archival mechanism
 
 interface ContextMenuProps {
     x: number;

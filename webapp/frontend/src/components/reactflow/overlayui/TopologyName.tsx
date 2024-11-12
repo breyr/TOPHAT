@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useCallback} from 'react';
 import { CircleCheck } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import {useAuth} from "../../../hooks/useAuth.ts";
@@ -12,6 +12,7 @@ export default function TopologyName() {
     const [isEditing, setIsEditing] = useState(false);
     const [inputWidth, setInputWidth] = useState(0);
     const spanRef = useRef<HTMLSpanElement>(null);
+    const initialNameRef = useRef<string>("");
     const { token } = useAuth();
     const { id } = useParams();
 
@@ -30,6 +31,7 @@ export default function TopologyName() {
 
                 const data: Topology = await response.json();
                 setTopologyName(data.name);
+                initialNameRef.current = data.name;
             } catch (error) {
                 console.error("Failed to fetch topology data:", error);
             }
@@ -42,12 +44,36 @@ export default function TopologyName() {
         }
     }, [topologyName, isEditing]);
 
+    const updateTopologyName = useCallback(async () => {
+        try {
+            const response = await fetch(`/api/topology/${id}`, {
+                method: "PUT",
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                },
+                body: JSON.stringify({
+                    name: topologyName
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error(`Error ${response.status}: ${response.statusText}`);
+            }
+        } catch (error) {
+            console.error("Failed to update topology name:", error);
+        }
+    }, [id, token, topologyName]);
+
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setTopologyName(e.target.value);
     };
 
-    const handleBlur = () => {
+    const handleBlur = async () => {
         setIsEditing(false);
+        if (topologyName !== initialNameRef.current) {
+           await updateTopologyName();
+        }
     };
 
     const handleClick = () => {

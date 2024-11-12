@@ -20,7 +20,27 @@ export interface Topology {
     user_id: number;
     name: string;
     thumbnail: Buffer;
-    react_flow_state: any; // Use a more specific type if you know the structure of the JSON
+    react_flow_state: {
+        nodes: Array<{
+            id: string;
+            type: string;
+            position: { x: number; y: number };
+            data: { label: string };
+            measured?: { width: number; height: number };
+            selected?: boolean;
+            dragging?: boolean;
+        }>;
+        edges: Array<{
+            source: string;
+            target: string;
+            id: string;
+        }>;
+        viewport: {
+            x: number;
+            y: number;
+            zoom: number;
+        };
+    };
     expires_on: Date;
     archived: boolean;
     created_at: Date;
