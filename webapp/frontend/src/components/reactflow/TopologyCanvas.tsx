@@ -1,4 +1,4 @@
-import type {Connection, Edge, Node, ReactFlowInstance} from "@xyflow/react";
+import type { Connection, Edge, Node, ReactFlowInstance } from "@xyflow/react";
 import {
     Background,
     BackgroundVariant,
@@ -11,7 +11,10 @@ import {
     applyEdgeChanges,
     applyNodeChanges,
     useReactFlow,
+    getNodesBounds,
+    getViewportForBounds
 } from "@xyflow/react";
+import { toJpeg } from 'html-to-image';
 import "@xyflow/react/dist/base.css"; // use to make custom node css
 import { TerminalSquare } from "lucide-react";
 import React, {useCallback, useEffect, useMemo, useState} from "react";
@@ -31,12 +34,17 @@ const getId = () => `dndnode_${id++}`;
 // options to remove branding
 const proOptions = { hideAttribution: true };
 
+// thumbnail settings
+const imageWidth = 250;
+const imageHeight = 250;
+
 const TopologyCanvas = () => {
     const [rfInstance, setRfInstance] = useState<ReactFlowInstance | null>(null); // reference to react flow instance
     const [nodes, setNodes] = useState<Node[]>(initialNodes);
     const [edges, setEdges] = useState<Edge[]>(initialEdges);
     const { token } = useAuth();
     const { id } = useParams();
+    const { getNodes } = useReactFlow();
 
     // load information from db on mount
     useEffect(() => {
@@ -64,8 +72,37 @@ const TopologyCanvas = () => {
     // logic to save a topology's react-flow state into the database
     const saveTopology = useCallback(async () => {
         if (rfInstance) {
+            // get react flow state object
             const flow = rfInstance.toObject();
+
+            // generate thumbnail
+            const nodes = getNodes();  // This will get all nodes including those in sub flows
+            const nodeBounds = getNodesBounds(nodes);
+            const viewport = getViewportForBounds(
+                nodeBounds,
+                imageHeight,
+                imageWidth,
+                0.5,
+                2,
+                20
+            );
+
             try {
+                // create thumbnail
+                const dataUrl = await toJpeg(document.querySelector(".react-flow__viewport")! as HTMLElement, {
+                    backgroundColor: "#fff",
+                    width: imageWidth,
+                    height: imageHeight,
+                    style: {
+                        width: imageWidth.toString(),
+                        height: imageHeight.toString(),
+                        transform: `translate(${viewport.x}px, ${viewport.y}px) scale(${viewport.zoom})`,
+                    }
+                })
+
+                // extract the base64 portion of the data URL
+                const base64Thumbnail = dataUrl.split(',')[1];
+
                 const response = await fetch(`/api/topology/${id}`, {
                     method: "PUT",
                     headers: {
@@ -73,7 +110,8 @@ const TopologyCanvas = () => {
                         'Authorization': `Bearer ${token}`,
                     },
                     body: JSON.stringify({
-                        react_flow_state: flow
+                        react_flow_state: flow,
+                        thumbnail: base64Thumbnail,
                     })
                 });
 

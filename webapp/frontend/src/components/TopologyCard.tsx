@@ -6,6 +6,11 @@ import { Trash2, Archive } from "lucide-react";
 
 // TODO add archival mechanism
 
+interface BufferLike {
+    type: "Buffer";
+    data: number[];
+}
+
 interface ContextMenuProps {
     x: number;
     y: number;
@@ -31,6 +36,7 @@ interface TopologyProps extends Topology {
 const TopologyCard: React.FC<TopologyProps> = ({id, name, thumbnail, expires_on, archived, updated_at, onDelete }) => {
     const { menuOpen, menuPos, showMenu, hideMenu } = useContextMenu();
     const navigateTo = useNavigate();
+    const [thumbnailSrc, setThumbnailSrc] = useState<string | null>(null);
 
     const handleContextMenu = (event: React.MouseEvent) => {
         event.preventDefault();
@@ -63,6 +69,29 @@ const TopologyCard: React.FC<TopologyProps> = ({id, name, thumbnail, expires_on,
         }
     }, [menuOpen, hideMenu]);
 
+    // handle conversion of thumbnail
+    useEffect(() => {
+        if (!thumbnail) return;
+
+        // Type assertion to handle the buffer-like object
+        const bufferObj = thumbnail as unknown as BufferLike;
+
+        if (bufferObj.type === "Buffer" && Array.isArray(bufferObj.data)) {
+            try {
+                // convert binary buffer to base64 string
+                const base64String = btoa(
+                    Array.from(bufferObj.data)
+                        .map(byte => String.fromCharCode(byte))
+                        .join('')
+                );
+                const thumbnailSourceString = `data:image/jpg;base64,${base64String}`;
+                setThumbnailSrc(thumbnailSourceString);
+            } catch (error) {
+                console.error('Error converting to base64:', error);
+            }
+        }
+    }, [thumbnail]);
+
     return (
         <div
             key={id}
@@ -72,7 +101,7 @@ const TopologyCard: React.FC<TopologyProps> = ({id, name, thumbnail, expires_on,
         >
             <div className="w-full">
                 <img
-                    src={URL.createObjectURL(new Blob([thumbnail]))}
+                    src={thumbnailSrc ?? ""}
                     alt='thumbnail'
                     className="w-full h-36 object-cover bg-gray-100 rounded-t-md"
                 />

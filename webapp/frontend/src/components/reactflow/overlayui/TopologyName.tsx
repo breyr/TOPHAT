@@ -5,8 +5,6 @@ import {useAuth} from "../../../hooks/useAuth.ts";
 import {useParams} from "react-router-dom";
 import {Topology} from "../../../types/types";
 
-// TODO add saving mechanism when you change the name
-
 export default function TopologyName() {
     const [topologyName, setTopologyName] = useState("Topology Name");
     const [isEditing, setIsEditing] = useState(false);
