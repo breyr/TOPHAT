@@ -43,6 +43,6 @@ export interface Topology {
     };
     expires_on: Date;
     archived: boolean;
-    created_at: Date;
-    updated_at: Date;
+    created_at: string;
+    updated_at: string;
 }

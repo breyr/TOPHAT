@@ -1,9 +1,10 @@
 import React, {useCallback} from 'react';
 import { CircleCheck } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import {useAuth} from "../../../hooks/useAuth.ts";
-import {useParams} from "react-router-dom";
-import {Topology} from "../../../types/types";
+import { useAuth } from "../../../hooks/useAuth.ts";
+import { useParams } from "react-router-dom";
+import { Topology } from "../../../types/types";
+import { useTopologyStore } from "../../../stores/topologystore.ts";
 
 export default function TopologyName() {
     const [topologyName, setTopologyName] = useState("Topology Name");
@@ -13,6 +14,9 @@ export default function TopologyName() {
     const initialNameRef = useRef<string>("");
     const { token } = useAuth();
     const { id } = useParams();
+    const { topologies, setLastUpdated } = useTopologyStore();
+
+    const currentTopology = topologies[id || ""];
 
     useEffect(() => {
         (async () => {
@@ -29,6 +33,7 @@ export default function TopologyName() {
 
                 const data: Topology = await response.json();
                 setTopologyName(data.name);
+                setLastUpdated(id!, data.updated_at);
                 initialNameRef.current = data.name;
             } catch (error) {
                 console.error("Failed to fetch topology data:", error);
@@ -95,7 +100,17 @@ export default function TopologyName() {
                     <span ref={spanRef} className="p-2">{topologyName}</span>
                 </div>
             )}
-            <CircleCheck className="ml-2 text-green-500" />
+            <div className="flex flex-row items-center gap-2">
+                {/* Show a loading spinner or text when saving */}
+                {currentTopology?.isSaving ? (
+                    <div className="text-blue-500">Saving...</div>
+                ) : (
+                    <CircleCheck className="ml-2 text-green-500"/>
+                )}
+                <p className="text-gray-400">
+                    {currentTopology?.lastUpdated ? new Date(currentTopology.lastUpdated).toLocaleString() : "Never updated"}
+                </p>
+            </div>
             {/* Hidden span to measure text width */}
             <span ref={spanRef} className="absolute invisible p-2">{topologyName}</span>
         </div>

@@ -1,4 +1,4 @@
-import type { Connection, Edge, Node, ReactFlowInstance } from "@xyflow/react";
+import type {Connection, Edge, EdgeChange, Node, NodeChange, ReactFlowInstance} from "@xyflow/react";
 import {
     Background,
     BackgroundVariant,
@@ -17,19 +17,20 @@ import {
 import { toJpeg } from 'html-to-image';
 import "@xyflow/react/dist/base.css"; // use to make custom node css
 import { TerminalSquare } from "lucide-react";
-import React, {useCallback, useEffect, useMemo, useState} from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { debounce } from "lodash";
 import TextUpdaterNode from "./nodes/TextUpdaterNode";
 import NodePicker from "./overlayui/NodePicker";
-import {useAuth} from "../../hooks/useAuth.ts";
-import {useParams} from "react-router-dom";
-import {Topology} from "../../types/types";
+import { useAuth } from "../../hooks/useAuth.ts";
+import { useParams } from "react-router-dom";
+import { Topology } from "../../types/types";
+import { useTopologyStore } from "../../stores/topologystore";
 
 const initialNodes = [] satisfies Node[];
 const initialEdges = [] satisfies Edge[];
 
 // required for drag and drop objects
-let id = 0; // TODO BUG HERE, we have to know what the last id used when returning state or just come up with a better naming scheme
-const getId = () => `dndnode_${id++}`;
+const getId = () => `dndnode_${Date.now()}_${Math.floor(Math.random() * 10000)}`;
 
 // options to remove branding
 const proOptions = { hideAttribution: true };
@@ -42,6 +43,8 @@ const TopologyCanvas = () => {
     const [rfInstance, setRfInstance] = useState<ReactFlowInstance | null>(null); // reference to react flow instance
     const [nodes, setNodes] = useState<Node[]>(initialNodes);
     const [edges, setEdges] = useState<Edge[]>(initialEdges);
+    const [isChangesPending, setIsChangesPending] = useState(false);
+    const { setIsSaving, setLastUpdated } = useTopologyStore();
     const { token } = useAuth();
     const { id } = useParams();
     const { getNodes } = useReactFlow();
@@ -72,6 +75,9 @@ const TopologyCanvas = () => {
     // logic to save a topology's react-flow state into the database
     const saveTopology = useCallback(async () => {
         if (rfInstance) {
+            // update saving state
+            setIsSaving(id!, true);
+
             // get react flow state object
             const flow = rfInstance.toObject();
 
@@ -118,27 +124,67 @@ const TopologyCanvas = () => {
                 if (!response.ok) {
                     throw new Error(`Error ${response.status}: ${response.statusText}`);
                 }
+
+                setLastUpdated(id!, new Date().toISOString());
             } catch (error) {
                 console.error("Failed to save topology state:", error);
+            } finally {
+                setIsSaving(id!, false);
             }
         }
-    }, [id, token, rfInstance])
+    }, [id, token, rfInstance, getNodes, setIsSaving, setLastUpdated])
+
+    const debouncedSaveTopology = useMemo(
+        () => debounce(() => {
+            if (isChangesPending) {
+                saveTopology();
+                setIsChangesPending(false); // reset the pending state after saving
+            }
+        }, 2000),
+        [saveTopology, isChangesPending]
+    );
+
+    // cleanup the debounce function when the component is unmounted
+    useEffect(() => {
+        return () => {
+            debouncedSaveTopology.cancel();
+        };
+    }, [debouncedSaveTopology]);
 
     const onNodesChange = useCallback(
-        // @ts-expect-error changes is implicit any
-        (changes) => setNodes((oldNodes) => applyNodeChanges(changes, oldNodes)),
-        [setNodes]
+        (changes: NodeChange[]) => {
+            setNodes((oldNodes) => {
+                const updatedNodes = applyNodeChanges(changes, oldNodes);
+                setIsChangesPending(true); // set the flag to true that changes are pending
+                debouncedSaveTopology(); // trigger debounced save
+                return updatedNodes;
+            });
+        },
+        [setNodes, debouncedSaveTopology]
     );
 
     const onEdgesChange = useCallback(
-        // @ts-expect-error changes is implicit any
-        (changes) => setEdges((eds) => applyEdgeChanges(changes, eds)),
-        [setEdges]
+        (changes: EdgeChange[]) => {
+            setEdges((oldEdges) => {
+                const updatedEdges = applyEdgeChanges(changes, oldEdges);
+                setIsChangesPending(true); // set the flag to true that changes are pending
+                debouncedSaveTopology(); // trigger debounced save
+                return updatedEdges;
+            });
+        },
+        [setEdges, debouncedSaveTopology]
     );
 
     const onConnect = useCallback(
-        (params: Connection) => setEdges((eds) => addEdge(params, eds)),
-        [setEdges]
+        (params: Connection) => {
+            setEdges((oldEdges) => {
+                const updatedEdges = addEdge(params, oldEdges);
+                setIsChangesPending(true); // set the flag to true that changes are pending
+                debouncedSaveTopology(); // trigger debounced save
+                return updatedEdges;
+            });
+        },
+        [setEdges, debouncedSaveTopology]
     );
 
     // need to be memoized
@@ -208,9 +254,6 @@ const TopologyCanvas = () => {
             >
                 <Background color="rgb(247, 247, 247)" variant={BackgroundVariant.Lines} />
                 <Controls position="bottom-right" />
-                <Panel position={"top-left"}>
-                    <button onClick={saveTopology}>save</button>
-                </Panel>
                 {/* Node Picker */}
                 <Panel position="top-right">
                     <NodePicker />
