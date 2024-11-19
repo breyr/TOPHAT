@@ -1,11 +1,38 @@
+import React from 'react';
 import { ArrowRight } from "lucide-react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../hooks/useAuth";
 
 export default function IndexPage() {
-
     const navigateTo = useNavigate();
+    const [username, setUsername] = useState("");
+    const [password, setPassword] = useState("");
+    const [message, setMessage] = useState("");
+    const { user, login } = useAuth();
+
+    // on mount if the token exists redirect to the dashboard
+    useEffect(() => {
+        if (user) {
+            navigateTo("/dashboard/");
+        }
+    }, [user, navigateTo]);
+
+    // handle login
+    const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        const { success, message } = await login(username, password);
+        if (success) {
+            navigateTo('/dashboard/')
+        } else {
+            // if not successful there will be a message returned from the backend that we can use
+            setMessage(message!);
+        }
+    }
+
+    // handle navigating to onboarding
     function handleNext() {
-        navigateTo('/onboard');
+        navigateTo('/onboard/');
     }
 
     return (
@@ -20,15 +47,16 @@ export default function IndexPage() {
                         <div className="flex flex-row items-center">
                             <p>First time setup?</p>
                             <p className="r-btn tertiary flex items-center hover:cursor-pointer" onClick={handleNext}>
-                                Complete our onboarding <ArrowRight size={18} />
+                                Complete onboarding <ArrowRight size={18} />
                             </p>
                         </div>
-                        <form className="flex flex-col mt-10 mb-6">
+                        <form onSubmit={handleLogin} className="flex flex-col mt-10 mb-6">
                             <label className="font-bold" htmlFor="email">Email / Username</label>
-                            <input className="r-input large" name="email" type="text" />
+                            <input className="r-input large" name="email" type="text" value={username} onChange={(e) => setUsername(e.target.value)} />
                             <label className="font-bold mt-4" htmlFor="password">Password</label>
-                            <input className="r-input large" name="password" type="password" />
-                            <button className="r-btn primary mt-5">Log In</button>
+                            <input className="r-input large" name="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
+                            <button type="submit" className="r-btn primary mt-5">Log In</button>
+                            <span>{message}</span>
                         </form>
                         <div className="flex justify-center">
                             <button className="r-btn tertiary">Need help signing in?</button>

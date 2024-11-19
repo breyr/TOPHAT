@@ -1,69 +1,102 @@
-import { jwtDecode } from "jwt-decode";
-import { createContext, ReactNode, useContext, useEffect, useState } from "react";
+import { jwtDecode } from 'jwt-decode';
+import {createContext, ReactNode, useEffect, useState} from 'react';
+import { UserJwtPayload } from "../types/types";
 
 interface AuthContextType {
+    user: UserJwtPayload | null;
     token: string | null;
-    setToken: (token: string | null) => void;
+    login: (username: string, password: string) => Promise<{ success: boolean; message?: string }>;
+    logout: () => void;
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+interface LoginResponse {
+    success: boolean;
+    message?: string;
+    payload?: {
+        token: string;
+    };
+}
+
+export const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-    const [token, setToken] = useState<string | null>(sessionStorage.getItem('token'));
+    const [authState, setAuthState] = useState<{ token: string | null, user: UserJwtPayload | null }>(
+        { token: null, user: null },
+    );
 
-    // when the state of the token changes, take appropriate action
     useEffect(() => {
+        const token = sessionStorage.getItem("token");
         if (token) {
-            sessionStorage.setItem('token', token);
-        } else {
-            sessionStorage.removeItem('token');
+            const user = jwtDecode<UserJwtPayload>(token);
+            setAuthState({ token, user });
+
+            // check token expiration
+            const expirationTime = user.exp * 1000;
+            const currentTime = Date.now();
+
+            if (expirationTime < currentTime) {
+                logout();
+            } else {
+                // set timeout to log out before the token expires
+                const timeout = expirationTime - currentTime - 60 * 1000;
+                const timerId = setTimeout(() => {
+                    logout();
+                }, timeout);
+
+                // cleanup
+                return () => clearTimeout(timerId);
+            }
         }
-    }, [token]);
+    }, []);
 
-    useEffect(() => {
+    // login helper
+    const login = async (username: string, password: string): Promise<{ success: boolean, message?: string }> => {
+        try {
+            const response = await fetch('/api/auth/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ username, password }),
+            });
 
-        const refreshThreshold = process.env.NODE_ENV == 'production'
-            ? 300000 // 5 minutes
-            : 15000 // 15 seconds
+            const data: LoginResponse = await response.json();
 
-        const checkTokenExpiry = () => {
-            // we set exp to be one hour via the backend - for testing it is set to one minute
-            if (token) {
-                const decodedToken = jwtDecode<{ exp: number }>(token);
-                const timeLeft = decodedToken.exp * 1000 - Date.now();
-                // refresh token
-                if (timeLeft < refreshThreshold) {
-                    fetch('/api/account/refresh', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${token}`
-                        }
-                    })
-                        .then(response => response.json())
-                        .then(data => setToken(data.token))
-                        .catch(() => setToken(null))
+            if (!response.ok) {
+                return {
+                    success: false,
+                    message: data.message || `Error: ${response.status} ${response.statusText}`
                 }
-            };
+            }
+
+            if (data.success && data.payload?.token) {
+                const token = data.payload.token;
+                setAuthState({ token, user: jwtDecode<UserJwtPayload>(token) });
+                sessionStorage.setItem('token', token);
+                return { success: true };
+            }
+            // return error message from backend
+            return { success: false, message: data.message || 'Login failed - no token received' };
+        } catch (error) {
+            console.error('Login error:', error);
+            return { success: false, message: 'An error occurred during login.' };
         }
+    }
 
-        checkTokenExpiry();
-        const interval = setInterval(checkTokenExpiry, 10000) // check every minute for prod, 10 seconds for testing
-
-        return () => clearInterval(interval);
-    }, [token, setToken]);
+    // logout helper
+    const logout = () => {
+        sessionStorage.removeItem('token');
+        setAuthState({ token: null, user: null });
+    }
 
     return (
-        <AuthContext.Provider value={{ token, setToken }}>
+        <AuthContext.Provider value={{
+            user: authState.user,
+            token: authState.token,
+            login,
+            logout
+        }}>
             {children}
         </AuthContext.Provider>
     );
-};
-
-export const useAuth = () => {
-    const context = useContext(AuthContext);
-    if (!context) {
-        throw new Error('useAuth must be used within an AuthProvider');
-    }
-    return context;
 };
