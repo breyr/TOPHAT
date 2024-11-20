@@ -1,36 +1,20 @@
 import { PlusCircle } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { useNavigate } from "react-router-dom";
-import { Topology } from "../types/types";
 
 const CreateTopology = () => {
-    const { token } = useAuth();
+    const { token, authenticatedApiClient } = useAuth();
     const navigateTo = useNavigate();
 
     const handleCreateTopology = async () => {
         if (!token) {
             return;
         }
-
         try {
-            const response = await fetch('/api/topology/', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`,
-                },
-                body: JSON.stringify({
-                    name: `Topology_${Date.now()}`,
-                }),
+            const response = await authenticatedApiClient.createTopology({
+                name: `Topology_${Date.now()}`
             });
-
-            if (!response.ok) {
-                throw new Error('Failed to create topology');
-            }
-
-            const data: Topology = await response.json();
-
-            navigateTo(`/topology/${data.id}`);
+            navigateTo(`/topology/${response.data!.id}`);
         } catch (error) {
             console.error('Error creating topology:', error);
         }

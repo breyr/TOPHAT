@@ -2,11 +2,11 @@ import {useEffect, useState} from "react";
 import CreateTopology from "../components/CreateTopology";
 import TopologyCard from "../components/TopologyCard";
 import { useAuth } from "../hooks/useAuth";
-import { Topology } from "../types/types";
+import {Topology} from "../types/types";
 import {Loader2} from "lucide-react";
 
 export default function UserTopologiesPage() {
-    const { token } = useAuth();
+    const { token, authenticatedApiClient } = useAuth();
     const [topologies, setTopologies] = useState([] as Topology[]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -19,17 +19,8 @@ export default function UserTopologiesPage() {
             try {
                 setIsLoading(true);
                 setError(null);
-                const response = await fetch('/api/topology/', {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    }
-                });
-                if (!response.ok) {
-                    setError('Failed to get topologies');
-                    return;
-                }
-                const data = await response.json();
-                setTopologies(data);
+                const response = await authenticatedApiClient.getAllTopologies();
+                setTopologies(response.data ?? []);
             } catch (e) {
                 setError(e instanceof Error ? e.message : 'An error occurred');
                 console.error(e);
@@ -44,21 +35,11 @@ export default function UserTopologiesPage() {
             return;
         }
         try {
-            const response = await fetch(`/api/topology/${topologyId}`, {
-                method: 'DELETE',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`,
-                },
-            });
-            if (!response.ok) {
-                throw new Error('Failed to delete topology');
-            } else {
-                // update topologies list on success
-                setTopologies((prevTopologies) => prevTopologies.filter(topology => topology.id !== topologyId));
-            }
+            const response = await authenticatedApiClient.deleteTopology(topologyId);
+            // update topologies list on success
+            setTopologies((prevTopologies) => prevTopologies.filter(topology => topology.id !== response.data?.topologyId));
         } catch (error) {
-            console.error('Error creating topology:', error);
+            console.error('Error deleting topology:', error);
         }
     }
 

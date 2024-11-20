@@ -23,7 +23,6 @@ import TextUpdaterNode from "./nodes/TextUpdaterNode";
 import NodePicker from "./overlayui/NodePicker";
 import { useAuth } from "../../hooks/useAuth.ts";
 import { useParams } from "react-router-dom";
-import { Topology } from "../../types/types";
 import { useTopologyStore } from "../../stores/topologystore";
 
 const initialNodes = [] satisfies Node[];
@@ -45,7 +44,7 @@ const TopologyCanvas = () => {
     const [edges, setEdges] = useState<Edge[]>(initialEdges);
     const [isChangesPending, setIsChangesPending] = useState(false);
     const { setIsSaving, setLastUpdated } = useTopologyStore();
-    const { token } = useAuth();
+    const { token, authenticatedApiClient } = useAuth();
     const { id } = useParams();
     const { getNodes } = useReactFlow();
 
@@ -53,19 +52,13 @@ const TopologyCanvas = () => {
     useEffect(() => {
         (async () => {
             try {
-                const response = await fetch(`/api/topology/${id}`, {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
-                });
-
-                if (!response.ok) {
-                    throw new Error(`Error ${response.status}: ${response.statusText}`);
+                const topologyId = parseInt(id ?? "");
+                if (isNaN(topologyId)) {
+                    // TODO show error
                 }
-
-                const data = await response.json() as Topology;
-                setNodes(data.react_flow_state.nodes ?? []);
-                setEdges(data.react_flow_state.edges ?? []);
+                const response = await authenticatedApiClient.getTopology(topologyId);
+                setNodes(response.data?.react_flow_state.nodes ?? []);
+                setEdges(response.data?.react_flow_state.edges ?? []);
             } catch (error) {
                 console.error("Failed to fetch topology data:", error);
             }
@@ -109,21 +102,12 @@ const TopologyCanvas = () => {
                 // extract the base64 portion of the data URL
                 const base64Thumbnail = dataUrl.split(',')[1];
 
-                const response = await fetch(`/api/topology/${id}`, {
-                    method: "PUT",
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`,
-                    },
-                    body: JSON.stringify({
-                        react_flow_state: flow,
-                        thumbnail: base64Thumbnail,
-                    })
-                });
-
-                if (!response.ok) {
-                    throw new Error(`Error ${response.status}: ${response.statusText}`);
-                }
+                // at this point id exists and is a number otherwise the topology wouldn't be loaded
+                // this does return the updated topology, but we don't need it
+                await authenticatedApiClient.updateTopology(parseInt(id!), {
+                    react_flow_state: flow,
+                    thumbnail: base64Thumbnail
+                })
 
                 setLastUpdated(id!, new Date().toISOString());
             } catch (error) {
