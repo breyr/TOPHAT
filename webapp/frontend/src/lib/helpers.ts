@@ -8,3 +8,16 @@ export function generateTempPassword(length: number = 12): string {
     }
     return password;
 }
+
+// debounce calls
+export function debounce<T extends (...args: any[]) => void>(func: T, wait: number) {
+    let timeout: ReturnType<typeof setTimeout> | undefined;
+
+    return function(...args: any[]) {
+        // @ts-expect-error `this` needs a type
+        // eslint-disable-next-line @typescript-eslint/no-this-alias
+        const context = this;
+        clearTimeout(timeout);
+        timeout = setTimeout(() => func.apply(context, args), wait);
+    }
+}
