@@ -1,12 +1,14 @@
 import { jwtDecode } from 'jwt-decode';
-import {createContext, ReactNode, useEffect, useState} from 'react';
+import {createContext, ReactNode, useCallback, useEffect, useMemo, useState} from 'react';
 import { UserJwtPayload } from "../types/types";
+import { ApiClient } from "../lib/authenticatedApi.ts";
 
 interface AuthContextType {
     user: UserJwtPayload | null;
     token: string | null;
     login: (username: string, password: string) => Promise<{ success: boolean; message?: string }>;
     logout: () => void;
+    authenticatedApiClient: ApiClient;
 }
 
 interface LoginResponse {
@@ -47,7 +49,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                 return () => clearTimeout(timerId);
             }
         }
-    }, []);
+    }, [authState.token]);
 
     // login helper
     const login = async (username: string, password: string): Promise<{ success: boolean, message?: string }> => {
@@ -84,18 +86,31 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
 
     // logout helper
-    const logout = () => {
+    const logout = useCallback(() => {
         sessionStorage.removeItem('token');
         setAuthState({ token: null, user: null });
-    }
+    }, []);
+
+    const getToken = useCallback(() => {
+        return authState.token;
+    }, [authState.token]);
+
+    // authenticate api client
+    const authenticatedApiClient = useMemo(() => new ApiClient({
+        baseUrl: '/api',
+        getToken,
+    }), [getToken]);
 
     return (
-        <AuthContext.Provider value={{
-            user: authState.user,
-            token: authState.token,
-            login,
-            logout
-        }}>
+        <AuthContext.Provider
+            value={{
+                user: authState.user,
+                token: authState.token,
+                login,
+                logout,
+                authenticatedApiClient,
+            }}
+        >
             {children}
         </AuthContext.Provider>
     );

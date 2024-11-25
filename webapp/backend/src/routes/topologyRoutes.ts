@@ -122,12 +122,29 @@ router.delete('/:id', authenticateToken, async (req: AuthenticatedRequest, res) 
 
     const { id } = req.params;
 
+    // validate id
+    const topologyId = parseInt(id);
+    if (isNaN(topologyId)) {
+        res.status(400).json({ message: 'Invalid topology ID format' });
+        return;
+    }
+
     try {
-        await prisma.topology.delete({
-            where: { id: parseInt(id) },
+        // check if the topology exists
+        const topology = await prisma.topology.findUnique({
+            where: { id: topologyId }
         });
 
-        res.status(204).send();
+        if (!topology) {
+            res.status(404).json({ message: 'Topology not found' });
+            return;
+        }
+
+        await prisma.topology.delete({
+            where: { id: topologyId },
+        });
+
+        res.status(200).json({ topologyId });
     } catch (error) {
         res.status(500).json({ message: 'Error deleting topology', error });
     }
