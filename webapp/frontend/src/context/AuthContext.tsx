@@ -12,9 +12,8 @@ interface AuthContextType {
 }
 
 interface LoginResponse {
-    success: boolean;
     message?: string;
-    payload?: {
+    data?: {
         token: string;
     };
 }
@@ -68,23 +67,23 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                 body: JSON.stringify({ usernameOrEmail, password }),
             });
 
-            const data: LoginResponse = await response.json();
+            const resJson: LoginResponse = await response.json();
 
             if (!response.ok) {
                 return {
                     success: false,
-                    message: data.message || `Error: ${response.status} ${response.statusText}`
+                    message: resJson.message || `Error: ${response.status} ${response.statusText}`
                 }
             }
 
-            if (data.success && data.payload?.token) {
-                const token = data.payload.token;
+            if (resJson.data?.token) {
+                const token = resJson.data.token;
                 setAuthState({ token, user: jwtDecode<UserJwtPayload>(token) });
                 sessionStorage.setItem('token', token);
                 return { success: true };
             }
             // return error message from backend
-            return { success: false, message: data.message || 'Login failed - no token received' };
+            return { success: false, message: resJson.message || 'Login failed - no token received' };
         } catch (error) {
             console.error('Login error:', error);
             return { success: false, message: 'An error occurred during login.' };
