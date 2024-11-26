@@ -1,9 +1,9 @@
-import {useEffect, useState} from "react";
+import { Loader2 } from "lucide-react";
+import { useEffect, useState } from "react";
 import CreateTopology from "../components/CreateTopology";
 import TopologyCard from "../components/TopologyCard";
 import { useAuth } from "../hooks/useAuth";
-import {Topology} from "../types/types";
-import {Loader2} from "lucide-react";
+import { Topology } from "../types/types";
 
 export default function UserTopologiesPage() {
     const { token, authenticatedApiClient } = useAuth();
@@ -28,7 +28,7 @@ export default function UserTopologiesPage() {
                 setIsLoading(false);
             }
         })();
-    }, [token]);
+    }, [token, authenticatedApiClient]);
 
     const handleDelete = async (topologyId: number) => {
         if (!token) {
@@ -45,10 +45,10 @@ export default function UserTopologiesPage() {
 
     return (
         <section className="pt-4 flex flex-row flex-wrap gap-x-8">
-            <CreateTopology/>
+            <CreateTopology />
             {isLoading ? (
                 <div className="flex items-center justify-center min-h-[200px]">
-                    <Loader2 className="h-8 w-8 animate-spin text-gray-500"/>
+                    <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
                 </div>
             ) : (
                 topologies.length !== 0 && (

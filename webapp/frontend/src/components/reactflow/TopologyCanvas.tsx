@@ -1,6 +1,4 @@
 import type { Connection, Edge, EdgeChange, Node, NodeChange, ReactFlowInstance } from "@xyflow/react";
-import type { Topology } from "../../types/types";
-import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
     Background,
     BackgroundVariant,
@@ -12,19 +10,20 @@ import {
     addEdge,
     applyEdgeChanges,
     applyNodeChanges,
-    useReactFlow,
     getNodesBounds,
-    getViewportForBounds
+    getViewportForBounds,
+    useReactFlow
 } from "@xyflow/react";
 import "@xyflow/react/dist/base.css"; // use to make custom node css
-import { debounce } from "../../lib/helpers.ts";
 import { toJpeg } from 'html-to-image';
 import { TerminalSquare } from "lucide-react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { useParams } from "react-router-dom";
+import { useAuth } from "../../hooks/useAuth.ts";
+import { debounce } from "../../lib/helpers.ts";
+import { useTopologyStore } from "../../stores/topologystore";
 import TextUpdaterNode from "./nodes/TextUpdaterNode";
 import NodePicker from "./overlayui/NodePicker";
-import { useAuth } from "../../hooks/useAuth.ts";
-import { useParams } from "react-router-dom";
-import { useTopologyStore } from "../../stores/topologystore";
 
 const initialNodes = [] satisfies Node[];
 const initialEdges = [] satisfies Edge[];
