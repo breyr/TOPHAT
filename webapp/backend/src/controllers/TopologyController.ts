@@ -59,7 +59,7 @@ export class TopologyController {
         try {
             const topologyId = checkForTopologyId(req);
             const topology = await this.topologyService.deleteTopology(topologyId);
-            res.status(200).json({ data: topologyId })
+            res.status(200).json({ data: { topologyId } })
         } catch (error) {
             next(error);
         }
