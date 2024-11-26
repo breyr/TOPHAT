@@ -1,4 +1,5 @@
 import { user as UserModel } from '@prisma/client';
+import { JsonValue } from '@prisma/client/runtime/library';
 import { Request } from 'express';
 import { JwtPayload } from "jsonwebtoken";
 
@@ -32,30 +33,36 @@ export interface UserResponse {
     account_type: string
 }
 
+export interface CreateTopologyDTO {
+    name: string
+}
+
+export interface CreatedTopologyResponse {
+    id: number
+    name: string
+    expires_on: Date
+}
+
+export interface UpdateTopologyDTO {
+    name: string;
+    id: number;
+    created_at: Date;
+    updated_at: Date;
+    user_id: number;
+    thumbnail: string;
+    react_flow_state: JsonValue;
+    expires_on: Date;
+    archived: boolean;
+}
+
 export interface Topology {
-    name?: string;
-    thumbnail?: string;
-    react_flow_state?: {
-        nodes: Array<{
-            id: string;
-            type: string;
-            position: { x: number; y: number };
-            data: { label: string };
-            measured?: { width: number; height: number };
-            selected?: boolean;
-            dragging?: boolean;
-        }>;
-        edges: Array<{
-            source: string;
-            target: string;
-            id: string;
-        }>;
-        viewport: {
-            x: number;
-            y: number;
-            zoom: number;
-        };
-    };
-    expires_on?: string | Date;
-    archived?: boolean;
+    name: string;
+    id: number;
+    created_at: Date;
+    updated_at: Date;
+    user_id: number;
+    thumbnail: Buffer;
+    react_flow_state: JsonValue;
+    expires_on: Date;
+    archived: boolean;
 }
