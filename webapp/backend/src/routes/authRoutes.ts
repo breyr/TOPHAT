@@ -3,7 +3,7 @@ import bcrypt from 'bcryptjs';
 import { Request, Response, Router } from 'express';
 import { authenticateToken } from '../middleware/authTokenMiddleware';
 import { DbContext } from '../prismaContext';
-import { ApiResponse, AuthenticatedRequest } from '../types';
+import { ApiResponse, AuthenticatedRequest } from '../types/types';
 import { createJwtToken } from '../utils/jwt';
 
 type LoginRequest = {

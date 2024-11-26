@@ -1,7 +1,7 @@
 import { Prisma, PrismaClient } from '@prisma/client';
 import { Router } from 'express';
 import { authenticateToken } from '../middleware/authTokenMiddleware';
-import { AuthenticatedRequest, Topology } from '../types';
+import { AuthenticatedRequest, Topology } from '../types/types';
 
 const prisma = new PrismaClient();
 const router = Router();
@@ -102,7 +102,7 @@ router.put('/:id', authenticateToken, async (req: AuthenticatedRequest, res) => 
                 name: name ?? Prisma.skip,
                 thumbnail: thumbnail ? Buffer.from(thumbnail, 'base64') : Prisma.skip, // Assuming thumbnail is sent as a base64 string
                 react_flow_state: react_flow_state ?? Prisma.skip,
-                expires_on: expires_on ?  new Date(expires_on) : Prisma.skip,
+                expires_on: expires_on ? new Date(expires_on) : Prisma.skip,
                 archived: archived ?? Prisma.skip,
             },
         });
