@@ -1,5 +1,5 @@
-import type { ApiResponse, Topology } from "../types/types";
 import { ReactFlowJsonObject } from "@xyflow/react";
+import type { Topology } from "../types/types";
 
 type ApiConfig = {
     baseUrl: string;
@@ -9,6 +9,10 @@ type ApiError = {
     message: string;
     status?: number;
 };
+type ApiResponse<T> = {
+    message: string;
+    data?: T;
+}
 
 export class ApiClient {
     private readonly baseUrl: string;
@@ -53,17 +57,12 @@ export class ApiClient {
         // check if response has JSON
         const contentType = response.headers.get('content-type');
         if (contentType && contentType.includes('application/json')) {
-            const jsonData = await response.json();
-            return {
-                success: true,
-                message: jsonData.message,
-                data: jsonData,
-            };
+            const data = await response.json();
+            return data;
         }
 
         // handle non JSON responses
         return {
-            success: true,
             message: 'Operation completed successfully',
             data: undefined,
         };
@@ -96,8 +95,6 @@ export class ApiClient {
     }
 
     async deleteTopology(id: number) {
-        // The topology endpoint doesn't return anything on delete - may need to change this
-        // Possibly return the id of the record deleted?
         return this.fetch<{ topologyId: number }>(`/topology/${id}`, {
             method: 'DELETE'
         });
