@@ -30,11 +30,6 @@ const TopologyCard: React.FC<TopologyProps> = ({
   const [archived, setArchived] = useState(initialArchived);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const handleContextMenu = (event: React.MouseEvent) => {
-    event.preventDefault();
-    showMenu(event.pageX, event.pageY);
-  };
-
   const handleClick = (event: React.MouseEvent) => {
     if (menuOpen) {
       event.stopPropagation();
