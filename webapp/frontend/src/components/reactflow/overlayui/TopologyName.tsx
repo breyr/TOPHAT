@@ -1,9 +1,7 @@
-import React, {useCallback} from 'react';
 import { CircleCheck } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
-import { useAuth } from "../../../hooks/useAuth.ts";
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useParams } from "react-router-dom";
-import { Topology } from "../../../types/types";
+import { useAuth } from "../../../hooks/useAuth.ts";
 import { useTopologyStore } from "../../../stores/topologystore.ts";
 
 export default function TopologyName() {
@@ -12,7 +10,7 @@ export default function TopologyName() {
     const [inputWidth, setInputWidth] = useState(0);
     const spanRef = useRef<HTMLSpanElement>(null);
     const initialNameRef = useRef<string>("");
-    const { token } = useAuth();
+    const { token, authenticatedApiClient } = useAuth();
     const { id } = useParams();
     const { topologies, setLastUpdated } = useTopologyStore();
 
@@ -21,20 +19,14 @@ export default function TopologyName() {
     useEffect(() => {
         (async () => {
             try {
-                const response = await fetch(`/api/topology/${id}`, {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
-                });
-
-                if (!response.ok) {
-                    throw new Error(`Error ${response.status}: ${response.statusText}`);
+                const topologyId = parseInt(id ?? "");
+                if (isNaN(topologyId)) {
+                    // TODO show error
                 }
-
-                const data: Topology = await response.json();
-                setTopologyName(data.name);
-                setLastUpdated(id!, data.updated_at);
-                initialNameRef.current = data.name;
+                const response = await authenticatedApiClient.getTopology(topologyId);
+                setTopologyName(response.data!.name);
+                setLastUpdated(id!, response.data!.updated_at);
+                initialNameRef.current = response.data!.name;
             } catch (error) {
                 console.error("Failed to fetch topology data:", error);
             }
@@ -75,7 +67,7 @@ export default function TopologyName() {
     const handleBlur = async () => {
         setIsEditing(false);
         if (topologyName !== initialNameRef.current) {
-           await updateTopologyName();
+            await updateTopologyName();
         }
     };
 
@@ -105,7 +97,7 @@ export default function TopologyName() {
                 {currentTopology?.isSaving ? (
                     <div className="text-blue-500">Saving...</div>
                 ) : (
-                    <CircleCheck className="ml-2 text-green-500"/>
+                    <CircleCheck className="ml-2 text-green-500" />
                 )}
                 <p className="text-gray-400">
                     {currentTopology?.lastUpdated ? new Date(currentTopology.lastUpdated).toLocaleString() : "Never updated"}

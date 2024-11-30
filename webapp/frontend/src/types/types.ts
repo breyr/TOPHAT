@@ -1,13 +1,7 @@
 export type Model = 'multi-tenant' | 'single-user' | null
 export type AccountType = 'admin' | 'user'
 
-// reference from backend response type
-export interface ApiResponse<T> {
-    success: boolean;
-    message: string;
-    data?: T;
-    error?: Error;
-}
+// the form of the user portion of the JWT payload
 export interface UserJwtPayload {
     id: number
     username: string
@@ -15,6 +9,7 @@ export interface UserJwtPayload {
     account_type: AccountType
     exp: number
 }
+// the response form of topologies from the backend
 export interface Topology {
     id: number;
     user_id: number;

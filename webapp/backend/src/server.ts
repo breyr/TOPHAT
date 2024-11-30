@@ -1,5 +1,5 @@
+import { execSync } from "child_process";
 import app from './app';
-import {execSync} from "child_process";
 
 const PORT = process.env.PORT || 3000;
 
