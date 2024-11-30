@@ -1,12 +1,12 @@
 import { jwtDecode } from 'jwt-decode';
-import {createContext, ReactNode, useCallback, useEffect, useMemo, useState} from 'react';
-import { UserJwtPayload } from "../types/types";
+import { createContext, ReactNode, useCallback, useEffect, useMemo, useState } from 'react';
 import { ApiClient } from "../lib/authenticatedApi.ts";
+import { UserJwtPayload } from "../types/types";
 
 interface AuthContextType {
     user: UserJwtPayload | null;
     token: string | null;
-    login: (username: string, password: string) => Promise<{ success: boolean; message?: string }>;
+    login: (usernameOrEmail: string, password: string) => Promise<{ success: boolean; message?: string }>;
     logout: () => void;
     authenticatedApiClient: ApiClient;
 }
@@ -25,6 +25,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const [authState, setAuthState] = useState<{ token: string | null, user: UserJwtPayload | null }>(
         { token: null, user: null },
     );
+
+    // logout helper
+    const logout = useCallback(() => {
+        sessionStorage.removeItem('token');
+        setAuthState({ token: null, user: null });
+    }, []);
 
     useEffect(() => {
         const token = sessionStorage.getItem("token");
@@ -49,17 +55,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                 return () => clearTimeout(timerId);
             }
         }
-    }, [authState.token]);
+    }, [logout]);
 
     // login helper
-    const login = async (username: string, password: string): Promise<{ success: boolean, message?: string }> => {
+    const login = async (usernameOrEmail: string, password: string): Promise<{ success: boolean, message?: string }> => {
         try {
             const response = await fetch('/api/auth/login', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ username, password }),
+                body: JSON.stringify({ usernameOrEmail, password }),
             });
 
             const data: LoginResponse = await response.json();
@@ -84,12 +90,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             return { success: false, message: 'An error occurred during login.' };
         }
     }
-
-    // logout helper
-    const logout = useCallback(() => {
-        sessionStorage.removeItem('token');
-        setAuthState({ token: null, user: null });
-    }, []);
 
     const getToken = useCallback(() => {
         return authState.token;
