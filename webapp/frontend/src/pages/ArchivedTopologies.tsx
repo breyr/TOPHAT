@@ -10,7 +10,7 @@ export default function ArchivedTopologiesPage() {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
-    // get user's topologies on page load by making authenticated request
+    // get user's archived topologies on page load by making authenticated request
     useEffect(() => {
         (async () => {
             if (!token) return;
@@ -54,7 +54,7 @@ export default function ArchivedTopologiesPage() {
                         <TopologyCard key={topology.id} {...topology} onDelete={() => handleDelete(topology.id)} />
                     ))
                 ) : (
-                <div>No archived topologies found.</div>
+                <p>No archived topologies found.</p>
                 )
             )}
         </section>
