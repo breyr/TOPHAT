@@ -4,7 +4,7 @@ import { useAuth } from "../hooks/useAuth";
 import {Topology} from "../types/types";
 import {Loader2} from "lucide-react";
 
-export default function ArchivedTopologiesPage() {
+export default function UserArchivedTopologiesPage() {
     const { token, authenticatedApiClient } = useAuth();
     const [archivedTopologies, setArchivedTopologies] = useState([] as Topology[]);
     const [isLoading, setIsLoading] = useState(true);
@@ -14,11 +14,10 @@ export default function ArchivedTopologiesPage() {
     useEffect(() => {
         (async () => {
             if (!token) return;
-
             try {
                 setIsLoading(true);
                 setError(null);
-                const response = await authenticatedApiClient.getAllTopologies();
+                const response = await authenticatedApiClient.getArchivedTopologies();
                 setArchivedTopologies(response.data ?? []);
             } catch (e) {
                 setError(e instanceof Error ? e.message : 'An error occurred');
@@ -42,6 +41,19 @@ export default function ArchivedTopologiesPage() {
         }
     }
 
+    const handleArchive = async (topologyId: number) => {
+        if (!token) {
+            return;
+        }
+        try {
+            await authenticatedApiClient.archiveTopology(topologyId);
+            // update topologies list on success
+            setArchivedTopologies((prevTopologies) => prevTopologies.filter(topology => topology.id !== topologyId));
+        } catch (error) {
+            console.error('Error activating topology:', error);
+        }
+    };
+
     return (
         <section className="pt-4 flex flex-row flex-wrap gap-x-8">
             {isLoading ? (
@@ -51,7 +63,7 @@ export default function ArchivedTopologiesPage() {
             ) : (
                 archivedTopologies.length !== 0 ? (
                     archivedTopologies.map((topology) => (
-                        <TopologyCard key={topology.id} {...topology} onDelete={() => handleDelete(topology.id)} />
+                        <TopologyCard key={topology.id} {...topology} onDelete={() => handleDelete(topology.id)} onArchive={() => handleArchive(topology.id)} />
                     ))
                 ) : (
                 <p>No archived topologies found.</p>
