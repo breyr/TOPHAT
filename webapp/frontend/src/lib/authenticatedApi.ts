@@ -84,11 +84,7 @@ export class ApiClient {
         return this.fetch<Topology>(`/topology/${id}`);
     }
 
-    async updateTopology(id: number, data: {
-        react_flow_state?: ReactFlowJsonObject
-        thumbnail?: string
-        archived?: boolean
-    }) {
+    async updateTopology(id: number, data: Partial<Topology>) {
         return this.fetch<Topology>(`/topology/${id}`, {
             method: 'PUT',
             body: JSON.stringify(data)
