@@ -1,4 +1,4 @@
-import type { ReactFlowState, Topology } from "../../../common/shared-types";
+import type { Topology } from "../../../common/shared-types";
 
 type ApiConfig = {
     baseUrl: string;
@@ -84,10 +84,7 @@ export class ApiClient {
     }
 
     // TODO change how this works - make sure this is also being used by the nav bar component for name saving
-    async updateTopology(id: number, data: {
-        react_flow_state: ReactFlowState
-        thumbnail: string
-    }) {
+    async updateTopology(id: number, data: Partial<Topology>) {
         return this.fetch<Topology>(`/topology/${id}`, {
             method: 'PUT',
             body: JSON.stringify(data)
