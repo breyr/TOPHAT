@@ -3,7 +3,7 @@ import bcrypt from 'bcryptjs';
 import { IUserRepository } from "../types/classInterfaces";
 import { CreateUserDTO, UserResponse } from "../types/types";
 
-export class PrismaUserRespository implements IUserRepository {
+export class PrismaUserRepository implements IUserRepository {
     private prisma: PrismaClient;
 
     constructor(prismaClient: PrismaClient) {

@@ -1,6 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 import { PrismaTopologyRepository } from "../repositories/PrismaTopologyRepository";
-import { PrismaUserRespository } from "../repositories/PrismaUserRepository";
+import { PrismaUserRepository } from "../repositories/PrismaUserRepository";
 import { TopologyService } from "../services/TopologyService";
 import { UserService } from "../services/UserService";
 import { ITopologyRepository, ITopologyService, IUserRepository, IUserService } from "../types/classInterfaces";
@@ -14,7 +14,7 @@ export class DIContainer {
 
     static initialize() {
         this.prismaClient = this.prismaClient || new PrismaClient();
-        this.userRepository = new PrismaUserRespository(this.prismaClient)
+        this.userRepository = new PrismaUserRepository(this.prismaClient)
         this.userService = new UserService(this.userRepository);
         this.topologyRepository = new PrismaTopologyRepository(this.prismaClient);
         this.topologyService = new TopologyService(this.topologyRepository);

@@ -1,4 +1,4 @@
-import bycrpt from 'bcryptjs';
+import bcrypt from 'bcryptjs';
 import { NextFunction, Request, Response } from "express";
 import { DIContainer } from "../config/DIContainer";
 import { CreateUserDTO, LoginRequestDTO, UserResponse } from "../types/types";
@@ -33,7 +33,7 @@ export class UserController {
                 user = await this.userService.getUserByUsername(userDTO.usernameOrEmail);
             }
             // check for existence of user and correct credentials
-            if (!user || !bycrpt.compareSync(userDTO.password, user.password)) {
+            if (!user || !bcrypt.compareSync(userDTO.password, user.password)) {
                 throw new ValidationError('Invalid credentials')
             }
             // create token
