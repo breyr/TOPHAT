@@ -1,14 +1,16 @@
-import { user as UserModel } from '@prisma/client';
 import { JsonValue } from '@prisma/client/runtime/library';
 import { Request } from 'express';
 import { JwtPayload } from "jsonwebtoken";
 
 // interfaces for JwtPayloads and Authenticated Requests
 export interface CustomJwtPayload extends JwtPayload {
-    user: Pick<UserModel, 'id' | 'username' | 'email' | 'account_type'>;
+    id: number;
+    username: string;
+    email: string;
+    account_type: string;
 }
 export interface AuthenticatedRequest extends Request {
-    user?: CustomJwtPayload
+    jwt_payload?: CustomJwtPayload
 }
 
 // this interface is required still because although we have a Topology interface in the common project,

@@ -14,7 +14,7 @@ export function validateEmail(email: string): boolean {
 }
 
 export function checkForUserId(req: AuthenticatedRequest): number {
-    const userId = req.user?.id;
+    const userId = req.jwt_payload?.id;
     if (!userId) {
         throw new ValidationError("User ID is missing");
     }

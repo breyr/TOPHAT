@@ -10,13 +10,13 @@ export const authenticateToken = (req: AuthenticatedRequest, res: Response, next
         return;
     }
 
-    jwt.verify(token, process.env.SECRET_KEY!, (err, user) => {
+    jwt.verify(token, process.env.SECRET_KEY!, (err, payload) => {
         if (err) {
             console.log('Token verification failed', err);
             res.status(403).json({ message: 'Forbidden: Invalid or expired token' });
             return;
         }
-        req.user = user as CustomJwtPayload;
+        req.jwt_payload = payload as CustomJwtPayload;
         next();
     })
 }
