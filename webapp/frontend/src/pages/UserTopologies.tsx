@@ -20,7 +20,7 @@ export default function UserTopologiesPage() {
                 setIsLoading(true);
                 setError(null);
                 const response = await authenticatedApiClient.getAllTopologies();
-                setTopologies(response.data ?? []);
+                setTopologies(response.data?.filter(topology => !topology.archived) ?? []);
             } catch (e) {
                 setError(e instanceof Error ? e.message : 'An error occurred');
                 console.error(e);
@@ -43,6 +43,21 @@ export default function UserTopologiesPage() {
         }
     }
 
+    const handleArchive = async (topologyId: number) => {
+        if (!token) {
+            return;
+        }
+        try {
+            const response = await authenticatedApiClient.updateTopology(topologyId,{
+                archived: true
+            });
+            // update topologies list on success
+            setTopologies((prevTopologies) => prevTopologies.filter(topology => topology.id !== response.data?.id));
+        } catch (error) {
+            console.error('Error archiving topology:', error);
+        }
+    };
+
     return (
         <section className="pt-4 flex flex-row flex-wrap gap-x-8">
             <CreateTopology />
@@ -53,7 +68,7 @@ export default function UserTopologiesPage() {
             ) : (
                 topologies.length !== 0 && (
                     topologies.map((topology) => (
-                        <TopologyCard key={topology.id} {...topology} onDelete={() => handleDelete(topology.id)} />
+                        <TopologyCard key={topology.id} {...topology} onDelete={() => handleDelete(topology.id)}  onArchive={() => handleArchive(topology.id)} />
                     ))
                 )
             )}

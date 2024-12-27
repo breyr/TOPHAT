@@ -13,6 +13,7 @@ interface BufferLike {
 
 interface TopologyProps extends Topology {
   onDelete: (topologyId: number) => void;
+  onArchive: (topologyId: number) => void;
 }
 
 const TopologyCard: React.FC<TopologyProps> = ({
@@ -23,6 +24,7 @@ const TopologyCard: React.FC<TopologyProps> = ({
   archived: initialArchived,
   updated_at,
   onDelete,
+  onArchive
 }) => {
   const { menuOpen, menuPos, showMenu, hideMenu } = useContextMenu();
   const navigateTo = useNavigate();
@@ -43,6 +45,7 @@ const TopologyCard: React.FC<TopologyProps> = ({
   const toggleArchived = (event: React.MouseEvent) => {
     event.stopPropagation();
     setArchived(!archived);
+    onArchive(id);
   };
 
   const handleDeleteClick = (e: React.MouseEvent) => {
@@ -54,23 +57,6 @@ const TopologyCard: React.FC<TopologyProps> = ({
     onDelete(id);
     setIsModalOpen(false);
   };
-
-  // close the context menu on outside click
-  useEffect(() => {
-    const handleOutsideClick = (event: MouseEvent) => {
-      if (menuOpen && !(event.target as HTMLElement).closest(".context-menu")) {
-        hideMenu();
-      }
-    };
-
-    if (menuOpen) {
-      document.addEventListener("click", handleOutsideClick);
-    }
-
-    return () => {
-      document.removeEventListener("click", handleOutsideClick);
-    };
-  }, [menuOpen, hideMenu]);
 
   // handle conversion of thumbnail
   useEffect(() => {

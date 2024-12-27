@@ -17,8 +17,8 @@ export default function UserArchivedTopologiesPage() {
             try {
                 setIsLoading(true);
                 setError(null);
-                const response = await authenticatedApiClient.getArchivedTopologies();
-                setArchivedTopologies(response.data ?? []);
+                const response = await authenticatedApiClient.getAllTopologies();
+                setArchivedTopologies(response.data?.filter(topology => topology.archived) ?? []);
             } catch (e) {
                 setError(e instanceof Error ? e.message : 'An error occurred');
                 console.error(e);
@@ -46,9 +46,11 @@ export default function UserArchivedTopologiesPage() {
             return;
         }
         try {
-            await authenticatedApiClient.archiveTopology(topologyId);
+            const response = await authenticatedApiClient.updateTopology(topologyId, {
+                archived: false
+            });
             // update topologies list on success
-            setArchivedTopologies((prevTopologies) => prevTopologies.filter(topology => topology.id !== topologyId));
+            setArchivedTopologies((prevTopologies) => prevTopologies.filter(topology => topology.id !== response.data?.id));
         } catch (error) {
             console.error('Error activating topology:', error);
         }
