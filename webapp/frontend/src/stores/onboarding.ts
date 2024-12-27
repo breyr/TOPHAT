@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { Model } from '../types/types';
+import type { Model } from '../../../common/shared-types';
 
 interface AdminCredentials {
     email: string;

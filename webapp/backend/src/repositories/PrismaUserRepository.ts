@@ -1,7 +1,8 @@
 import { PrismaClient } from "@prisma/client";
 import bcrypt from 'bcryptjs';
+import type { RegisterUserRequestPayload } from "../../../common/shared-types";
 import { IUserRepository } from "../types/classInterfaces";
-import { CreateUserDTO, UserResponse } from "../types/types";
+import { UserResponse } from "../types/types";
 
 export class PrismaUserRepository implements IUserRepository {
     private prisma: PrismaClient;
@@ -10,7 +11,7 @@ export class PrismaUserRepository implements IUserRepository {
         this.prisma = prismaClient
     }
 
-    create(formData: CreateUserDTO): Promise<UserResponse> {
+    create(formData: RegisterUserRequestPayload): Promise<UserResponse> {
         const hashedPassword = bcrypt.hashSync(formData.password, 10);
         return this.prisma.user.create({
             data: {

@@ -19,6 +19,7 @@ import { toJpeg } from 'html-to-image';
 import { TerminalSquare } from "lucide-react";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
+import type { ReactFlowState } from "../../../../common/shared-types.ts";
 import { useAuth } from "../../hooks/useAuth.ts";
 import { debounce } from "../../lib/helpers.ts";
 import { useTopologyStore } from "../../stores/topologystore";
@@ -57,8 +58,8 @@ const TopologyCanvas = () => {
                     // TODO show error
                 }
                 const response = await authenticatedApiClient.getTopology(topologyId);
-                setNodes(response.data?.react_flow_state.nodes ?? []);
-                setEdges(response.data?.react_flow_state.edges ?? []);
+                setNodes(response.data?.react_flow_state?.nodes ?? []);
+                setEdges(response.data?.react_flow_state?.edges ?? []);
             } catch (error) {
                 console.error("Failed to fetch topology data:", error);
             }
@@ -105,7 +106,7 @@ const TopologyCanvas = () => {
                 // at this point id exists and is a number otherwise the topology wouldn't be loaded
                 // this does return the updated topology, but we don't need it
                 await authenticatedApiClient.updateTopology(parseInt(id!), {
-                    react_flow_state: flow,
+                    react_flow_state: flow as ReactFlowState,
                     thumbnail: base64Thumbnail
                 })
 

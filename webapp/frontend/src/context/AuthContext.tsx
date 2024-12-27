@@ -1,5 +1,6 @@
 import { jwtDecode } from 'jwt-decode';
 import { createContext, ReactNode, useCallback, useEffect, useMemo, useState } from 'react';
+import type { LoginResponsePayload } from '../../../common/shared-types.ts';
 import { ApiClient } from "../lib/authenticatedApi.ts";
 import { UserJwtPayload } from "../types/types";
 
@@ -9,13 +10,6 @@ interface AuthContextType {
     login: (usernameOrEmail: string, password: string) => Promise<{ success: boolean; message?: string }>;
     logout: () => void;
     authenticatedApiClient: ApiClient;
-}
-
-interface LoginResponse {
-    message?: string;
-    data?: {
-        token: string;
-    };
 }
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -67,7 +61,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                 body: JSON.stringify({ usernameOrEmail, password }),
             });
 
-            const resJson: LoginResponse = await response.json();
+            const resJson: LoginResponsePayload = await response.json();
 
             if (!response.ok) {
                 return {

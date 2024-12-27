@@ -1,5 +1,6 @@
+import type { RegisterUserRequestPayload } from "../../../common/shared-types";
 import { IUserRepository, IUserService } from "../types/classInterfaces";
-import { CreateUserDTO, UserResponse } from "../types/types";
+import type { User } from "../types/models";
 import { validateEmail, ValidationError } from "../utils/validation";
 
 export class UserService implements IUserService {
@@ -9,7 +10,7 @@ export class UserService implements IUserService {
         this.userRepository = userRepository
     }
 
-    async createUser(formData: CreateUserDTO): Promise<UserResponse> {
+    async createUser(formData: RegisterUserRequestPayload): Promise<User> {
         // validate email
         if (!validateEmail(formData.email)) {
             throw new ValidationError('Invalid email format')
@@ -28,15 +29,15 @@ export class UserService implements IUserService {
         return this.userRepository.create(formData);
     }
 
-    getUserByEmail(email: string): Promise<UserResponse | null> {
+    getUserByEmail(email: string): Promise<User | null> {
         return this.userRepository.findByEmail(email);
     }
 
-    getUserByUsername(username: string): Promise<UserResponse | null> {
+    getUserByUsername(username: string): Promise<User | null> {
         return this.userRepository.findByUsername(username);
     }
 
-    deleteUser(id: number): Promise<UserResponse | null> {
+    deleteUser(id: number): Promise<User | null> {
         return this.userRepository.delete(id);
     }
 

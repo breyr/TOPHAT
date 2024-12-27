@@ -1,9 +1,9 @@
 import { Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
+import type { Topology } from "../../../common/shared-types";
 import CreateTopology from "../components/CreateTopology";
 import TopologyCard from "../components/TopologyCard";
 import { useAuth } from "../hooks/useAuth";
-import { Topology } from "../types/types";
 
 export default function UserTopologiesPage() {
     const { token, authenticatedApiClient } = useAuth();

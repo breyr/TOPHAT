@@ -1,22 +1,24 @@
 // holds interfaces similar to C#
-import { CreatedTopologyResponse, CreateTopologyDTO, CreateUserDTO, Topology, UpdateTopologyDTO, UserResponse } from "./types";
+import type { CreateTopologyRequestPayload, RegisterUserRequestPayload, Topology } from "../../../common/shared-types";
+import { User } from "./models";
+import { UpdateTopologyDTO } from "./types";
 
 export interface IUserRepository {
-    create(formData: CreateUserDTO): Promise<UserResponse>;
-    findByEmail(email: string): Promise<UserResponse | null>;
-    findByUsername(username: string): Promise<UserResponse | null>;
-    delete(id: number): Promise<UserResponse | null>;
+    create(formData: RegisterUserRequestPayload): Promise<User>;
+    findByEmail(email: string): Promise<User | null>;
+    findByUsername(username: string): Promise<User | null>;
+    delete(id: number): Promise<User | null>;
 }
 
 export interface IUserService {
-    createUser(formData: CreateUserDTO): Promise<UserResponse>;
-    getUserByEmail(email: string): Promise<UserResponse | null>;
-    getUserByUsername(username: string): Promise<UserResponse | null>;
-    deleteUser(id: number): Promise<UserResponse | null>;
+    createUser(formData: RegisterUserRequestPayload): Promise<User>;
+    getUserByEmail(email: string): Promise<User | null>;
+    getUserByUsername(username: string): Promise<User | null>;
+    deleteUser(id: number): Promise<User | null>;
 }
 
 export interface ITopologyRepository {
-    create(userId: number, requestData: CreateTopologyDTO): Promise<CreatedTopologyResponse>;
+    create(userId: number, requestData: CreateTopologyRequestPayload): Promise<Topology>;
     findAll(userId: number): Promise<Topology[] | null>;
     findOne(userId: number, topologyId: number): Promise<Topology | null>;
     update(topologyId: number, topologyData: UpdateTopologyDTO): Promise<Topology>;
@@ -24,7 +26,7 @@ export interface ITopologyRepository {
 }
 
 export interface ITopologyService {
-    createTopology(userId: number, requestData: CreateTopologyDTO): Promise<CreatedTopologyResponse>;
+    createTopology(userId: number, requestData: CreateTopologyRequestPayload): Promise<Topology>;
     getAllTopologies(userId: number): Promise<Topology[] | null>;
     getTopologyById(userId: number, topologyId: number): Promise<Topology | null>;
     updateTopology(topologyId: number, topologyData: UpdateTopologyDTO): Promise<Topology>;

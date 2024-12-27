@@ -1,5 +1,6 @@
-import { ITopologyRepository, ITopologyService } from "../types/classInterfaces";
-import { CreateTopologyDTO, CreatedTopologyResponse, Topology, UpdateTopologyDTO } from "../types/types";
+import type { CreateTopologyRequestPayload, Topology } from "../../../common/shared-types";
+import type { ITopologyRepository, ITopologyService } from "../types/classInterfaces";
+import { UpdateTopologyDTO } from "../types/types";
 
 export class TopologyService implements ITopologyService {
     private topologyRepository: ITopologyRepository;
@@ -8,7 +9,7 @@ export class TopologyService implements ITopologyService {
         this.topologyRepository = topologyRepository;
     }
 
-    createTopology(userId: number, requestData: CreateTopologyDTO): Promise<CreatedTopologyResponse> {
+    createTopology(userId: number, requestData: CreateTopologyRequestPayload): Promise<Topology> {
         return this.topologyRepository.create(userId, requestData);
     }
 

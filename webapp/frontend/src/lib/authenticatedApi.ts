@@ -1,5 +1,4 @@
-import { ReactFlowJsonObject } from "@xyflow/react";
-import type { Topology } from "../types/types";
+import type { ReactFlowState, Topology } from "../../../common/shared-types";
 
 type ApiConfig = {
     baseUrl: string;
@@ -84,8 +83,9 @@ export class ApiClient {
         return this.fetch<Topology>(`/topology/${id}`);
     }
 
+    // TODO change how this works - make sure this is also being used by the nav bar component for name saving
     async updateTopology(id: number, data: {
-        react_flow_state: ReactFlowJsonObject
+        react_flow_state: ReactFlowState
         thumbnail: string
     }) {
         return this.fetch<Topology>(`/topology/${id}`, {
