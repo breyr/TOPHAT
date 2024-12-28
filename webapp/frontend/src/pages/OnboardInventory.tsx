@@ -40,13 +40,13 @@ export default function OnboardInventoryPage() {
             <h1 className="text-4xl font-bold mb-4">Device Inventory</h1>
             <div className="w-full">
                 <Accordion transition transitionTimeout={200}>
-                    <AccordionItem header={<div className="flex flex-row items-center gap-2"><EthernetPort className="mr-2" /> Interconnect Devices</div>} isFirst>
+                    <AccordionItem header={<div className="flex flex-row items-center gap-2"><Server className="mr-2" /> Interconnect Devices</div>} isFirst>
                         <InterconnectDevicesTable />
                     </AccordionItem>
-                    <AccordionItem header={<div className="flex flex-row items-center gap-2"><Server className="mr-2" /> Lab Devices</div>}>
+                    <AccordionItem header={<div className="flex flex-row items-center gap-2"><SquareTerminal className="mr-2" /> Lab Devices</div>}>
                         <LabDevicesTable />
                     </AccordionItem>
-                    <AccordionItem header={<div className="flex flex-row items-center gap-2"><SquareTerminal className="mr-2" /> Physical Connections</div>} isLast>
+                    <AccordionItem header={<div className="flex flex-row items-center gap-2"><EthernetPort className="mr-2" /> Physical Connections</div>} isLast>
                         test
                     </AccordionItem>
                 </Accordion>
