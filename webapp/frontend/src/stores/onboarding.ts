@@ -22,7 +22,7 @@ interface NewDevice {
     ports: string; // will be CSV that we need to parse
 }
 
-interface InterconnectDevice extends NewDevice {
+export interface InterconnectDevice extends NewDevice {
     ipAddress: string;
     username: string;
     password: string;
@@ -30,12 +30,7 @@ interface InterconnectDevice extends NewDevice {
     type: 'interconnect';
 }
 
-interface CommServerDevice extends NewDevice {
-    ipAddress: string;
-    type: 'comm server';
-}
-
-interface LabDevice extends NewDevice {
+export interface LabDevice extends NewDevice {
     type: 'lab';
 }
 
@@ -45,7 +40,6 @@ type OnboardingState = {
     adminCredentials: AdminCredentials;
     additionalUsers: NewUser[];
     interconnectDevices: InterconnectDevice[];
-    commServerDevices: CommServerDevice[];
     labDevices: LabDevice[];
 }
 
@@ -59,9 +53,6 @@ type OnboardingActions = {
     addInterconnectDevice: (device: InterconnectDevice) => void;
     updateInterconnectDevice: (idx: number, device: Partial<InterconnectDevice>) => void;
     removeInterconnectDevice: (idx: number) => void;
-    addCommServerDevice: (device: CommServerDevice) => void;
-    updateCommServerDevice: (idx: number, device: Partial<CommServerDevice>) => void;
-    removeCommServerDevice: (idx: number) => void;
     addLabDevice: (device: LabDevice) => void;
     updateLabDevice: (idx: number, device: Partial<LabDevice>) => void;
     removeLabDevice: (idx: number) => void;
@@ -80,7 +71,6 @@ export const useOnboardingStore = create<OnboardingStore>((set) => ({
     },
     additionalUsers: [],
     interconnectDevices: [],
-    commServerDevices: [],
     labDevices: [],
     setStep: (step) => set({ step }),
     setModel: (model) => set({ model }),
@@ -108,17 +98,6 @@ export const useOnboardingStore = create<OnboardingStore>((set) => ({
     }),
     removeInterconnectDevice: (index) => set((state) => ({
         interconnectDevices: state.interconnectDevices.filter((_, i) => i !== index)
-    })),
-    addCommServerDevice: (device) => set((state) => ({
-        commServerDevices: [...state.commServerDevices, device]
-    })),
-    updateCommServerDevice: (index, device) => set((state) => {
-        const newDevices = [...state.commServerDevices];
-        newDevices[index] = { ...newDevices[index], ...device };
-        return { commServerDevices: newDevices };
-    }),
-    removeCommServerDevice: (index) => set((state) => ({
-        commServerDevices: state.commServerDevices.filter((_, i) => i !== index)
     })),
     addLabDevice: (device) => set((state) => ({
         labDevices: [...state.labDevices, device]

@@ -1,6 +1,5 @@
 import { Accordion, AccordionItem as Item } from "@szhsin/react-accordion";
 import { ChevronDown, EthernetPort, Server, SquareTerminal } from "lucide-react";
-import CommServerDevicesTable from "../components/table/CommServerDevicesTable";
 import InterconnectDevicesTable from "../components/table/InterconnectDevicesTable";
 import LabDevicesTable from "../components/table/LabDevicesTable";
 
@@ -16,7 +15,7 @@ const AccordionItem = ({ header, isFirst, isLast, children, ...rest }: Accordion
         {...rest}
         header={({ state: { isEnter } }) => (
             <div className="flex flex-row justify-between items-center w-full">
-                <p className="flex-grow">{header}</p>
+                <div className="flex-grow accordion-header">{header}</div>
                 <ChevronDown className={`transition-transform duration-200 ${isEnter ? "rotate-180" : ""}`} />
             </div>
         )}
@@ -37,18 +36,18 @@ const AccordionItem = ({ header, isFirst, isLast, children, ...rest }: Accordion
 
 export default function OnboardInventoryPage() {
     return (
-        <section className="flex flex-col h-full w-full p-8 items-center">
+        <section className="flex flex-col h-full w-full pt-8 items-center">
             <h1 className="text-4xl font-bold mb-4">Device Inventory</h1>
             <div className="w-full">
                 <Accordion transition transitionTimeout={200}>
                     <AccordionItem header={<div className="flex flex-row items-center gap-2"><EthernetPort className="mr-2" /> Interconnect Devices</div>} isFirst>
                         <InterconnectDevicesTable />
                     </AccordionItem>
-                    <AccordionItem header={<div className="flex flex-row items-center gap-2"><SquareTerminal className="mr-2" /> Comm Servers</div>}>
-                        <CommServerDevicesTable />
-                    </AccordionItem>
-                    <AccordionItem header={<div className="flex flex-row items-center gap-2"><Server className="mr-2" /> Lab Devices</div>} isLast>
+                    <AccordionItem header={<div className="flex flex-row items-center gap-2"><Server className="mr-2" /> Lab Devices</div>}>
                         <LabDevicesTable />
+                    </AccordionItem>
+                    <AccordionItem header={<div className="flex flex-row items-center gap-2"><SquareTerminal className="mr-2" /> Physical Connections</div>} isLast>
+                        test
                     </AccordionItem>
                 </Accordion>
             </div>

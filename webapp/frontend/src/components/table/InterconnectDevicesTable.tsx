@@ -1,12 +1,17 @@
 import { CircleMinus, CirclePlus } from 'lucide-react';
+import { useCallback, useState } from 'react';
 import DataTable from 'react-data-table-component';
-import { useOnboardingStore } from "../../stores/onboarding";
+import { InterconnectDevice, useOnboardingStore } from "../../stores/onboarding";
+import DeviceModal from '../DeviceModal';
 import customStyles from './dataTableStyles';
 
 export default function InterconnectDevicesTable() {
     const { interconnectDevices, addInterconnectDevice, updateInterconnectDevice, removeInterconnectDevice } = useOnboardingStore(
         (state) => state, // select the entire state object for this store, can specify by using dot notation
     );
+    const [isOpen, setIsOpen] = useState(false);
+    const [selectedIndex, setSelectedIndex] = useState<number>(-1);
+    const [selectedDevice, setSelectedDevice] = useState<InterconnectDevice | undefined>();
 
     const addNewRow = () => {
         addInterconnectDevice({
@@ -20,7 +25,7 @@ export default function InterconnectDevicesTable() {
             serialNumber: '',
             ports: ''
         });
-    }
+    };
 
     const handleTableInputChange = (index: number, e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
@@ -29,7 +34,13 @@ export default function InterconnectDevicesTable() {
 
     const handleRowDeleteClick = (index: number) => {
         removeInterconnectDevice(index);
-    }
+    };
+
+    const openModal = useCallback((row: InterconnectDevice, index: number) => {
+        setSelectedIndex(index);
+        setSelectedDevice(row);
+        setIsOpen(true);
+    }, []);
 
     const columns = [
         {
@@ -139,17 +150,10 @@ export default function InterconnectDevicesTable() {
         },
         {
             name: 'Ports',
-            selector: row => row.ports,
-            sortable: true,
             cell: (row, index) => (
-                <input
-                    type="text"
-                    value={row.ports}
-                    name="ports"
-                    placeholder="Ports"
-                    onChange={(e) => handleTableInputChange(index, e)}
-                    className="w-full focus:outline-none"
-                />
+                <button onClick={() => openModal(row, index)} className='border-b-blue-400 border-b-2 flex flex-row items-center'>
+                    Configure
+                </button>
             ),
         },
         {
@@ -165,7 +169,6 @@ export default function InterconnectDevicesTable() {
                     </button>
                 </div>
             ),
-            button: true,
             width: '56px',
         },
     ];
@@ -186,6 +189,7 @@ export default function InterconnectDevicesTable() {
                 paginationRowsPerPageOptions={[5, 10, 15]}
                 customStyles={customStyles}
             />
+            {isOpen && <DeviceModal setIsOpen={setIsOpen} deviceIndex={selectedIndex} deviceType='interconnect' deviceInformation={selectedDevice} />}
         </section>
     );
 }
