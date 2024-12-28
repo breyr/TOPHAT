@@ -1,12 +1,17 @@
 import { CircleMinus, CirclePlus } from 'lucide-react';
+import { useCallback, useState } from 'react';
 import DataTable from 'react-data-table-component';
-import { useOnboardingStore } from "../../stores/onboarding";
+import { LabDevice, useOnboardingStore } from "../../stores/onboarding";
+import DeviceModal from '../DeviceModal';
 import customStyles from './dataTableStyles';
 
 export default function LabDevicesTable() {
     const { labDevices, addLabDevice, updateLabDevice, removeLabDevice } = useOnboardingStore(
         (state) => state, // select the entire state object for this store, can specify by using dot notation
     );
+    const [isOpen, setIsOpen] = useState(false);
+    const [selectedIndex, setSelectedIndex] = useState<number>(-1);
+    const [selectedDevice, setSelectedDevice] = useState<LabDevice | undefined>();
 
     const addNewRow = () => {
         addLabDevice({
@@ -25,13 +30,19 @@ export default function LabDevicesTable() {
 
     const handleRowDeleteClick = (index: number) => {
         removeLabDevice(index);
-    }
+    };
+
+    const openModal = useCallback((row: LabDevice, index: number) => {
+        setSelectedIndex(index);
+        setSelectedDevice(row);
+        setIsOpen(true);
+    }, []);
 
     const columns = [
         {
             name: 'Device Name',
             sortable: true,
-            selector: row => row.friendlyDdeviceNameeviceName,
+            selector: row => row.deviceName,
             cell: (row, index) => (
                 <input
                     type="text"
@@ -75,17 +86,10 @@ export default function LabDevicesTable() {
         },
         {
             name: 'Ports',
-            selector: row => row.ports,
-            sortable: true,
             cell: (row, index) => (
-                <input
-                    type="text"
-                    value={row.ports}
-                    name="ports"
-                    placeholder="Ports"
-                    onChange={(e) => handleTableInputChange(index, e)}
-                    className="w-full focus:outline-none"
-                />
+                <button onClick={() => openModal(row, index)} className='border-b-blue-400 border-b-2 flex flex-row items-center'>
+                    Configure
+                </button>
             ),
         },
         {
@@ -122,6 +126,7 @@ export default function LabDevicesTable() {
                 paginationRowsPerPageOptions={[5, 10, 15]}
                 customStyles={customStyles}
             />
+            {isOpen && <DeviceModal setIsOpen={setIsOpen} deviceIndex={selectedIndex} deviceType='lab' deviceInformation={selectedDevice} />}
         </section>
     );
 }
