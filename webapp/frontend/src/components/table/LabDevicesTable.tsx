@@ -141,7 +141,6 @@ export default function LabDevicesTable() {
                     </button>
                 </div>
             ),
-            button: true,
             width: '56px',
         },
     ];

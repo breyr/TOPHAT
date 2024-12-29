@@ -1,5 +1,6 @@
 import { Accordion, AccordionItem as Item } from "@szhsin/react-accordion";
 import { ChevronDown, EthernetPort, Server, SquareTerminal } from "lucide-react";
+import ConnectionsTable from "../components/table/ConnectionsTable";
 import InterconnectDevicesTable from "../components/table/InterconnectDevicesTable";
 import LabDevicesTable from "../components/table/LabDevicesTable";
 
@@ -35,6 +36,7 @@ const AccordionItem = ({ header, isFirst, isLast, children, ...rest }: Accordion
 );
 
 export default function OnboardInventoryPage() {
+
     return (
         <section className="flex flex-col h-full w-full pt-8 items-center">
             <h1 className="text-4xl font-bold mb-4">Device Inventory</h1>
@@ -46,8 +48,8 @@ export default function OnboardInventoryPage() {
                     <AccordionItem header={<div className="flex flex-row items-center gap-2"><SquareTerminal className="mr-2" /> Lab Devices</div>}>
                         <LabDevicesTable />
                     </AccordionItem>
-                    <AccordionItem header={<div className="flex flex-row items-center gap-2"><EthernetPort className="mr-2" /> Physical Connections</div>} isLast>
-                        test
+                    <AccordionItem header={<div className="flex flex-row items-center gap-2"><EthernetPort className="mr-2" /> Connections</div>} isLast>
+                        <ConnectionsTable />
                     </AccordionItem>
                 </Accordion>
             </div>
