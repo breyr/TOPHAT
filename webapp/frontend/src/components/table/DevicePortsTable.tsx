@@ -16,7 +16,10 @@ interface Port {
 const DevicePortsTable: React.FC<DevicePortsTableProps> = ({ ports, onUpdatePorts }) => {
 
     const [devicePorts, setDevicePorts] = useState<Port[]>([]);
+    const [initialPorts, setInitialPorts] = useState<string>('');
+    const [isSaveDisabled, setIsSaveDisabled] = useState<boolean>(true);
 
+    // initialize devicePorts and initialPorts when the component mounts
     useEffect(() => {
         if (ports.trim()) {
             const portArr = ports.split(',').map((portStr) => {
@@ -29,10 +32,18 @@ const DevicePortsTable: React.FC<DevicePortsTableProps> = ({ ports, onUpdatePort
                 };
             });
             setDevicePorts(portArr);
+            setInitialPorts(ports);
         } else {
             setDevicePorts([]);
+            setInitialPorts('');
         }
-    }, [ports])
+    }, [ports]);
+
+    // check if devicePorts is different from initialPorts when devicePorts changes
+    useEffect(() => {
+        const currentPorts = devicePorts.map((port) => `${port.prefix}|${port.range}`).join(',');
+        setIsSaveDisabled(currentPorts === initialPorts); // disable Save button if no changes
+    }, [devicePorts, initialPorts]);
 
     const addNewRow = () => {
         const blankPort: Port = {
@@ -136,7 +147,11 @@ const DevicePortsTable: React.FC<DevicePortsTableProps> = ({ ports, onUpdatePort
                         <CirclePlus /> Add Port Range
                     </button>
                 </div>
-                <button onClick={save} className="r-btn text-green-600 hover:text-green-700 flex flex-row items-center gap-1">
+                <button
+                    onClick={save}
+                    disabled={isSaveDisabled}
+                    className={`r-btn text-green-600 hover:text-green-700 flex flex-row items-center gap-1 ${isSaveDisabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+                >
                     <Save /> Save
                 </button>
             </div>
