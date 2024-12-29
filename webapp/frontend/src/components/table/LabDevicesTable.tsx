@@ -18,6 +18,7 @@ export default function LabDevicesTable() {
         addLabDevice({
             type: 'lab',
             deviceName: '',
+            icon: '',
             model: '',
             serialNumber: '',
             description: '',
@@ -61,6 +62,25 @@ export default function LabDevicesTable() {
                     className="w-full focus:outline-none"
                 />
             )
+        },
+        {
+            name: 'Type',
+            selector: row => row.icon,
+            sortable: true,
+            cell: (row, index) => (
+                <select
+                    value={row.icon || ""}
+                    name="icon"
+                    onChange={(e) => handleTableInputChange(index, e)}
+                    className="bg-transparent focus:outline-none hover:cursor-pointer"
+                >
+                    <option value="" disabled>Select</option>
+                    <option value="router">Router</option>
+                    <option value="switch">Switch</option>
+                    <option value="external">External</option>
+                    <option value="server">Server</option>
+                </select>
+            ),
         },
         {
             name: 'Model',

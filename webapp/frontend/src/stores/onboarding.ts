@@ -33,6 +33,7 @@ export interface InterconnectDevice extends NewDevice {
 export interface LabDevice extends NewDevice {
     description: string;
     type: 'lab';
+    icon: '' | 'router' | 'switch' | 'external' | 'server';
 }
 
 type OnboardingState = {
