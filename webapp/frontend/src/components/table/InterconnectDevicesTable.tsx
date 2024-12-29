@@ -189,7 +189,7 @@ export default function InterconnectDevicesTable() {
                 paginationRowsPerPageOptions={[5, 10, 15]}
                 customStyles={customStyles}
             />
-            {isOpen && <DeviceModal setIsOpen={setIsOpen} deviceIndex={selectedIndex} deviceType='interconnect' deviceInformation={selectedDevice} />}
+            {isOpen && <DeviceModal renderTable={true} setIsOpen={setIsOpen} deviceIndex={selectedIndex} deviceType='interconnect' deviceInformation={selectedDevice} />}
         </section>
     );
 }

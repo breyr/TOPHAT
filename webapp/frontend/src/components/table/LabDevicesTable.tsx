@@ -9,7 +9,8 @@ export default function LabDevicesTable() {
     const { labDevices, addLabDevice, updateLabDevice, removeLabDevice } = useOnboardingStore(
         (state) => state, // select the entire state object for this store, can specify by using dot notation
     );
-    const [isOpen, setIsOpen] = useState(false);
+    const [isPortModalOpen, setIsPortModalOpen] = useState(false);
+    const [isDescriptionModalOpen, setIsDescriptionModalOpen] = useState(false);
     const [selectedIndex, setSelectedIndex] = useState<number>(-1);
     const [selectedDevice, setSelectedDevice] = useState<LabDevice | undefined>();
 
@@ -19,6 +20,7 @@ export default function LabDevicesTable() {
             deviceName: '',
             model: '',
             serialNumber: '',
+            description: '',
             ports: ''
         });
     }
@@ -32,11 +34,17 @@ export default function LabDevicesTable() {
         removeLabDevice(index);
     };
 
-    const openModal = useCallback((row: LabDevice, index: number) => {
+    const openPortModal = useCallback((row: LabDevice, index: number) => {
         setSelectedIndex(index);
         setSelectedDevice(row);
-        setIsOpen(true);
+        setIsPortModalOpen(true);
     }, []);
+
+    const openDescriptionModal = useCallback((row: LabDevice, index: number) => {
+        setSelectedIndex(index);
+        setSelectedDevice(row);
+        setIsDescriptionModalOpen(true);
+    }, [])
 
     const columns = [
         {
@@ -85,9 +93,17 @@ export default function LabDevicesTable() {
             ),
         },
         {
+            name: 'Description',
+            cell: (row, index) => (
+                <button onClick={() => openDescriptionModal(row, index)} className='border-b-blue-400 border-b-2 flex flex-row items-center'>
+                    Edit
+                </button>
+            ),
+        },
+        {
             name: 'Ports',
             cell: (row, index) => (
-                <button onClick={() => openModal(row, index)} className='border-b-blue-400 border-b-2 flex flex-row items-center'>
+                <button onClick={() => openPortModal(row, index)} className='border-b-blue-400 border-b-2 flex flex-row items-center'>
                     Configure
                 </button>
             ),
@@ -126,7 +142,8 @@ export default function LabDevicesTable() {
                 paginationRowsPerPageOptions={[5, 10, 15]}
                 customStyles={customStyles}
             />
-            {isOpen && <DeviceModal setIsOpen={setIsOpen} deviceIndex={selectedIndex} deviceType='lab' deviceInformation={selectedDevice} />}
+            {isDescriptionModalOpen && <DeviceModal renderTable={false} setIsOpen={setIsDescriptionModalOpen} deviceIndex={selectedIndex} deviceType='lab' deviceInformation={selectedDevice} />}
+            {isPortModalOpen && <DeviceModal renderTable={true} setIsOpen={setIsPortModalOpen} deviceIndex={selectedIndex} deviceType='lab' deviceInformation={selectedDevice} />}
         </section>
     );
 }
