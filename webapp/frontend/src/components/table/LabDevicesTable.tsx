@@ -13,6 +13,8 @@ export default function LabDevicesTable() {
     const [isDescriptionModalOpen, setIsDescriptionModalOpen] = useState(false);
     const [selectedIndex, setSelectedIndex] = useState<number>(-1);
     const [selectedDevice, setSelectedDevice] = useState<LabDevice | undefined>();
+    const [currentPage, setCurrentPage] = useState(0);
+    const [rowsPerPage, setRowsPerPage] = useState(5);
 
     const addNewRow = () => {
         addLabDevice({
@@ -52,95 +54,123 @@ export default function LabDevicesTable() {
             name: 'Device Name',
             sortable: true,
             selector: row => row.deviceName,
-            cell: (row, index) => (
-                <input
-                    type="text"
-                    value={row.deviceName}
-                    name="deviceName"
-                    placeholder="Device name"
-                    onChange={(e) => handleTableInputChange(index, e)}
-                    className="w-full focus:outline-none"
-                />
-            )
+            cell: (row, localIndex: number) => {
+                const globalIndex = currentPage * rowsPerPage + localIndex;
+
+                return (
+                    <input
+                        type="text"
+                        value={row.deviceName}
+                        name="deviceName"
+                        placeholder="Device name"
+                        onChange={(e) => handleTableInputChange(globalIndex, e)}
+                        className="w-full focus:outline-none"
+                    />
+                )
+            }
         },
         {
             name: 'Type',
             selector: row => row.icon,
             sortable: true,
-            cell: (row, index) => (
-                <select
-                    value={row.icon || ""}
-                    name="icon"
-                    onChange={(e) => handleTableInputChange(index, e)}
-                    className="bg-transparent focus:outline-none hover:cursor-pointer"
-                >
-                    <option value="" disabled>Select</option>
-                    <option value="router">Router</option>
-                    <option value="switch">Switch</option>
-                    <option value="external">External</option>
-                    <option value="server">Server</option>
-                </select>
-            ),
+            cell: (row, localIndex: number) => {
+                const globalIndex = currentPage * rowsPerPage + localIndex;
+
+                return (
+                    <select
+                        value={row.icon || ""}
+                        name="icon"
+                        onChange={(e) => handleTableInputChange(globalIndex, e)}
+                        className="bg-transparent focus:outline-none hover:cursor-pointer"
+                    >
+                        <option value="" disabled>Select</option>
+                        <option value="router">Router</option>
+                        <option value="switch">Switch</option>
+                        <option value="external">External</option>
+                        <option value="server">Server</option>
+                    </select>
+                )
+            }
         },
         {
             name: 'Model',
             selector: row => row.model,
             sortable: true,
-            cell: (row, index) => (
-                <input
-                    type="text"
-                    value={row.model}
-                    name="model"
-                    placeholder="Model"
-                    onChange={(e) => handleTableInputChange(index, e)}
-                    className="w-full focus:outline-none"
-                />
-            ),
+            cell: (row, localIndex: number) => {
+                const globalIndex = currentPage * rowsPerPage + localIndex;
+
+                return (
+                    <input
+                        type="text"
+                        value={row.model}
+                        name="model"
+                        placeholder="Model"
+                        onChange={(e) => handleTableInputChange(globalIndex, e)}
+                        className="w-full focus:outline-none"
+                    />
+                )
+            }
         },
         {
             name: 'SN',
             selector: row => row.serialNumber,
             sortable: true,
-            cell: (row, index) => (
-                <input
-                    type="text"
-                    value={row.serialNumber}
-                    name="serialNumber"
-                    placeholder="Serial Number"
-                    onChange={(e) => handleTableInputChange(index, e)}
-                    className="w-full focus:outline-none"
-                />
-            ),
+            cell: (row, localIndex: number) => {
+                const globalIndex = currentPage * rowsPerPage + localIndex;
+
+                return (
+                    <input
+                        type="text"
+                        value={row.serialNumber}
+                        name="serialNumber"
+                        placeholder="Serial Number"
+                        onChange={(e) => handleTableInputChange(globalIndex, e)}
+                        className="w-full focus:outline-none"
+                    />
+                )
+            }
         },
         {
             name: 'Description',
-            cell: (row, index) => (
-                <button onClick={() => openDescriptionModal(row, index)} className='border-b-blue-400 border-b-2 flex flex-row items-center'>
-                    Edit
-                </button>
-            ),
+            cell: (row, localIndex: number) => {
+                const globalIndex = currentPage * rowsPerPage + localIndex;
+
+                return (
+                    <button onClick={() => openDescriptionModal(row, globalIndex)} className='border-b-blue-400 border-b-2 flex flex-row items-center'>
+                        Edit
+                    </button>
+                )
+            }
         },
         {
             name: 'Ports',
-            cell: (row, index) => (
-                <button onClick={() => openPortModal(row, index)} className='border-b-blue-400 border-b-2 flex flex-row items-center'>
-                    Configure
-                </button>
-            ),
+            cell: (row, localIndex: number) => {
+                const globalIndex = currentPage * rowsPerPage + localIndex;
+
+                return (
+                    <button onClick={() => openPortModal(row, globalIndex)} className='border-b-blue-400 border-b-2 flex flex-row items-center'>
+                        Configure
+                    </button>
+                )
+            }
         },
         {
             name: '',
-            cell: (_row, index) => (
-                <div className="flex flex-row justify-center">
-                    <button
-                        type="button"
-                        className="text-red-500 hover:text-red-700"
-                        onClick={() => handleRowDeleteClick(index)}
-                    >
-                        <CircleMinus />
-                    </button>
-                </div>
-            ),
+            cell: (_, localIndex: number) => {
+                const globalIndex = currentPage * rowsPerPage + localIndex;
+
+                return (
+                    <div className="flex flex-row justify-center">
+                        <button
+                            type="button"
+                            className="text-red-500 hover:text-red-700"
+                            onClick={() => handleRowDeleteClick(globalIndex)}
+                        >
+                            <CircleMinus />
+                        </button>
+                    </div>
+                )
+            },
             width: '56px',
         },
     ];
@@ -159,6 +189,11 @@ export default function LabDevicesTable() {
                 data={labDevices}
                 pagination
                 paginationRowsPerPageOptions={[5, 10, 15]}
+                onChangePage={(page) => setCurrentPage(page - 1)} // RDT pages aren't 0 indexed
+                onChangeRowsPerPage={(newRowsPerPage) => {
+                    setRowsPerPage(newRowsPerPage);
+                    setCurrentPage(0); // reset to the first page when rows per page changes
+                }}
                 customStyles={customStyles}
             />
             {isDescriptionModalOpen && <DeviceModal renderTable={false} setIsOpen={setIsDescriptionModalOpen} deviceIndex={selectedIndex} deviceType='lab' deviceInformation={selectedDevice} />}

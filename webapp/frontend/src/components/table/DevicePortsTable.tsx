@@ -18,6 +18,8 @@ const DevicePortsTable: React.FC<DevicePortsTableProps> = ({ ports, onUpdatePort
     const [devicePorts, setDevicePorts] = useState<Port[]>([]);
     const [initialPorts, setInitialPorts] = useState<string>('');
     const [isSaveDisabled, setIsSaveDisabled] = useState<boolean>(true);
+    const [currentPage, setCurrentPage] = useState(0);
+    const [rowsPerPage, setRowsPerPage] = useState(5);
 
     // initialize devicePorts and initialPorts when the component mounts
     useEffect(() => {
@@ -81,32 +83,40 @@ const DevicePortsTable: React.FC<DevicePortsTableProps> = ({ ports, onUpdatePort
             name: 'Interface Prefix',
             sortable: true,
             selector: row => row.prefix,
-            cell: (row, index) => (
-                <input
-                    type="text"
-                    value={row.prefix}
-                    name="prefix"
-                    placeholder="GigabitEthernet1/0/"
-                    onChange={(e) => handleTableInputChange(index, e)}
-                    className="w-full focus:outline-none"
-                />
-            )
+            cell: (row, localIndex: number) => {
+                const globalIndex = currentPage * rowsPerPage + localIndex;
+
+                return (
+                    <input
+                        type="text"
+                        value={row.prefix}
+                        name="prefix"
+                        placeholder="GigabitEthernet1/0/"
+                        onChange={(e) => handleTableInputChange(globalIndex, e)}
+                        className="w-full focus:outline-none"
+                    />
+                )
+            }
         },
         {
             name: 'Port Range',
             selector: (row) => row.range,
-            cell: (row, index) => (
-                <div className="flex items-center space-x-2">
-                    <input
-                        type="text"
-                        value={row.range}
-                        name="range"
-                        placeholder="1-46"
-                        onChange={(e) => handleTableInputChange(index, e)}
-                        className="w-full focus:outline-none"
-                    />
-                </div>
-            ),
+            cell: (row, localIndex: number) => {
+                const globalIndex = currentPage * rowsPerPage + localIndex;
+
+                return (
+                    <div className="flex items-center space-x-2">
+                        <input
+                            type="text"
+                            value={row.range}
+                            name="range"
+                            placeholder="1-46"
+                            onChange={(e) => handleTableInputChange(globalIndex, e)}
+                            className="w-full focus:outline-none"
+                        />
+                    </div>
+                )
+            },
         },
         {
             name: '',
@@ -115,17 +125,21 @@ const DevicePortsTable: React.FC<DevicePortsTableProps> = ({ ports, onUpdatePort
         },
         {
             name: '',
-            cell: (_row, index) => (
-                <div className="flex flex-row justify-end">
-                    <button
-                        type="button"
-                        className="text-red-500 hover:text-red-700"
-                        onClick={() => handleRowDeleteClick(index)}
-                    >
-                        <CircleMinus />
-                    </button>
-                </div>
-            ),
+            cell: (_row, localIndex) => {
+                const globalIndex = currentPage * rowsPerPage + localIndex;
+
+                return (
+                    <div className="flex flex-row justify-end">
+                        <button
+                            type="button"
+                            className="text-red-500 hover:text-red-700"
+                            onClick={() => handleRowDeleteClick(globalIndex)}
+                        >
+                            <CircleMinus />
+                        </button>
+                    </div>
+                )
+            },
             width: '56px'
         },
     ];
@@ -137,6 +151,11 @@ const DevicePortsTable: React.FC<DevicePortsTableProps> = ({ ports, onUpdatePort
                 data={devicePorts}
                 pagination
                 paginationRowsPerPageOptions={[5, 10, 15]}
+                onChangePage={(page) => setCurrentPage(page - 1)} // RDT pages aren't 0 indexed
+                onChangeRowsPerPage={(newRowsPerPage) => {
+                    setRowsPerPage(newRowsPerPage);
+                    setCurrentPage(0); // reset to the first page when rows per page changes
+                }}
                 customStyles={customStyles}
             />
             <div className='flex flex-row justify-end pt-6'>

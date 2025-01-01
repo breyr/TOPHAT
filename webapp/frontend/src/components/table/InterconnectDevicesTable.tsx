@@ -12,6 +12,8 @@ export default function InterconnectDevicesTable() {
     const [isOpen, setIsOpen] = useState(false);
     const [selectedIndex, setSelectedIndex] = useState<number>(-1);
     const [selectedDevice, setSelectedDevice] = useState<InterconnectDevice | undefined>();
+    const [currentPage, setCurrentPage] = useState(0);
+    const [rowsPerPage, setRowsPerPage] = useState(5);
 
     const addNewRow = () => {
         addInterconnectDevice({
@@ -47,128 +49,164 @@ export default function InterconnectDevicesTable() {
             name: 'Device Name',
             sortable: true,
             selector: row => row.deviceName,
-            cell: (row, index) => (
-                <input
-                    type="text"
-                    value={row.deviceName}
-                    name="deviceName"
-                    placeholder="Device name"
-                    onChange={(e) => handleTableInputChange(index, e)}
-                    className="w-full focus:outline-none"
-                />
-            )
+            cell: (row, localIndex: number) => {
+                const globalIndex = currentPage * rowsPerPage + localIndex;
+
+                return (
+                    <input
+                        type="text"
+                        value={row.deviceName}
+                        name="deviceName"
+                        placeholder="Device name"
+                        onChange={(e) => handleTableInputChange(globalIndex, e)}
+                        className="w-full focus:outline-none"
+                    />
+                )
+            }
         },
         {
             name: 'Model',
             selector: row => row.model,
             sortable: true,
-            cell: (row, index) => (
-                <input
-                    type="text"
-                    value={row.model}
-                    name="model"
-                    placeholder="Model"
-                    onChange={(e) => handleTableInputChange(index, e)}
-                    className="w-full focus:outline-none"
-                />
-            ),
+            cell: (row, localIndex: number) => {
+                const globalIndex = currentPage * rowsPerPage + localIndex;
+
+                return (
+                    <input
+                        type="text"
+                        value={row.model}
+                        name="model"
+                        placeholder="Model"
+                        onChange={(e) => handleTableInputChange(globalIndex, e)}
+                        className="w-full focus:outline-none"
+                    />
+                )
+            }
         },
         {
             name: 'SN',
             selector: row => row.serialNumber,
             sortable: true,
-            cell: (row, index) => (
-                <input
-                    type="text"
-                    value={row.serialNumber}
-                    name="serialNumber"
-                    placeholder="Serial Number"
-                    onChange={(e) => handleTableInputChange(index, e)}
-                    className="w-full focus:outline-none"
-                />
-            ),
+            cell: (row, localIndex: number) => {
+                const globalIndex = currentPage * rowsPerPage + localIndex;
+
+                return (
+                    <input
+                        type="text"
+                        value={row.serialNumber}
+                        name="serialNumber"
+                        placeholder="Serial Number"
+                        onChange={(e) => handleTableInputChange(globalIndex, e)}
+                        className="w-full focus:outline-none"
+                    />
+                )
+            }
         },
         {
             name: 'IP Address',
             selector: row => row.ipAddress,
             sortable: true,
-            cell: (row, index) => (
-                <input
-                    type="text"
-                    value={row.ipAddress}
-                    name="ipAddress"
-                    placeholder="IP Address"
-                    onChange={(e) => handleTableInputChange(index, e)}
-                    className="w-full focus:outline-none"
-                />
-            ),
+            cell: (row, localIndex: number) => {
+                const globalIndex = currentPage * rowsPerPage + localIndex;
+
+                return (
+                    <input
+                        type="text"
+                        value={row.ipAddress}
+                        name="ipAddress"
+                        placeholder="IP Address"
+                        onChange={(e) => handleTableInputChange(globalIndex, e)}
+                        className="w-full focus:outline-none"
+                    />
+                )
+            }
         },
         {
             name: 'Username',
             selector: row => row.username,
             sortable: true,
-            cell: (row, index) => (
-                <input
-                    type="text"
-                    value={row.username}
-                    name="username"
-                    placeholder="Username"
-                    onChange={(e) => handleTableInputChange(index, e)}
-                    className="w-full focus:outline-none"
-                />
-            ),
+            cell: (row, localIndex: number) => {
+                const globalIndex = currentPage * rowsPerPage + localIndex;
+
+                return (
+                    <input
+                        type="text"
+                        value={row.username}
+                        name="username"
+                        placeholder="Username"
+                        onChange={(e) => handleTableInputChange(globalIndex, e)}
+                        className="w-full focus:outline-none"
+                    />
+                )
+            }
         },
         {
             name: 'Password',
             selector: row => row.password,
             sortable: true,
-            cell: (row, index) => (
-                <input
-                    type="text"
-                    value={row.password}
-                    name="password"
-                    placeholder="Password"
-                    onChange={(e) => handleTableInputChange(index, e)}
-                    className="w-full focus:outline-none"
-                />
-            ),
+            cell: (row, localIndex: number) => {
+                const globalIndex = currentPage * rowsPerPage + localIndex;
+
+                return (
+                    <input
+                        type="text"
+                        value={row.password}
+                        name="password"
+                        placeholder="Password"
+                        onChange={(e) => handleTableInputChange(globalIndex, e)}
+                        className="w-full focus:outline-none"
+                    />
+                )
+            },
         },
         {
             name: 'Secret Password',
             selector: row => row.secretPassword,
             sortable: true,
-            cell: (row, index) => (
-                <input
-                    type="text"
-                    value={row.secretPassword}
-                    name="secretPassword"
-                    placeholder="Secret Password"
-                    onChange={(e) => handleTableInputChange(index, e)}
-                    className="w-full focus:outline-none"
-                />
-            ),
+            cell: (row, localIndex: number) => {
+                const globalIndex = currentPage * rowsPerPage + localIndex;
+
+                return (
+                    <input
+                        type="text"
+                        value={row.secretPassword}
+                        name="secretPassword"
+                        placeholder="Secret Password"
+                        onChange={(e) => handleTableInputChange(globalIndex, e)}
+                        className="w-full focus:outline-none"
+                    />
+                )
+            },
         },
         {
             name: 'Ports',
-            cell: (row, index) => (
-                <button onClick={() => openModal(row, index)} className='border-b-blue-400 border-b-2 flex flex-row items-center'>
-                    Configure
-                </button>
-            ),
+            cell: (row, localIndex: number) => {
+                const globalIndex = currentPage * rowsPerPage + localIndex;
+
+                return (
+                    <button onClick={() => openModal(row, globalIndex)} className='border-b-blue-400 border-b-2 flex flex-row items-center'>
+                        Configure
+                    </button>
+                )
+            }
         },
         {
             name: '',
-            cell: (_row, index) => (
-                <div className="flex flex-row justify-center">
-                    <button
-                        type="button"
-                        className="text-red-500 hover:text-red-700"
-                        onClick={() => handleRowDeleteClick(index)}
-                    >
-                        <CircleMinus />
-                    </button>
-                </div>
-            ),
+            cell: (_, localIndex: number) => {
+                const globalIndex = currentPage * rowsPerPage + localIndex;
+
+                return (
+                    <div className="flex flex-row justify-center">
+                        <button
+                            type="button"
+                            className="text-red-500 hover:text-red-700"
+                            onClick={() => handleRowDeleteClick(globalIndex)}
+                        >
+                            <CircleMinus />
+                        </button>
+                    </div>
+                )
+            },
             width: '56px',
         },
     ];
@@ -187,6 +225,11 @@ export default function InterconnectDevicesTable() {
                 data={interconnectDevices}
                 pagination
                 paginationRowsPerPageOptions={[5, 10, 15]}
+                onChangePage={(page) => setCurrentPage(page - 1)} // RDT pages aren't 0 indexed
+                onChangeRowsPerPage={(newRowsPerPage) => {
+                    setRowsPerPage(newRowsPerPage);
+                    setCurrentPage(0); // reset to the first page when rows per page changes
+                }}
                 customStyles={customStyles}
             />
             {isOpen && <DeviceModal renderTable={true} setIsOpen={setIsOpen} deviceIndex={selectedIndex} deviceType='interconnect' deviceInformation={selectedDevice} />}
