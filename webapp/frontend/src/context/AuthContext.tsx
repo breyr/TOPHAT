@@ -1,6 +1,6 @@
 import { jwtDecode, JwtPayload } from 'jwt-decode';
 import { createContext, ReactNode, useCallback, useEffect, useMemo, useState } from 'react';
-import type { LoginResponsePayload } from '../../../common/shared-types.ts';
+import type { AccountType, LoginResponsePayload, RegisterUserResponsePayload } from '../../../common/shared-types.ts';
 import { ApiClient } from "../lib/authenticatedApi.ts";
 
 export interface CustomJwtPayload extends JwtPayload {
@@ -15,6 +15,7 @@ interface AuthContextType {
     token: string | null;
     login: (usernameOrEmail: string, password: string) => Promise<{ success: boolean; message?: string }>;
     logout: () => void;
+    register: (username: string, email: string, password: string, account_type: AccountType) => Promise<RegisterUserResponsePayload | boolean>;
     authenticatedApiClient: ApiClient;
 }
 
@@ -90,6 +91,34 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         }
     }
 
+    // registration helper
+    const register = async (username: string, email: string, password: string, account_type: AccountType): Promise<RegisterUserResponsePayload | boolean> => {
+        // attempt to register and login
+        try {
+            const response = await fetch('/api/auth/register', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ username, email, password, account_type })
+            });
+
+            const resJson: RegisterUserResponsePayload = await response.json();
+
+            // validation errors
+            if (!response.ok) {
+                return resJson
+            }
+
+            // call login immediately after a successful registration
+            login(username, password);
+        } catch (error) {
+            console.error('Login error:', error);
+        }
+        // the user got logged in
+        return true;
+    }
+
     const getToken = useCallback(() => {
         return authState.token;
     }, [authState.token]);
@@ -107,6 +136,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                 token: authState.token,
                 login,
                 logout,
+                register,
                 authenticatedApiClient,
             }}
         >

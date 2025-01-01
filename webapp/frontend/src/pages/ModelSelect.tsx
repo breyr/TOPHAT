@@ -36,11 +36,11 @@ export default function ModelSelectPage() {
                     onSelect={() => setModel("single-user")}
                 />
             </div>
-            <div className="flex flex-row justify-center mx-auto w-1/4 h-20">
+            <div className="flex flex-row justify-center mx-auto w-1/4 h-20 mt-12">
                 {model ? (
-                    <p className="text-blue-500 font-semibold text-lg flex items-center hover:text-blue-600 hover:cursor-pointer" onClick={handleNext}>
+                    <button className="r-btn primary w-1/2 flex flex-row items-center justify-center gap-1" onClick={handleNext}>
                         Continue <ArrowRight size={20} />
-                    </p>
+                    </button>
                 ) : (
                     // placeholder with the same height as the button
                     <div className="h-20"></div>
