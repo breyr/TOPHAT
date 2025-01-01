@@ -1,158 +1,159 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import DataTable from 'react-data-table-component';
 import { useOnboardingStore } from '../../stores/onboarding';
 import customStyles from './dataTableStyles';
 
-interface Device {
-    name: string;
-    port: string;
+interface Connection {
+    labDevice: {
+        name: string;
+        port: string;
+    };
+    interconnectDevice: {
+        name: string;
+        port: string;
+    }
 }
 
+
 function ConnectionsTable() {
-    const { labDevices, interconnectDevices, addConnection } = useOnboardingStore(
+    const { labDevices, interconnectDevices } = useOnboardingStore(
         (state) => state,
     );
 
-    const [expandedDevices, setExpandedDevices] = useState<Device[]>([]);
-    const [uniqueDeviceNames, setUniqueDeviceNames] = useState<string[]>([]);
-    const [selectedPorts, setSelectedPorts] = useState<Record<string, { device: string; port: string }>>({});
-    const [availablePortsMap, setAvailablePortsMap] = useState<Record<string, string[]>>({});
+    const [connections, setConnections] = useState<Connection[]>([]);
+    const [usedPorts, setUsedPorts] = useState<Record<string, Set<string>>>({});
+    const [currentPage, setCurrentPage] = useState(0);
+    const [rowsPerPage, setRowsPerPage] = useState(5);
 
-    useEffect(() => {
-        const uniqueNames = Array.from(
-            new Set(interconnectDevices.map((d) => d.deviceName))
-        );
-        setUniqueDeviceNames(uniqueNames);
+    // utility function to generate ports from a prot definition string
+    const generatePorts = (portDefinition: string): string[] => {
+        const [prefix, range] = portDefinition.split('|');
+        if (!range) return [];
+        const [start, end] = range.split('-').map(Number);
+        if (isNaN(start) || isNaN(end)) return [];
+        return Array.from({ length: end - start + 1 }, (_, i) => `${prefix}${start + i}`);
+    };
 
-        // build the availablePortsMap
-        const initialPortsMap: Record<string, string[]> = {};
+    // set available port information
+    const availablePortsMap = useMemo(() => {
+        const map: Record<string, string[]> = {};
         interconnectDevices.forEach((d) => {
-            const ports = d.ports.split(',').flatMap((portDefinition) => {
-                const [prefix, range] = portDefinition.split('|');
-                if (!range) return [];
-                const [start, end] = range.split('-');
-                const numericStart = parseInt(start, 10);
-                const numericEnd = parseInt(end, 10);
-                if (isNaN(numericStart) || isNaN(numericEnd)) return [];
-                return Array.from(
-                    { length: numericEnd - numericStart + 1 },
-                    (_, i) => `${prefix}${numericStart + i}`
-                );
-            });
-            initialPortsMap[d.deviceName] = ports;
+            const ports = d.ports.split(',').flatMap((portDef) => generatePorts(portDef));
+            map[d.deviceName] = ports;
         });
-        setAvailablePortsMap(initialPortsMap);
+        return map;
+    }, [interconnectDevices]);
 
-        // generate expanded devices from labDevices
-        const expanded = labDevices.flatMap((d) => {
-            const name = d.deviceName;
-            return d.ports.split(',').flatMap((portDefinition) => {
-                const [prefix, range] = portDefinition.split('|');
-                if (!range) return []; // skip if range is invalid
-                const [start, end] = range.split('-');
-                const numericStart = parseInt(start, 10);
-                const numericEnd = parseInt(end, 10);
-                if (isNaN(numericStart) || isNaN(numericEnd)) return []; // skip invalid ranges
+    // sync connections when lab devices change
+    useEffect(() => {
+        const newConnections: Connection[] = labDevices.flatMap((device) =>
+            device.ports.split(',').flatMap((portDef) =>
+                generatePorts(portDef).map((port) => ({
+                    labDevice: { name: device.deviceName, port },
+                    interconnectDevice: { name: '', port: '' }, // Initially empty
+                }))
+            )
+        );
+        setConnections(newConnections);
+    }, [labDevices]);
 
-                // generate all ports for this range
-                return Array.from(
-                    { length: numericEnd - numericStart + 1 },
-                    (_, i) => ({ name, port: `${prefix}${numericStart + i}` })
-                );
-            });
+    // update usedPorts state when connections change
+    useEffect(() => {
+        const updatedUsedPorts: Record<string, Set<string>> = {};
+        connections.forEach(({ interconnectDevice }) => {
+            if (interconnectDevice.name && interconnectDevice.port) {
+                if (!updatedUsedPorts[interconnectDevice.name]) {
+                    updatedUsedPorts[interconnectDevice.name] = new Set();
+                }
+                updatedUsedPorts[interconnectDevice.name].add(interconnectDevice.port);
+            }
         });
+        setUsedPorts(updatedUsedPorts);
+    }, [connections]);
 
-        // update state once with the complete expanded list
-        setExpandedDevices(expanded);
+    // handle cleanup of connections when a device is deleted
+    useEffect(() => {
+        const labDeviceNames = new Set(labDevices.map((d) => d.deviceName));
+        const interconnectDeviceNames = new Set(interconnectDevices.map((d) => d.deviceName));
+
+        setConnections((prevConnections) =>
+            prevConnections.filter(
+                (connection) =>
+                    labDeviceNames.has(connection.labDevice.name) &&
+                    (!connection.interconnectDevice.name || interconnectDeviceNames.has(connection.interconnectDevice.name))
+            )
+        );
     }, [labDevices, interconnectDevices]);
 
-    // TODO finish adding deletion and updating connections to the store
-
-    const handleDeviceChange = (rowIndex: number, newDevice: string) => {
-        setSelectedPorts((prev) => ({
-            ...prev,
-            [rowIndex]: { device: newDevice, port: '' }, // reset port when changing device
-        }));
+    const handleDeviceChange = (index: number, newDeviceName: string) => {
+        setConnections((prev) => {
+            const updated = [...prev];
+            updated[index] = {
+                ...updated[index],
+                interconnectDevice: { name: newDeviceName, port: '' }, // reset port because the selected interconnect device changed
+            };
+            return updated;
+        });
     };
 
-    const handlePortChange = (rowIndex: number, newPort: string) => {
-        const selectedDevice = selectedPorts[rowIndex]?.device;
-
-        if (selectedDevice && newPort) {
-            setSelectedPorts((prevSelectedPorts) => {
-                // track the selected device and port
-                const updatedSelectedPorts = { ...prevSelectedPorts };
-                updatedSelectedPorts[rowIndex] = { device: selectedDevice, port: newPort };
-
-                // add the connection to the Zustand store
-                addConnection({
-                    labDevice: expandedDevices[rowIndex].name,
-                    interconnectDevice: selectedDevice,
-                    labPort: expandedDevices[rowIndex].port,
-                    interconnectPort: newPort,
-                });
-
-                return updatedSelectedPorts;
-            });
-        }
+    const handlePortChange = (index: number, newPort: string) => {
+        setConnections((prev) => {
+            const updated = [...prev];
+            updated[index] = {
+                ...updated[index],
+                interconnectDevice: { ...updated[index].interconnectDevice, port: newPort }, // changing the port for a selected connection
+            };
+            return updated;
+        });
     };
+
+    const getFilteredPorts = (deviceName: string, selectedPort: string): string[] => {
+        const allPorts = availablePortsMap[deviceName] || [];
+        const usedPortsForDevice = usedPorts[deviceName] || new Set();
+
+        return allPorts.filter((port) => port === selectedPort || !usedPortsForDevice.has(port));
+    }
 
     const columns = [
-        {
-            name: 'Device Name',
-            sortable: true,
-            selector: row => row.name,
-            cell: (row) => (
-                <p>{row.name}</p>
-            )
-        },
-        {
-            name: 'Port',
-            selector: row => row.port,
-            sortable: true,
-            cell: (row) => (
-                <p>{row.port}</p>
-            ),
-        },
-        {
-            name: '',
-            cell: () => (
-                <p>connected to</p>
-            ),
-        },
+        { name: 'Lab Device', selector: (row: Connection) => row.labDevice.name },
+        { name: 'Lab Port', selector: (row: Connection) => row.labDevice.port },
         {
             name: 'Interconnect Device',
-            sortable: true,
-            cell: (row, index) => (
-                <select
-                    value={selectedPorts[index]?.device || ''}
-                    onChange={(e) => handleDeviceChange(index, e.target.value)}
-                    className="bg-transparent focus:outline-none hover:cursor-pointer"
-                >
-                    <option value="">Select Device</option>
-                    {uniqueDeviceNames.map((deviceName) => (
-                        <option key={deviceName} value={deviceName}>
-                            {deviceName}
-                        </option>
-                    ))}
-                </select>
-            ),
-        },
-        {
-            name: 'Port',
-            cell: (row, index) => {
-                const selectedDevice = selectedPorts[index]?.device;
-
-                // If no device is selected, return null
-                if (!selectedDevice) return null;
-
-                // Get all available ports for the selected device
-                const availablePorts = availablePortsMap[selectedDevice] || [];
+            cell: (_, localIndex: number) => {
+                const globalIndex = currentPage * rowsPerPage + localIndex;
 
                 return (
                     <select
-                        value={selectedPorts[index]?.port || ''}
-                        onChange={(e) => handlePortChange(index, e.target.value)}
+                        value={connections[globalIndex].interconnectDevice.name || ''}
+                        onChange={(e) => handleDeviceChange(globalIndex, e.target.value)}
+                        className="bg-transparent focus:outline-none hover:cursor-pointer"
+                    >
+                        <option value="">Select Device</option>
+                        {interconnectDevices.map((device) => (
+                            <option key={device.deviceName} value={device.deviceName}>
+                                {device.deviceName}
+                            </option>
+                        ))}
+                    </select>
+                )
+            },
+        },
+        {
+            name: 'Interconnect Port',
+            cell: (_, localIndex: number) => {
+                const globalIndex = currentPage * rowsPerPage + localIndex;
+                const selectedDevice = connections[globalIndex].interconnectDevice.name;
+                const selectedPort = connections[globalIndex].interconnectDevice.port;
+                const availablePorts = getFilteredPorts(selectedDevice, selectedPort);
+
+                if (!selectedDevice) {
+                    return <span className="text-gray-500">Select an interconnect device</span>
+                }
+
+                return (
+                    <select
+                        value={connections[globalIndex].interconnectDevice.port || ''}
+                        onChange={(e) => handlePortChange(globalIndex, e.target.value)}
                         disabled={!selectedDevice}
                         className="bg-transparent focus:outline-none hover:cursor-pointer"
                     >
@@ -165,18 +166,27 @@ function ConnectionsTable() {
                     </select>
                 );
             },
-        }
+        },
     ];
 
     return (
         <section className='p-4'>
-            <DataTable
-                columns={columns}
-                data={expandedDevices}
-                pagination
-                paginationRowsPerPageOptions={[5, 10, 15]}
-                customStyles={customStyles}
-            />
+            {connections.length > 0 ? (
+                <DataTable
+                    columns={columns}
+                    data={connections}
+                    pagination
+                    paginationRowsPerPageOptions={[5, 10, 15]}
+                    onChangePage={(page) => setCurrentPage(page - 1)} // RDT pages aren't 0 indexed
+                    onChangeRowsPerPage={(newRowsPerPage) => {
+                        setRowsPerPage(newRowsPerPage);
+                        setCurrentPage(0); // reset to the first page when rows per page changes
+                    }}
+                    customStyles={customStyles}
+                />
+            ) : (
+                <div className='text-center'>Loading connections...</div>
+            )}
         </section>
     );
 }

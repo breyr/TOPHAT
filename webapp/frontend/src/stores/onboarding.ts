@@ -36,13 +36,6 @@ export interface LabDevice extends NewDevice {
     icon: '' | 'router' | 'switch' | 'external' | 'server';
 }
 
-export interface Connection {
-    labDevice: string;
-    interconnectDevice: string;
-    labPort: string;
-    interconnectPort: string;
-}
-
 type OnboardingState = {
     step: number;
     model: Model;
@@ -50,7 +43,6 @@ type OnboardingState = {
     additionalUsers: NewUser[];
     interconnectDevices: InterconnectDevice[];
     labDevices: LabDevice[];
-    connections: Connection[];
 }
 
 type OnboardingActions = {
@@ -66,9 +58,6 @@ type OnboardingActions = {
     addLabDevice: (device: LabDevice) => void;
     updateLabDevice: (idx: number, device: Partial<LabDevice>) => void;
     removeLabDevice: (idx: number) => void;
-    addConnection: (connection: Connection) => void;
-    updateConnection: (index: number, connection: Partial<Connection>) => void;
-    removeConnection: (index: number) => void;
 }
 
 export type OnboardingStore = OnboardingState & OnboardingActions;
@@ -123,16 +112,5 @@ export const useOnboardingStore = create<OnboardingStore>((set) => ({
     }),
     removeLabDevice: (index) => set((state) => ({
         labDevices: state.labDevices.filter((_, i) => i !== index)
-    })),
-    addConnection: (connection) => set((state) => ({
-        connections: [...state.connections, connection]
-    })),
-    updateConnection: (index, connection) => set((state) => {
-        const updatedConnections = [...state.connections];
-        updatedConnections[index] = { ...updatedConnections[index], ...connection };
-        return { connections: updatedConnections };
-    }),
-    removeConnection: (index) => set((state) => ({
-        connections: state.connections.filter((_, i) => i !== index)
     })),
 }));
