@@ -126,7 +126,7 @@ function ConnectionsTable() {
                     <select
                         value={connections[globalIndex].interconnectDevice.name || ''}
                         onChange={(e) => handleDeviceChange(globalIndex, e.target.value)}
-                        className="bg-transparent focus:outline-none hover:cursor-pointer"
+                        className="w-full bg-transparent focus:outline-none hover:cursor-pointer"
                     >
                         <option value="">Select Device</option>
                         {interconnectDevices.map((device) => (
@@ -147,7 +147,7 @@ function ConnectionsTable() {
                 const availablePorts = getFilteredPorts(selectedDevice, selectedPort);
 
                 if (!selectedDevice) {
-                    return <span className="text-gray-500">Select an interconnect device</span>
+                    return <span className="text-gray-400">Select an interconnect device</span>
                 }
 
                 return (
@@ -155,7 +155,7 @@ function ConnectionsTable() {
                         value={connections[globalIndex].interconnectDevice.port || ''}
                         onChange={(e) => handlePortChange(globalIndex, e.target.value)}
                         disabled={!selectedDevice}
-                        className="bg-transparent focus:outline-none hover:cursor-pointer"
+                        className="w-full bg-transparent focus:outline-none hover:cursor-pointer"
                     >
                         <option value="">Select Port</option>
                         {availablePorts.map((port) => (
@@ -185,7 +185,9 @@ function ConnectionsTable() {
                     customStyles={customStyles}
                 />
             ) : (
-                <div className='text-center'>Loading connections...</div>
+                <div className='text-center font-semibold text-gray-500'>
+                    Please add at least one interconnect device and one lab device to your inventory and configure their ports to view connections.
+                </div>
             )}
         </section>
     );
