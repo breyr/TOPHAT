@@ -64,7 +64,7 @@ export default function OnboardInventoryPage() {
                     </AccordionItem>
                 </Accordion>
             </div>
-            {labDevices && interconnectDevices &&
+            {labDevices.length > 0 && interconnectDevices.length > 0 &&
                 <p className="text-blue-500 font-semibold text-lg flex items-center hover:text-blue-600 hover:cursor-pointer" onClick={handleNext}>
                     Continue <ArrowRight size={20} />
                 </p>
