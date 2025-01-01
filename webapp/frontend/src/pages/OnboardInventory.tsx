@@ -1,8 +1,10 @@
 import { Accordion, AccordionItem as Item } from "@szhsin/react-accordion";
-import { ChevronDown, EthernetPort, Server, SquareTerminal } from "lucide-react";
+import { ArrowRight, ChevronDown, EthernetPort, Server, SquareTerminal } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import ConnectionsTable from "../components/table/ConnectionsTable";
 import InterconnectDevicesTable from "../components/table/InterconnectDevicesTable";
 import LabDevicesTable from "../components/table/LabDevicesTable";
+import { useOnboardingStore } from "../stores/onboarding";
 
 interface AccordionItemProps {
     header: React.ReactNode;
@@ -36,11 +38,20 @@ const AccordionItem = ({ header, isFirst, isLast, children, ...rest }: Accordion
 );
 
 export default function OnboardInventoryPage() {
+    const { step, setStep, labDevices, interconnectDevices } = useOnboardingStore(
+        (state) => state,
+    )
+    const navigateTo = useNavigate();
+
+    const handleNext = () => {
+        setStep(step + 1);
+        navigateTo('/onboard/finish');
+    };
 
     return (
         <section className="flex flex-col h-full w-full pt-8 items-center">
             <h1 className="text-4xl font-bold mb-4">Device Inventory</h1>
-            <div className="w-full">
+            <div className="flex-grow w-full">
                 <Accordion transition transitionTimeout={200}>
                     <AccordionItem header={<div className="flex flex-row items-center gap-2"><Server className="mr-2" /> Interconnect Devices</div>} isFirst>
                         <InterconnectDevicesTable />
@@ -53,6 +64,11 @@ export default function OnboardInventoryPage() {
                     </AccordionItem>
                 </Accordion>
             </div>
+            {labDevices && interconnectDevices &&
+                <p className="text-blue-500 font-semibold text-lg flex items-center hover:text-blue-600 hover:cursor-pointer" onClick={handleNext}>
+                    Continue <ArrowRight size={20} />
+                </p>
+            }
         </section>
     )
 }
