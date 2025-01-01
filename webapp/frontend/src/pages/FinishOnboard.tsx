@@ -5,7 +5,7 @@ function OnboardingPage() {
     const navigate = useNavigate();
 
     const handleExploreDashboard = () => {
-        navigate('/dashboard');
+        navigate('/dashboard/');
     };
 
     return (
