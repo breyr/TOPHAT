@@ -2,6 +2,7 @@ import * as dotenv from 'dotenv';
 import express from 'express';
 import { DIContainer } from './config/DIContainer';
 import { errorHandler } from './middleware/errorHandler';
+import { deviceRouter } from './routes/deviceRoutes';
 import { topologyRouter } from './routes/topologyRoutes';
 import { userRouter } from './routes/userRoutes';
 
@@ -19,6 +20,7 @@ app.use(express.json());
 const baseRouter = express.Router();
 baseRouter.use('/auth', userRouter);
 baseRouter.use('/topology', topologyRouter);
+baseRouter.use('/device', deviceRouter);
 
 // mount base router
 app.use('/api', baseRouter);

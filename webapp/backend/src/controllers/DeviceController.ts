@@ -1,0 +1,111 @@
+import type { Device, DeviceType, IconType } from "@prisma/client";
+import type { NextFunction, Response } from "express";
+import { DIContainer } from "../config/DIContainer";
+import type { AuthenticatedRequest } from '../types/types';
+
+export class DeviceController {
+    private deviceService = DIContainer.getDeviceService();
+
+    async createDevice(req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> {
+        try {
+            const deviceData = { ...req.body } as Partial<Device>;
+            const device = await this.deviceService.createDevice(deviceData);
+            res.status(201).json({
+                message: 'Device created successfully',
+                data: device,
+            });
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    async deleteDevice(req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> {
+        try {
+            const { id: deviceId } = req.params;
+            const device = await this.deviceService.deleteDevice(Number(deviceId));
+            if (!device) {
+                res.status(404).json({ message: 'Device not found' });
+                return;
+            }
+            res.status(200).json({
+                message: 'Device deleted successfully',
+                data: device,
+            });
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    async updateDevice(req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> {
+        try {
+            const { id: deviceId } = req.params;
+            const deviceData = { ...req.body } as Partial<Device>;
+            const device = await this.deviceService.updateDevice(Number(deviceId), deviceData);
+            if (!device) {
+                res.status(404).json({ message: 'Device not found' });
+                return;
+            }
+            res.status(200).json({
+                message: 'Device updated successfully',
+                data: device,
+            });
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    async getAllDevices(req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> {
+        try {
+            const devices = await this.deviceService.getAllDevices();
+            res.status(200).json({
+                message: 'Devices retrieved successfully',
+                data: devices,
+            });
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    async getDeviceById(req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> {
+        try {
+            const { id: deviceId } = req.params;
+            const device = await this.deviceService.getDeviceById(Number(deviceId));
+            if (!device) {
+                res.status(404).json({ message: 'Device not found' });
+                return;
+            }
+            res.status(200).json({
+                message: 'Device retrieved successfully',
+                data: device,
+            });
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    async getDevicesByType(req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> {
+        try {
+            const { deviceType } = req.params;
+            const devices = await this.deviceService.getDevicesByType(deviceType as DeviceType);
+            res.status(200).json({
+                message: 'Devices retrieved successfully',
+                data: devices,
+            });
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    async getDevicesByIcon(req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> {
+        try {
+            const { deviceIcon } = req.params;
+            const devices = await this.deviceService.getDevicesByIcon(deviceIcon as IconType);
+            res.status(200).json({
+                message: 'Devices retrieved successfully',
+                data: devices,
+            });
+        } catch (error) {
+            next(error);
+        }
+    }
+}
