@@ -23,12 +23,15 @@ export default function UserTopologiesPage() {
                 setTopologies(response.data ?? []);
             } catch (e) {
                 setError(e instanceof Error ? e.message : 'An error occurred');
-                console.error(e);
             } finally {
                 setIsLoading(false);
             }
         })();
     }, [token, authenticatedApiClient]);
+
+    useEffect(() => {
+        console.debug(error);
+    }, [error]);
 
     const handleDelete = async (topologyId: number) => {
         if (!token) {

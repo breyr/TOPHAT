@@ -64,11 +64,12 @@ export interface UserJwtPayload {
 
 // Topology DTOs
 //
+// this interface is only used on client side
 export interface Topology {
     id: number;
     userId: number;
     name: string;
-    thumbnail: Buffer;
+    thumbnail: { [key: number]: number } | string; // receive | send
     reactFlowState: ReactFlowState | null;
     expiresOn: Date;
     archived: boolean;

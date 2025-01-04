@@ -34,7 +34,7 @@ export default function UserCreatePage() {
 
     const handleFormSubmission = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        const response = await register(adminCredentials.username, adminCredentials.email, adminCredentials.password, 'admin');
+        const response = await register(adminCredentials.username, adminCredentials.email, adminCredentials.password, 'ADMIN');
         if (typeof response !== 'boolean') {
             setAdminRegisterError((response as RegisterUserResponsePayload).message);
         } else {

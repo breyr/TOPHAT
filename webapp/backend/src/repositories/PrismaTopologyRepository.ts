@@ -72,8 +72,8 @@ export class PrismaTopologyRepository implements ITopologyRepository {
             data: {
                 name: topologyData.name ?? Prisma.skip,
                 thumbnail: topologyData.thumbnail ? Buffer.from(topologyData.thumbnail, 'base64') : Prisma.skip, // Assuming thumbnail is sent as a base64 string
-                reactFlowState: topologyData.react_flow_state ?? Prisma.skip,
-                expiresOn: topologyData.expires_on ? new Date(topologyData.expires_on) : Prisma.skip,
+                reactFlowState: topologyData.reactFlowState ?? Prisma.skip,
+                expiresOn: topologyData.expiresOn ? new Date(topologyData.expiresOn) : Prisma.skip,
                 archived: topologyData.archived ?? Prisma.skip,
             }
         }).then((topology) => {

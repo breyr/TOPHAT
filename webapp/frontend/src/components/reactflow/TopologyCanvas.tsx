@@ -16,7 +16,6 @@ import {
 } from "@xyflow/react";
 import "@xyflow/react/dist/base.css"; // use to make custom node css
 import { toJpeg } from 'html-to-image';
-import { TerminalSquare } from "lucide-react";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 import type { ReactFlowState } from "../../../../common/shared-types.ts";
@@ -58,13 +57,13 @@ const TopologyCanvas = () => {
                     // TODO show error
                 }
                 const response = await authenticatedApiClient.getTopology(topologyId);
-                setNodes(response.data?.react_flow_state?.nodes ?? []);
-                setEdges(response.data?.react_flow_state?.edges ?? []);
+                setNodes(response.data?.reactFlowState?.nodes ?? []);
+                setEdges(response.data?.reactFlowState?.edges ?? []);
             } catch (error) {
                 console.error("Failed to fetch topology data:", error);
             }
         })();
-    }, [id, token]);
+    }, [id, token, authenticatedApiClient]);
 
     // logic to save a topology's react-flow state into the database
     const saveTopology = useCallback(async () => {
@@ -106,18 +105,18 @@ const TopologyCanvas = () => {
                 // at this point id exists and is a number otherwise the topology wouldn't be loaded
                 // this does return the updated topology, but we don't need it
                 await authenticatedApiClient.updateTopology(parseInt(id!), {
-                    react_flow_state: flow as ReactFlowState,
+                    reactFlowState: flow as ReactFlowState,
                     thumbnail: base64Thumbnail
-                })
+                });
 
-                setLastUpdated(id!, new Date().toISOString());
+                setLastUpdated(id!, new Date());
             } catch (error) {
                 console.error("Failed to save topology state:", error);
             } finally {
                 setIsSaving(id!, false);
             }
         }
-    }, [id, token, rfInstance, getNodes, setIsSaving, setLastUpdated])
+    }, [id, rfInstance, getNodes, setIsSaving, setLastUpdated, authenticatedApiClient])
 
     // useMemo is required here because on component re-renders, debounce will be recreated
     // this causes issues like saves being spammed
@@ -238,13 +237,6 @@ const TopologyCanvas = () => {
                 {/* Node Picker */}
                 <Panel position="top-right">
                     <NodePicker />
-                </Panel>
-                {/* Terminal Window */}
-                <Panel position="bottom-left">
-                    <div className="flex flex-row items-center border-b-2 border-blue-500 cursor-pointer pb-2">
-                        <h4 className="mr-2 p-0 m-0">Terminal</h4>
-                        <TerminalSquare size={20} />
-                    </div>
                 </Panel>
             </ReactFlow>
         </div>

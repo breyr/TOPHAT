@@ -7,7 +7,7 @@ export interface CustomJwtPayload extends JwtPayload {
     id: number;
     username: string;
     email: string;
-    account_type: string;
+    accountType: AccountType;
 }
 
 interface AuthContextType {
@@ -15,7 +15,7 @@ interface AuthContextType {
     token: string | null;
     login: (usernameOrEmail: string, password: string) => Promise<{ success: boolean; message?: string }>;
     logout: () => void;
-    register: (username: string, email: string, password: string, account_type: AccountType) => Promise<RegisterUserResponsePayload | boolean>;
+    register: (username: string, email: string, password: string, accountType: AccountType) => Promise<RegisterUserResponsePayload | boolean>;
     authenticatedApiClient: ApiClient;
 }
 
@@ -92,7 +92,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
 
     // registration helper
-    const register = async (username: string, email: string, password: string, account_type: AccountType): Promise<RegisterUserResponsePayload | boolean> => {
+    const register = async (username: string, email: string, password: string, accountType: AccountType): Promise<RegisterUserResponsePayload | boolean> => {
         // attempt to register and login
         try {
             const response = await fetch('/api/auth/register', {
@@ -100,7 +100,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ username, email, password, account_type })
+                body: JSON.stringify({ username, email, password, accountType })
             });
 
             const resJson: RegisterUserResponsePayload = await response.json();

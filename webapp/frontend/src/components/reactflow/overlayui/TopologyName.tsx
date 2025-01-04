@@ -25,13 +25,13 @@ export default function TopologyName() {
                 }
                 const response = await authenticatedApiClient.getTopology(topologyId);
                 setTopologyName(response.data!.name);
-                setLastUpdated(id!, response.data!.updated_at);
+                setLastUpdated(id!, response.data!.updatedAt);
                 initialNameRef.current = response.data!.name;
             } catch (error) {
                 console.error("Failed to fetch topology data:", error);
             }
         })();
-    }, [id, token]);
+    }, [id, token, authenticatedApiClient, setLastUpdated]);
 
     useEffect(() => {
         if (spanRef.current) {

@@ -2,12 +2,12 @@ import { create } from 'zustand';
 
 type TopologyState = {
     isSaving: boolean;
-    lastUpdated: string;  // We'll store the last updated timestamp here
+    lastUpdated: Date;  // We'll store the last updated timestamp here
 }
 
 type TopologyActions = {
     setIsSaving: (id: string, isSaving: boolean) => void;
-    setLastUpdated: (id: string, lastUpdated: string) => void;
+    setLastUpdated: (id: string, lastUpdated: Date) => void;
 }
 
 type TopologyStore = {
@@ -31,7 +31,7 @@ export const useTopologyStore = create<TopologyStore>((set) => ({
         })),
 
     // Update the lastUpdated field of a specific topology by its ID
-    setLastUpdated: (id: string, lastUpdated: string) =>
+    setLastUpdated: (id: string, lastUpdated: Date) =>
         set((state) => ({
             topologies: {
                 ...state.topologies,
