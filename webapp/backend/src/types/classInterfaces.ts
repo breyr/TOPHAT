@@ -1,5 +1,5 @@
 // holds interfaces similar to C#
-import { AppUser, Device, DeviceType, IconType, Topology } from "@prisma/client";
+import { AppUser, Connection, Device, DeviceType, IconType, Topology } from "@prisma/client";
 import type { CreateTopologyRequestPayload, RegisterUserRequestPayload } from "../../../common/shared-types";
 import { UpdateTopologyDTO } from "./types";
 
@@ -51,4 +51,24 @@ export interface IDeviceService {
     getDeviceById(deviceId: number): Promise<Device | null>;
     getDevicesByType(deviceType: DeviceType): Promise<Device[]>;
     getDevicesByIcon(deviceIcon: IconType): Promise<Device[]>;
+}
+
+export interface IConnectionRepository {
+    create(requestData: Connection): Promise<Connection>;
+    delete(connectionId: number): Promise<Connection | null>;
+    update(connectionId: number, requestData: Partial<Connection>): Promise<Connection>;
+    findAll(): Promise<Connection[]>;
+    findById(connectionId: number): Promise<Connection | null>;
+    findByLabDeviceName(labDeviceName: string): Promise<Connection[]>;
+    findByInterconnectDeviceName(interconnectDeviceName: string): Promise<Connection[]>;
+}
+
+export interface IConnectionService {
+    createConnection(requestData: Connection): Promise<Connection>;
+    deleteConnection(connectionId: number): Promise<Connection | null>;
+    updateConnection(connectionId: number, requestData: Partial<Connection>): Promise<Connection>;
+    getAllConnections(): Promise<Connection[]>;
+    getConnectionById(connectionId: number): Promise<Connection | null>;
+    getConnectionsByLabDeviceName(labDeviceName: string): Promise<Connection[]>;
+    getConnectionsByInterconnectDeviceName(interconnectDeviceName: string): Promise<Connection[]>;
 }

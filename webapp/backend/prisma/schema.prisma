@@ -75,3 +75,11 @@ model Device {
   user     AppUser  @relation(fields: [userId], references: [id])
   topology Topology @relation(fields: [topologyId], references: [id])
 }
+
+model Connection {
+  id                     Int    @id @default(autoincrement())
+  labDeviceName          String @db.Text
+  labDevicePort          String @db.Text
+  interconnectDeviceName String @db.Text
+  interconnectDevicePort String @db.Text
+}

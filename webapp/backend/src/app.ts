@@ -2,6 +2,7 @@ import * as dotenv from 'dotenv';
 import express from 'express';
 import { DIContainer } from './config/DIContainer';
 import { errorHandler } from './middleware/errorHandler';
+import { connectionRouter } from './routes/connectionRoutes';
 import { deviceRouter } from './routes/deviceRoutes';
 import { topologyRouter } from './routes/topologyRoutes';
 import { userRouter } from './routes/userRoutes';
@@ -21,6 +22,7 @@ const baseRouter = express.Router();
 baseRouter.use('/auth', userRouter);
 baseRouter.use('/topology', topologyRouter);
 baseRouter.use('/devices', deviceRouter);
+baseRouter.use('/connections', connectionRouter);
 
 // mount base router
 app.use('/api', baseRouter);
