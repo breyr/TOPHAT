@@ -1,4 +1,4 @@
-import { PrismaClient, type User } from "@prisma/client";
+import { PrismaClient, type AppUser } from "@prisma/client";
 import bcrypt from 'bcryptjs';
 import type { RegisterUserRequestPayload } from "../../../common/shared-types";
 import { IUserRepository } from "../types/classInterfaces";
@@ -10,9 +10,9 @@ export class PrismaUserRepository implements IUserRepository {
         this.prisma = prismaClient
     }
 
-    create(formData: RegisterUserRequestPayload): Promise<User> {
+    create(formData: RegisterUserRequestPayload): Promise<AppUser> {
         const hashedPassword = bcrypt.hashSync(formData.password, 10);
-        return this.prisma.user.create({
+        return this.prisma.appUser.create({
             data: {
                 username: formData.username,
                 email: formData.email,
@@ -24,20 +24,20 @@ export class PrismaUserRepository implements IUserRepository {
         })
     }
 
-    findByEmail(email: string): Promise<User | null> {
-        return this.prisma.user.findFirst({
+    findByEmail(email: string): Promise<AppUser | null> {
+        return this.prisma.appUser.findFirst({
             where: { email },
         })
     }
 
-    findByUsername(username: string): Promise<User | null> {
-        return this.prisma.user.findFirst({
+    findByUsername(username: string): Promise<AppUser | null> {
+        return this.prisma.appUser.findFirst({
             where: { username },
         })
     }
 
-    delete(id: number): Promise<User | null> {
-        return this.prisma.user.delete({
+    delete(id: number): Promise<AppUser | null> {
+        return this.prisma.appUser.delete({
             where: { id },
         })
     }

@@ -1,20 +1,20 @@
 // holds interfaces similar to C#
-import { Device, DeviceType, IconType, Topology, User } from "@prisma/client";
+import { AppUser, Device, DeviceType, IconType, Topology } from "@prisma/client";
 import type { CreateTopologyRequestPayload, RegisterUserRequestPayload } from "../../../common/shared-types";
 import { UpdateTopologyDTO } from "./types";
 
 export interface IUserRepository {
-    create(formData: RegisterUserRequestPayload): Promise<User>;
-    findByEmail(email: string): Promise<User | null>;
-    findByUsername(username: string): Promise<User | null>;
-    delete(id: number): Promise<User | null>;
+    create(formData: RegisterUserRequestPayload): Promise<AppUser>;
+    findByEmail(email: string): Promise<AppUser | null>;
+    findByUsername(username: string): Promise<AppUser | null>;
+    delete(id: number): Promise<AppUser | null>;
 }
 
 export interface IUserService {
-    createUser(formData: RegisterUserRequestPayload): Promise<User>;
-    getUserByEmail(email: string): Promise<User | null>;
-    getUserByUsername(username: string): Promise<User | null>;
-    deleteUser(id: number): Promise<User | null>;
+    createUser(formData: RegisterUserRequestPayload): Promise<AppUser>;
+    getUserByEmail(email: string): Promise<AppUser | null>;
+    getUserByUsername(username: string): Promise<AppUser | null>;
+    deleteUser(id: number): Promise<AppUser | null>;
 }
 
 export interface ITopologyRepository {

@@ -1,4 +1,4 @@
-import type { User } from '@prisma/client';
+import type { AppUser } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 import { NextFunction, Request, Response } from "express";
 import type { LoginRequestPayload, LoginResponsePayload, RegisterUserRequestPayload } from '../../../common/shared-types';
@@ -29,7 +29,7 @@ export class UserController {
         try {
             const userLoginPayload = { ...req.body } as LoginRequestPayload
             // check if we have an email or username
-            let user: User | null
+            let user: AppUser | null
             if (validateEmail(userLoginPayload.usernameOrEmail)) {
                 user = await this.userService.getUserByEmail(userLoginPayload.usernameOrEmail);
             } else {

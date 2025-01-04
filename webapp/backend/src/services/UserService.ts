@@ -1,4 +1,4 @@
-import type { User } from "@prisma/client";
+import type { AppUser } from "@prisma/client";
 import type { RegisterUserRequestPayload } from "../../../common/shared-types";
 import { IUserRepository, IUserService } from "../types/classInterfaces";
 import { validateEmail, ValidationError } from "../utils/validation";
@@ -10,7 +10,7 @@ export class UserService implements IUserService {
         this.userRepository = userRepository
     }
 
-    async createUser(formData: RegisterUserRequestPayload): Promise<User> {
+    async createUser(formData: RegisterUserRequestPayload): Promise<AppUser> {
         // validate email
         if (!validateEmail(formData.email)) {
             throw new ValidationError('Invalid email format')
@@ -29,15 +29,15 @@ export class UserService implements IUserService {
         return this.userRepository.create(formData);
     }
 
-    getUserByEmail(email: string): Promise<User | null> {
+    getUserByEmail(email: string): Promise<AppUser | null> {
         return this.userRepository.findByEmail(email);
     }
 
-    getUserByUsername(username: string): Promise<User | null> {
+    getUserByUsername(username: string): Promise<AppUser | null> {
         return this.userRepository.findByUsername(username);
     }
 
-    deleteUser(id: number): Promise<User | null> {
+    deleteUser(id: number): Promise<AppUser | null> {
         return this.userRepository.delete(id);
     }
 
