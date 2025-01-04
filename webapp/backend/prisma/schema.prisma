@@ -8,28 +8,70 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model user {
-  id           Int      @id @default(autoincrement())
-  username     String   @db.VarChar
-  email        String   @unique @db.VarChar
-  password     String   @db.VarChar
-  account_type String   @db.VarChar
-  created_at   DateTime @db.Timestamp(6)
-  updated_at   DateTime @db.Timestamp(6)
+enum DeviceType {
+  LAB
+  INTERCONNECT
+}
 
-  @@index([username], map: "ix_user_username")
+enum IconType {
+  ROUTER
+  SWITCH
+  EXTERNAL
+  SERVER
+}
+
+enum AccountType {
+  USER
+  ADMIN
+}
+
+model user {
+  id          Int         @id @default(autoincrement())
+  username    String      @db.VarChar
+  email       String      @unique @db.VarChar
+  password    String      @db.VarChar
+  accountType AccountType
+  createdAt   DateTime    @db.Timestamp(6)
+  updatedAt   DateTime    @db.Timestamp(6)
+
+  topologies topology[]
+  devices    device[]
 }
 
 model topology {
-  id               Int      @id @default(autoincrement())
-  user_id          Int
-  name             String   @db.VarChar
-  thumbnail        Bytes
-  react_flow_state Json
-  expires_on       DateTime @db.Timestamp(6)
-  archived         Boolean  @default(false)
-  created_at       DateTime @default(now())
-  updated_at       DateTime @updatedAt
+  id             Int      @id @default(autoincrement())
+  userId         Int
+  name           String   @db.VarChar
+  thumbnail      Bytes
+  reactFlowState Json
+  expiresOn      DateTime @db.Timestamp(6)
+  archived       Boolean  @default(false)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 
-  @@index([user_id], map: "ix_topology_user_id")
+  // many-to-one (many topologies to one user)
+  user    user     @relation(fields: [userId], references: [id])
+  // one-to-many (one topology can be associated with many devices)
+  devices device[]
+}
+
+model device {
+  id             Int        @id @default(autoincrement())
+  userId         Int // "FK" to user, just used for tracking purposes 
+  topologyId     Int // "FK" to topology, just used for tracking purposes
+  name           String     @db.Text
+  model          String     @db.Text
+  serialNumber   String     @db.Text
+  ipAddress      String?    @db.VarChar(32)
+  description    String?    @db.Text
+  password       String?    @db.Text
+  username       String?    @db.Text
+  secretPassword String?    @db.Text
+  ports          String     @db.Text
+  type           DeviceType
+  icon           IconType
+
+  // many-to-one
+  user     user     @relation(fields: [userId], references: [id])
+  topology topology @relation(fields: [topologyId], references: [id])
 }
