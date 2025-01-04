@@ -1,6 +1,6 @@
+import type { User } from "@prisma/client";
 import type { RegisterUserRequestPayload } from "../../../common/shared-types";
 import { IUserRepository, IUserService } from "../types/classInterfaces";
-import type { User } from "../types/models";
 import { validateEmail, ValidationError } from "../utils/validation";
 
 export class UserService implements IUserService {

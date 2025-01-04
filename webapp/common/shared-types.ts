@@ -1,6 +1,6 @@
 // TYPES
 //
-export type AccountType = 'user' | 'admin'
+export type AccountType = 'USER' | 'ADMIN'
 export type Model = 'multi-tenant' | 'single-user' | null
 type Node = {
     id: string;
@@ -43,7 +43,7 @@ export interface RegisterUserRequestPayload {
     username: string;
     email: string;
     password: string;
-    account_type: AccountType;
+    accountType: AccountType;
 }
 export interface RegisterUserResponsePayload {
     message: string;

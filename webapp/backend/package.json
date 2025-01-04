@@ -23,7 +23,7 @@
     "@types/bcryptjs": "^2.4.6",
     "@types/express": "^5.0.0",
     "@types/jsonwebtoken": "^9.0.7",
-    "@types/node": "^22.7.6",
+    "@types/node": "^22.10.5",
     "prisma": "^6.1.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.6.3"

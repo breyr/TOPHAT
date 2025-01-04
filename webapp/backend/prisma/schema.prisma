@@ -25,7 +25,7 @@ enum AccountType {
   ADMIN
 }
 
-model user {
+model User {
   id          Int         @id @default(autoincrement())
   username    String      @db.VarChar
   email       String      @unique @db.VarChar
@@ -34,11 +34,11 @@ model user {
   createdAt   DateTime    @db.Timestamp(6)
   updatedAt   DateTime    @db.Timestamp(6)
 
-  topologies topology[]
-  devices    device[]
+  topologies Topology[]
+  devices    Device[]
 }
 
-model topology {
+model Topology {
   id             Int      @id @default(autoincrement())
   userId         Int
   name           String   @db.VarChar
@@ -50,12 +50,12 @@ model topology {
   updatedAt      DateTime @updatedAt
 
   // many-to-one (many topologies to one user)
-  user    user     @relation(fields: [userId], references: [id])
+  user    User     @relation(fields: [userId], references: [id])
   // one-to-many (one topology can be associated with many devices)
-  devices device[]
+  devices Device[]
 }
 
-model device {
+model Device {
   id             Int        @id @default(autoincrement())
   userId         Int // "FK" to user, just used for tracking purposes 
   topologyId     Int // "FK" to topology, just used for tracking purposes
@@ -72,6 +72,6 @@ model device {
   icon           IconType
 
   // many-to-one
-  user     user     @relation(fields: [userId], references: [id])
-  topology topology @relation(fields: [topologyId], references: [id])
+  user     User     @relation(fields: [userId], references: [id])
+  topology Topology @relation(fields: [topologyId], references: [id])
 }

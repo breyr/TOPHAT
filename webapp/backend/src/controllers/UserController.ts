@@ -1,8 +1,8 @@
+import type { User } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 import { NextFunction, Request, Response } from "express";
 import type { LoginRequestPayload, LoginResponsePayload, RegisterUserRequestPayload } from '../../../common/shared-types';
 import { DIContainer } from "../config/DIContainer";
-import type { User } from '../types/models';
 import { createJwtToken } from '../utils/jwt';
 import { validateEmail, ValidationError } from "../utils/validation";
 
@@ -40,7 +40,7 @@ export class UserController {
                 throw new ValidationError('Invalid credentials')
             }
             // create token
-            const token = createJwtToken(user.id, user.username, user.email, user.account_type)
+            const token = createJwtToken(user.id, user.username, user.email, user.accountType)
             const responsePayload: LoginResponsePayload = {
                 message: 'Login successful',
                 data: { token }

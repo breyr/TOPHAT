@@ -1,8 +1,7 @@
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, type User } from "@prisma/client";
 import bcrypt from 'bcryptjs';
 import type { RegisterUserRequestPayload } from "../../../common/shared-types";
 import { IUserRepository } from "../types/classInterfaces";
-import type { User } from "../types/models";
 
 export class PrismaUserRepository implements IUserRepository {
     private prisma: PrismaClient;
@@ -18,16 +17,9 @@ export class PrismaUserRepository implements IUserRepository {
                 username: formData.username,
                 email: formData.email,
                 password: hashedPassword,
-                account_type: formData.account_type,
-                created_at: new Date(),
-                updated_at: new Date(),
-            },
-            select: {
-                id: true,
-                email: true,
-                username: true,
-                password: true,
-                account_type: true
+                accountType: formData.accountType,
+                createdAt: new Date(),
+                updatedAt: new Date(),
             }
         })
     }
@@ -35,39 +27,18 @@ export class PrismaUserRepository implements IUserRepository {
     findByEmail(email: string): Promise<User | null> {
         return this.prisma.user.findFirst({
             where: { email },
-            select: {
-                id: true,
-                email: true,
-                username: true,
-                password: true,
-                account_type: true
-            }
         })
     }
 
     findByUsername(username: string): Promise<User | null> {
         return this.prisma.user.findFirst({
             where: { username },
-            select: {
-                id: true,
-                email: true,
-                username: true,
-                password: true,
-                account_type: true
-            }
         })
     }
 
     delete(id: number): Promise<User | null> {
         return this.prisma.user.delete({
             where: { id },
-            select: {
-                id: true,
-                email: true,
-                username: true,
-                password: true,
-                account_type: true
-            }
         })
     }
 
