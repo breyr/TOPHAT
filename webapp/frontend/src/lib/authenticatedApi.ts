@@ -1,4 +1,4 @@
-import type { Topology } from "../../../common/shared-types";
+import type { Device, DeviceType, IconType, Topology } from "../../../common/shared-types";
 
 type ApiConfig = {
     baseUrl: string;
@@ -67,12 +67,12 @@ export class ApiClient {
         };
     }
 
-    // API Methods go here
+    // Topology API Methods
     async createTopology(data: Partial<Topology>) {
         return this.fetch<Topology>('/topology/', {
             method: 'POST',
             body: JSON.stringify(data),
-        })
+        });
     }
 
     async getAllTopologies() {
@@ -83,7 +83,6 @@ export class ApiClient {
         return this.fetch<Topology>(`/topology/${id}`);
     }
 
-    // TODO change how this works - make sure this is also being used by the nav bar component for name saving
     async updateTopology(id: number, data: Partial<Topology>) {
         return this.fetch<Topology>(`/topology/${id}`, {
             method: 'PUT',
@@ -95,5 +94,42 @@ export class ApiClient {
         return this.fetch<{ topologyId: number }>(`/topology/${id}`, {
             method: 'DELETE'
         });
+    }
+
+    // Device API Methods
+    async createDevice(data: Partial<Device>) {
+        return this.fetch<Device>('/devices/', {
+            method: 'POST',
+            body: JSON.stringify(data),
+        });
+    }
+
+    async getAllDevices() {
+        return this.fetch<Device[]>('/devices/');
+    }
+
+    async getDeviceById(id: number) {
+        return this.fetch<Device>(`/devices/${id}`);
+    }
+
+    async updateDevice(id: number, data: Partial<Device>) {
+        return this.fetch<Device>(`/devices/${id}`, {
+            method: 'PUT',
+            body: JSON.stringify(data)
+        });
+    }
+
+    async deleteDevice(id: number) {
+        return this.fetch<{ deviceId: number }>(`/devices/${id}`, {
+            method: 'DELETE'
+        });
+    }
+
+    async getDevicesByType(deviceType: DeviceType) {
+        return this.fetch<Device[]>(`/devices/type/${deviceType}`);
+    }
+
+    async getDevicesByIcon(deviceIcon: IconType) {
+        return this.fetch<Device[]>(`/devices/icon/${deviceIcon}`);
     }
 }
