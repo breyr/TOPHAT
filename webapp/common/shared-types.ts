@@ -58,22 +58,22 @@ export interface UserJwtPayload {
     id: number
     username: string
     email: string
-    account_type: AccountType
+    accountType: AccountType
     exp: number
 }
 
 // Topology DTOs
 //
 export interface Topology {
-    name: string;
     id: number;
-    created_at: Date;
-    updated_at: Date;
-    user_id: number;
+    userId: number;
+    name: string;
     thumbnail: Buffer;
-    react_flow_state: ReactFlowState | null;
-    expires_on: Date;
+    reactFlowState: ReactFlowState | null;
+    expiresOn: Date;
     archived: boolean;
+    createdAt: Date;
+    updatedAt: Date;
 }
 export interface CreateTopologyRequestPayload {
     name: string;
