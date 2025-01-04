@@ -20,7 +20,7 @@ app.use(express.json());
 const baseRouter = express.Router();
 baseRouter.use('/auth', userRouter);
 baseRouter.use('/topology', topologyRouter);
-baseRouter.use('/device', deviceRouter);
+baseRouter.use('/devices', deviceRouter);
 
 // mount base router
 app.use('/api', baseRouter);
