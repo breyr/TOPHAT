@@ -1,6 +1,8 @@
 // TYPES
 //
 export type AccountType = 'USER' | 'ADMIN'
+export type DeviceType = 'LAB' | 'INTERCONNECT'
+export type IconType = 'ROUTER' | 'SWITCH' | 'EXTERNAL' | 'SERVER'
 export type Model = 'multi-tenant' | 'single-user' | null
 type Node = {
     id: string;
@@ -75,4 +77,53 @@ export interface Topology {
 }
 export interface CreateTopologyRequestPayload {
     name: string;
+}
+
+// Device DTOs
+//
+export interface Device {
+    id: number;
+    userId: number;
+    topologyId: number;
+    name: string;
+    model: string;
+    serialNumber: string;
+    ipAddress: string | null;
+    description: string | null;
+    password: string | null;
+    username: string | null;
+    secretPassword: string | null;
+    ports: string;
+    type: DeviceType;
+    icon: IconType;
+}
+
+export interface CreateDeviceRequestPayload {
+    userId: number;
+    topologyId: number;
+    name: string;
+    model: string;
+    serialNumber: string;
+    ipAddress: string | null;
+    description: string | null;
+    password: string | null;
+    username: string | null;
+    secretPassword: string | null;
+    ports: string;
+    type: DeviceType;
+    icon: IconType;
+}
+
+export interface UpdateDeviceRequestPayload {
+    name?: string;
+    model?: string;
+    serialNumber?: string;
+    ipAddress?: string | null;
+    description?: string | null;
+    password?: string | null;
+    username?: string | null;
+    secretPassword?: string | null;
+    ports?: string;
+    type?: DeviceType;
+    icon?: IconType;
 }
