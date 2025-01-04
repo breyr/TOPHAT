@@ -1,6 +1,6 @@
 // holds interfaces similar to C#
-import { User } from "@prisma/client";
-import type { CreateTopologyRequestPayload, RegisterUserRequestPayload, Topology } from "../../../common/shared-types";
+import { Topology, User } from "@prisma/client";
+import type { CreateTopologyRequestPayload, RegisterUserRequestPayload } from "../../../common/shared-types";
 import { UpdateTopologyDTO } from "./types";
 
 export interface IUserRepository {

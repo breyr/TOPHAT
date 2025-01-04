@@ -1,5 +1,5 @@
-import { Prisma, PrismaClient } from "@prisma/client";
-import type { CreateTopologyRequestPayload, ReactFlowState, Topology } from "../../../common/shared-types";
+import { Prisma, PrismaClient, type Topology } from "@prisma/client";
+import type { CreateTopologyRequestPayload, ReactFlowState } from "../../../common/shared-types";
 import { ITopologyRepository } from "../types/classInterfaces";
 import { UpdateTopologyDTO } from "../types/types";
 
@@ -21,29 +21,29 @@ export class PrismaTopologyRepository implements ITopologyRepository {
     create(userId: number, requestData: CreateTopologyRequestPayload): Promise<Topology> {
         return this.prismaClient.topology.create({
             data: {
-                user_id: userId,
+                userId,
                 name: requestData.name,
                 thumbnail: Buffer.from([0]), // default to empty buffer
-                react_flow_state: JSON.stringify({}), // Store as JSON string in database
-                expires_on: new Date(Date.now() + 6 * 60 * 60 * 1000), // default to 6 hours from now
+                reactFlowState: JSON.stringify({}), // Store as JSON string in database
+                expiresOn: new Date(Date.now() + 6 * 60 * 60 * 1000), // default to 6 hours from now
                 archived: false,
             }
         }).then((topology) => {
             return {
                 ...topology,
-                react_flow_state: PrismaTopologyRepository.convertReactFlowState(topology.react_flow_state)
+                reactFlowState: PrismaTopologyRepository.convertReactFlowState(topology.reactFlowState)
             };
         });
     }
 
     findAll(userId: number): Promise<Topology[] | null> {
         return this.prismaClient.topology.findMany({
-            where: { user_id: userId }
+            where: { userId }
         }).then((topologies) => {
             return topologies?.map((topology) => {
                 return {
                     ...topology,
-                    react_flow_state: PrismaTopologyRepository.convertReactFlowState(topology.react_flow_state)
+                    reactFlowState: PrismaTopologyRepository.convertReactFlowState(topology.reactFlowState)
                 };
             }) || null;
         });
@@ -53,7 +53,7 @@ export class PrismaTopologyRepository implements ITopologyRepository {
         return this.prismaClient.topology.findFirst({
             where: {
                 AND: [
-                    { user_id: userId },
+                    { userId },
                     { id: topologyId }
                 ]
             }
@@ -61,7 +61,7 @@ export class PrismaTopologyRepository implements ITopologyRepository {
             if (!topology) return null;
             return {
                 ...topology,
-                react_flow_state: PrismaTopologyRepository.convertReactFlowState(topology.react_flow_state)
+                reactFlowState: PrismaTopologyRepository.convertReactFlowState(topology.reactFlowState)
             };
         });
     }
@@ -72,14 +72,14 @@ export class PrismaTopologyRepository implements ITopologyRepository {
             data: {
                 name: topologyData.name ?? Prisma.skip,
                 thumbnail: topologyData.thumbnail ? Buffer.from(topologyData.thumbnail, 'base64') : Prisma.skip, // Assuming thumbnail is sent as a base64 string
-                react_flow_state: topologyData.react_flow_state ?? Prisma.skip,
-                expires_on: topologyData.expires_on ? new Date(topologyData.expires_on) : Prisma.skip,
+                reactFlowState: topologyData.react_flow_state ?? Prisma.skip,
+                expiresOn: topologyData.expires_on ? new Date(topologyData.expires_on) : Prisma.skip,
                 archived: topologyData.archived ?? Prisma.skip,
             }
         }).then((topology) => {
             return {
                 ...topology,
-                react_flow_state: PrismaTopologyRepository.convertReactFlowState(topology.react_flow_state)
+                reactFlowState: PrismaTopologyRepository.convertReactFlowState(topology.reactFlowState)
             };
         });
     }
@@ -91,7 +91,7 @@ export class PrismaTopologyRepository implements ITopologyRepository {
             if (!topology) return null;
             return {
                 ...topology,
-                react_flow_state: PrismaTopologyRepository.convertReactFlowState(topology.react_flow_state)
+                reactFlowState: PrismaTopologyRepository.convertReactFlowState(topology.reactFlowState)
             };
         });
     }
