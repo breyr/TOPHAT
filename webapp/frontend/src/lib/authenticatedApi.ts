@@ -1,4 +1,4 @@
-import type { AccountType, Device, DeviceType, IconType, Topology } from "../../../common/shared-types";
+import type { AccountType, CreateConnectionRequestPayload, Device, DeviceType, IconType, Topology } from "../../../common/shared-types";
 
 type ApiConfig = {
     baseUrl: string;
@@ -118,6 +118,13 @@ export class ApiClient {
         });
     }
 
+    async createDeviceBulk(data: Partial<Device>[]) {
+        return this.fetch<Device[]>('/devices/bulk', {
+            method: 'POST',
+            body: JSON.stringify(data),
+        })
+    }
+
     async getAllDevices() {
         return this.fetch<Device[]>('/devices/');
     }
@@ -145,5 +152,14 @@ export class ApiClient {
 
     async getDevicesByIcon(deviceIcon: IconType) {
         return this.fetch<Device[]>(`/devices/icon/${deviceIcon}`);
+    }
+
+    async createOrUpdateConnection(data: CreateConnectionRequestPayload & { id?: number }) {
+        const url = data.id ? `/connections/${data.id}` : '/connections';
+        const method = data.id ? 'PUT' : 'POST';
+        return this.fetch<{ id: number }>(url, {
+            method,
+            body: JSON.stringify(data),
+        });
     }
 }

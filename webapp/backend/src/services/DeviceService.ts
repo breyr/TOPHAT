@@ -8,6 +8,20 @@ export class DeviceService implements IDeviceService {
         this.deviceRepository = deviceRepository;
     }
 
+    async createDevices(requestData: Partial<Device>[]): Promise<Device[]> {
+        if (!requestData || !Array.isArray(requestData)) {
+            throw new Error("Invalid input data");
+        }
+
+        const createdDevices: Device[] = [];
+        for (const deviceData of requestData) {
+            const createdDevice = await this.deviceRepository.create(deviceData as Device);
+            createdDevices.push(createdDevice);
+        }
+
+        return createdDevices;
+    }
+
     async createDevice(requestData: Device): Promise<Device> {
         return this.deviceRepository.create(requestData);
     }

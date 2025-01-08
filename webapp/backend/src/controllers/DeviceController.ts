@@ -19,6 +19,19 @@ export class DeviceController {
         }
     }
 
+    async createDevices(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+        try {
+            const devicesData = req.body as Partial<Device>[];
+            const devices = await this.deviceService.createDevices(devicesData);
+            res.status(201).json({
+                message: 'Users created successfully',
+                data: devices.map(device => ({ id: device.id })),
+            });
+        } catch (error) {
+            next(error);
+        }
+    }
+
     async deleteDevice(req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> {
         try {
             const { id: deviceId } = req.params;

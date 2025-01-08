@@ -7,6 +7,7 @@ const router = Router();
 const deviceController = new DeviceController();
 
 router.post('/', authenticateToken, async (req: AuthenticatedRequest, res, next) => deviceController.createDevice(req, res, next));
+router.post('/bulk', authenticateToken, async (req: AuthenticatedRequest, res, next) => deviceController.createDevices(req, res, next));
 router.get('/', authenticateToken, async (req: AuthenticatedRequest, res, next) => deviceController.getAllDevices(req, res, next));
 router.get('/:id', authenticateToken, async (req: AuthenticatedRequest, res, next) => deviceController.getDeviceById(req, res, next));
 router.put('/:id', authenticateToken, async (req: AuthenticatedRequest, res, next) => deviceController.updateDevice(req, res, next));

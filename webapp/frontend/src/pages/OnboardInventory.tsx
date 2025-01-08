@@ -1,10 +1,13 @@
 import { Accordion, AccordionItem as Item } from "@szhsin/react-accordion";
 import { ArrowRight, ChevronDown, EthernetPort, Server, SquareTerminal } from "lucide-react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { Device, DeviceType, IconType } from "../../../common/shared-types";
 import ConnectionsTable from "../components/table/ConnectionsTable";
 import InterconnectDevicesTable from "../components/table/InterconnectDevicesTable";
 import LabDevicesTable from "../components/table/LabDevicesTable";
-import { useOnboardingStore } from "../stores/onboarding";
+import { useAuth } from "../hooks/useAuth";
+import { InterconnectDevice, LabDevice, useOnboardingStore } from "../stores/onboarding";
 
 interface AccordionItemProps {
     header: React.ReactNode;
@@ -38,14 +41,64 @@ const AccordionItem = ({ header, isFirst, isLast, children, ...rest }: Accordion
 );
 
 export default function OnboardInventoryPage() {
+    const { authenticatedApiClient } = useAuth();
     const { step, setStep, labDevices, interconnectDevices } = useOnboardingStore(
         (state) => state,
     )
     const navigateTo = useNavigate();
+    const [isLoading, setIsLoading] = useState(false);
 
-    const handleNext = () => {
-        setStep(step + 1);
-        navigateTo('/onboard/finish');
+
+    // handle bulk creation of devices only
+    const handleDeviceBulkCreation = async () => {
+        const devicesToRegister: Partial<Device>[] = [
+            ...interconnectDevices.map((d: InterconnectDevice) => ({
+                userId: null,
+                topologyId: null,
+                name: d.deviceName,
+                model: d.model,
+                serialNumber: d.serialNumber,
+                ipAddress: d.ipAddress,
+                description: null,
+                password: d.password,
+                username: d.username,
+                secretPassword: d.secretPassword,
+                ports: d.ports,
+                type: 'INTERCONNECT' as DeviceType, // Set type to 'INTERCONNECT'
+                icon: null, // null because this isn't a draggable device for topologies
+            })),
+            ...labDevices.map((d: LabDevice) => ({
+                userId: null,
+                topologyId: null,
+                name: d.deviceName,
+                model: d.model,
+                serialNumber: d.serialNumber,
+                ipAddress: null,
+                description: d.description,
+                password: null,
+                username: null,
+                secretPassword: null,
+                ports: d.ports,
+                type: 'LAB' as DeviceType, // Set type to 'LAB'
+                icon: d.icon.toUpperCase() as IconType, // Set the icon based on the device
+            }))
+        ];
+
+        // Call your API to register devices
+        await authenticatedApiClient.createDeviceBulk(devicesToRegister);
+    };
+
+    const handleNext = async () => {
+        setIsLoading(true);
+        try {
+            await handleDeviceBulkCreation();
+            setStep(step + 1);
+            navigateTo('/onboard/finish');
+        } catch (error) {
+            console.error('Error during bulk device creation:', error);
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     return (
@@ -65,8 +118,8 @@ export default function OnboardInventoryPage() {
                 </Accordion>
             </div>
             {labDevices.length > 0 && interconnectDevices.length > 0 &&
-                <button className="r-btn primary w-1/5 flex flex-row items-center justify-center gap-1" onClick={handleNext}>
-                    Continue <ArrowRight size={20} />
+                <button className="r-btn primary w-1/5 flex flex-row items-center justify-center gap-1" onClick={handleNext} disabled={isLoading}>
+                    {isLoading ? 'Loading...' : 'Continue'} <ArrowRight size={20} />
                 </button>
             }
         </section>

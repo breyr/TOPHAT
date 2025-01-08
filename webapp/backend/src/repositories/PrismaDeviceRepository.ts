@@ -16,8 +16,25 @@ export class PrismaDeviceRepository implements IDeviceRepository {
         if (requestData.secretPassword) {
             requestData.secretPassword = await bcrypt.hash(requestData.secretPassword, 10);
         }
+
+        const deviceData: any = {
+            userId: requestData.userId || null,
+            topologyId: requestData.topologyId || null,
+            name: requestData.name,
+            model: requestData.model,
+            serialNumber: requestData.serialNumber,
+            ipAddress: requestData.ipAddress || null,
+            description: requestData.description || null,
+            password: requestData.password || null,
+            username: requestData.username || null,
+            secretPassword: requestData.secretPassword || null,
+            ports: requestData.ports,
+            type: requestData.type,
+            icon: requestData.icon?.toUpperCase() || null,
+        };
+
         return this.prisma.device.create({
-            data: requestData,
+            data: deviceData,
         });
     }
 

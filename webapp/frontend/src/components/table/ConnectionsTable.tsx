@@ -1,31 +1,21 @@
 import { useEffect, useMemo, useState } from 'react';
 import DataTable from 'react-data-table-component';
+import { Connection, CreateConnectionRequestPayload } from '../../../../common/shared-types';
+import { useAuth } from '../../hooks/useAuth';
 import { useOnboardingStore } from '../../stores/onboarding';
 import customStyles from './dataTableStyles';
-
-interface Connection {
-    labDevice: {
-        name: string;
-        port: string;
-    };
-    interconnectDevice: {
-        name: string;
-        port: string;
-    }
-}
-
 
 function ConnectionsTable() {
     const { labDevices, interconnectDevices } = useOnboardingStore(
         (state) => state,
     );
-
+    const { authenticatedApiClient } = useAuth();
     const [connections, setConnections] = useState<Connection[]>([]);
     const [usedPorts, setUsedPorts] = useState<Record<string, Set<string>>>({});
     const [currentPage, setCurrentPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(5);
 
-    // utility function to generate ports from a prot definition string
+    // utility function to generate ports from a port definition string
     const generatePorts = (portDefinition: string): string[] => {
         const [prefix, range] = portDefinition.split('|');
         if (!range) return [];
@@ -49,8 +39,10 @@ function ConnectionsTable() {
         const newConnections: Connection[] = labDevices.flatMap((device) =>
             device.ports.split(',').flatMap((portDef) =>
                 generatePorts(portDef).map((port) => ({
-                    labDevice: { name: device.deviceName, port },
-                    interconnectDevice: { name: '', port: '' }, // Initially empty
+                    labDeviceName: device.deviceName,
+                    labDevicePort: port,
+                    interconnectDeviceName: '',
+                    interconnectDevicePort: '', // Initially empty
                 }))
             )
         );
@@ -60,12 +52,12 @@ function ConnectionsTable() {
     // update usedPorts state when connections change
     useEffect(() => {
         const updatedUsedPorts: Record<string, Set<string>> = {};
-        connections.forEach(({ interconnectDevice }) => {
-            if (interconnectDevice.name && interconnectDevice.port) {
-                if (!updatedUsedPorts[interconnectDevice.name]) {
-                    updatedUsedPorts[interconnectDevice.name] = new Set();
+        connections.forEach(({ interconnectDeviceName, interconnectDevicePort }) => {
+            if (interconnectDeviceName && interconnectDevicePort) {
+                if (!updatedUsedPorts[interconnectDeviceName]) {
+                    updatedUsedPorts[interconnectDeviceName] = new Set();
                 }
-                updatedUsedPorts[interconnectDevice.name].add(interconnectDevice.port);
+                updatedUsedPorts[interconnectDeviceName].add(interconnectDevicePort);
             }
         });
         setUsedPorts(updatedUsedPorts);
@@ -79,19 +71,46 @@ function ConnectionsTable() {
         setConnections((prevConnections) =>
             prevConnections.filter(
                 (connection) =>
-                    labDeviceNames.has(connection.labDevice.name) &&
-                    (!connection.interconnectDevice.name || interconnectDeviceNames.has(connection.interconnectDevice.name))
+                    labDeviceNames.has(connection.labDeviceName) &&
+                    (!connection.interconnectDeviceName || interconnectDeviceNames.has(connection.interconnectDeviceName))
             )
         );
     }, [labDevices, interconnectDevices]);
+
+    const saveConnection = async (connection: Connection) => {
+        try {
+            const payload: CreateConnectionRequestPayload = {
+                labDeviceName: connection.labDeviceName,
+                labDevicePort: connection.labDevicePort,
+                interconnectDeviceName: connection.interconnectDeviceName,
+                interconnectDevicePort: connection.interconnectDevicePort,
+            };
+            const response = await authenticatedApiClient.createOrUpdateConnection({
+                ...payload,
+                id: connection.id,
+            });
+            setConnections((prev) => {
+                const updated = [...prev];
+                const index = updated.findIndex((c) => c.labDeviceName === connection.labDeviceName && c.labDevicePort === connection.labDevicePort);
+                if (index !== -1) {
+                    updated[index] = { ...updated[index], id: response?.data?.id };
+                }
+                return updated;
+            });
+        } catch (error) {
+            console.error('Error saving connection:', error);
+        }
+    };
 
     const handleDeviceChange = (index: number, newDeviceName: string) => {
         setConnections((prev) => {
             const updated = [...prev];
             updated[index] = {
                 ...updated[index],
-                interconnectDevice: { name: newDeviceName, port: '' }, // reset port because the selected interconnect device changed
+                interconnectDeviceName: newDeviceName,
+                interconnectDevicePort: '', // reset port because the selected interconnect device changed
             };
+            saveConnection(updated[index]);
             return updated;
         });
     };
@@ -101,8 +120,9 @@ function ConnectionsTable() {
             const updated = [...prev];
             updated[index] = {
                 ...updated[index],
-                interconnectDevice: { ...updated[index].interconnectDevice, port: newPort }, // changing the port for a selected connection
+                interconnectDevicePort: newPort, // changing the port for a selected connection
             };
+            saveConnection(updated[index]);
             return updated;
         });
     };
@@ -115,8 +135,8 @@ function ConnectionsTable() {
     }
 
     const columns = [
-        { name: 'Lab Device', selector: (row: Connection) => row.labDevice.name },
-        { name: 'Lab Port', selector: (row: Connection) => row.labDevice.port },
+        { name: 'Lab Device', selector: (row: Connection) => row.labDeviceName },
+        { name: 'Lab Port', selector: (row: Connection) => row.labDevicePort },
         {
             name: 'Interconnect Device',
             cell: (_, localIndex: number) => {
@@ -124,7 +144,7 @@ function ConnectionsTable() {
 
                 return (
                     <select
-                        value={connections[globalIndex].interconnectDevice.name || ''}
+                        value={connections[globalIndex].interconnectDeviceName || ''}
                         onChange={(e) => handleDeviceChange(globalIndex, e.target.value)}
                         className="w-full bg-transparent focus:outline-none hover:cursor-pointer"
                     >
@@ -142,8 +162,8 @@ function ConnectionsTable() {
             name: 'Interconnect Port',
             cell: (_, localIndex: number) => {
                 const globalIndex = currentPage * rowsPerPage + localIndex;
-                const selectedDevice = connections[globalIndex].interconnectDevice.name;
-                const selectedPort = connections[globalIndex].interconnectDevice.port;
+                const selectedDevice = connections[globalIndex].interconnectDeviceName;
+                const selectedPort = connections[globalIndex].interconnectDevicePort;
                 const availablePorts = getFilteredPorts(selectedDevice, selectedPort);
 
                 if (!selectedDevice) {
@@ -152,7 +172,7 @@ function ConnectionsTable() {
 
                 return (
                     <select
-                        value={connections[globalIndex].interconnectDevice.port || ''}
+                        value={connections[globalIndex].interconnectDevicePort || ''}
                         onChange={(e) => handlePortChange(globalIndex, e.target.value)}
                         disabled={!selectedDevice}
                         className="w-full bg-transparent focus:outline-none hover:cursor-pointer"

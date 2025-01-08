@@ -21,19 +21,18 @@ interface NewDevice {
     serialNumber: string;
     ports: string; // will be CSV that we need to parse
 }
-
 export interface InterconnectDevice extends NewDevice {
     ipAddress: string;
     username: string;
     password: string;
     secretPassword: string;
-    type: 'interconnect';
+    type: 'INTERCONNECT'; // must be uppercase to match prisma enum
 }
 
 export interface LabDevice extends NewDevice {
     description: string;
-    type: 'lab';
-    icon: '' | 'router' | 'switch' | 'external' | 'server';
+    type: 'LAB'; // must be uppercase to match prisma enum
+    icon: 'ROUTER' | 'SWITCH' | 'EXTERNAL' | 'SERVER'; // must be uppercase to match prisma enum
 }
 
 type OnboardingState = {

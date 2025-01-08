@@ -46,6 +46,7 @@ export interface IDeviceRepository {
 
 export interface IDeviceService {
     createDevice(requestData: Partial<Device>): Promise<Device>;
+    createDevices(requestData: Partial<Device>[]): Promise<Device[]>;
     deleteDevice(deviceId: number): Promise<Device | null>;
     updateDevice(deviceId: number, requestData: Partial<Device>): Promise<Device>;
     getAllDevices(): Promise<Device[]>;

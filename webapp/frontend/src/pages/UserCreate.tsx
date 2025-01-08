@@ -77,7 +77,7 @@ export default function UserCreatePage() {
     const navigateToNextStep = async () => {
         setIsLoading(true);
         try {
-            if (showUsersTable) {
+            if (showUsersTable && additionalUsers.length > 0) {
                 await handleBulkUserCreation();
             }
             setStep(step + 1);

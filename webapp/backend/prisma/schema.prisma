@@ -35,7 +35,6 @@ model AppUser {
   updatedAt   DateTime    @db.Timestamp(6)
 
   topologies Topology[]
-  devices    Device[]
 }
 
 model Topology {
@@ -50,15 +49,13 @@ model Topology {
   updatedAt      DateTime @updatedAt
 
   // many-to-one (many topologies to one user)
-  user    AppUser  @relation(fields: [userId], references: [id])
-  // one-to-many (one topology can be associated with many devices)
-  devices Device[]
+  user AppUser @relation(fields: [userId], references: [id])
 }
 
 model Device {
   id             Int        @id @default(autoincrement())
-  userId         Int // "FK" to user, just used for tracking purposes 
-  topologyId     Int // "FK" to topology, just used for tracking purposes
+  userId         Int? // "FK" to user, just used for tracking purposes 
+  topologyId     Int? // "FK" to topology, just used for tracking purposes
   name           String     @db.Text
   model          String     @db.Text
   serialNumber   String     @db.Text
@@ -69,11 +66,7 @@ model Device {
   secretPassword String?    @db.Text
   ports          String     @db.Text
   type           DeviceType
-  icon           IconType
-
-  // many-to-one
-  user     AppUser  @relation(fields: [userId], references: [id])
-  topology Topology @relation(fields: [topologyId], references: [id])
+  icon           IconType?
 }
 
 model Connection {
