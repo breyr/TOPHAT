@@ -28,6 +28,9 @@ export default function DashboardLayout() {
                     <Link to="/dashboard/" className={getTabClass("/")}>
                         Topologies
                     </Link>
+                    <Link to="/dashboard/archived" className={getTabClass("/archived")}>
+                        Archived
+                    </Link>
                     {
                         user?.account_type == 'admin'
                         &&
