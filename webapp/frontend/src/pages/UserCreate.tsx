@@ -5,12 +5,13 @@ import { useNavigate } from "react-router-dom";
 import { RegisterUserResponsePayload } from "../../../common/shared-types";
 import customStyles from "../components/table/dataTableStyles";
 import { useAuth } from "../hooks/useAuth";
+import type { AppUser } from "../lib/authenticatedApi";
 import { generateTempPassword } from "../lib/helpers";
 import { useOnboardingStore } from "../stores/onboarding";
 
 export default function UserCreatePage() {
     const navigateTo = useNavigate();
-    const { user, register, logout } = useAuth();
+    const { user, register, logout, authenticatedApiClient } = useAuth();
     const { model, step, setStep, adminCredentials, setAdminCredentials, additionalUsers, addAdditionalUser, updateAdditionalUser, removeAdditionalUser } = useOnboardingStore(
         (state) => state, // select the entire state object for this store, can specify by using dot notation
     );
@@ -18,6 +19,7 @@ export default function UserCreatePage() {
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [adminRegisterError, setAdminRegisterError] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target
@@ -32,6 +34,7 @@ export default function UserCreatePage() {
         setShowConfirmPassword(!showConfirmPassword);
     }
 
+    // registering the new admin account
     const handleFormSubmission = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         const response = await register(adminCredentials.username, adminCredentials.email, adminCredentials.password, 'ADMIN');
@@ -43,6 +46,18 @@ export default function UserCreatePage() {
         }
     }
 
+    // registering the users from the create additional users table
+    // this will be called on the next step button if the users table is showing - make async with loading spinner
+    const handleBulkUserCreation = async () => {
+        const usersToRegister: AppUser[] = additionalUsers.map(user => ({
+            username: user.email.split('@')[0],
+            email: user.email,
+            password: user.tempPassword,
+            accountType: user.accountType,
+        }));
+        await authenticatedApiClient.registerUserBulk(usersToRegister);
+    }
+
     // table handles
     const handleTableInputChange = (index: number, e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
@@ -50,7 +65,7 @@ export default function UserCreatePage() {
     };
 
     const addNewRow = () => {
-        addAdditionalUser({ email: '', username: '', tempPassword: generateTempPassword(), accountType: 'User' });
+        addAdditionalUser({ email: '', username: '', tempPassword: generateTempPassword(), accountType: 'USER' });
     }
 
     const handleRowDeleteClick = (index: number) => {
@@ -59,10 +74,19 @@ export default function UserCreatePage() {
     }
 
     // move user to next step
-    const navigateToNextStep = () => {
-        // update data and step
-        setStep(step + 1);
-        navigateTo('/onboard/inventory');
+    const navigateToNextStep = async () => {
+        setIsLoading(true);
+        try {
+            if (showUsersTable) {
+                await handleBulkUserCreation();
+            }
+            setStep(step + 1);
+            navigateTo('/onboard/inventory');
+        } catch (error) {
+            console.error('Error during bulk user creation:', error);
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     const columns = [
@@ -103,8 +127,8 @@ export default function UserCreatePage() {
                     onChange={(e) => handleTableInputChange(index, e)}
                     className="w-full rounded bg-white"
                 >
-                    <option value="User">User</option>
-                    <option value="Admin">Admin</option>
+                    <option value="USER">User</option>
+                    <option value="ADMIN">Admin</option>
                 </select>
             ),
         },
@@ -255,8 +279,9 @@ export default function UserCreatePage() {
                                 <button
                                     className="r-btn primary w-full flex flex-row items-center justify-center gap-1"
                                     onClick={navigateToNextStep}
+                                    disabled={isLoading}
                                 >
-                                    Continue <ArrowRight size={20} />
+                                    {isLoading ? 'Saving...' : 'Continue'} <ArrowRight size={20} />
                                 </button>
                             </div>
                         </div>

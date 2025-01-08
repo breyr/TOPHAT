@@ -1,4 +1,4 @@
-import type { Device, DeviceType, IconType, Topology } from "../../../common/shared-types";
+import type { AccountType, Device, DeviceType, IconType, Topology } from "../../../common/shared-types";
 
 type ApiConfig = {
     baseUrl: string;
@@ -11,6 +11,12 @@ type ApiError = {
 type ApiResponse<T> = {
     message: string;
     data?: T;
+}
+export interface AppUser {
+    username: string;
+    email: string;
+    password: string;
+    accountType: AccountType;
 }
 
 export class ApiClient {
@@ -65,6 +71,14 @@ export class ApiClient {
             message: 'Operation completed successfully',
             data: undefined,
         };
+    }
+
+    // User API Methods
+    async registerUserBulk(data: AppUser[]) {
+        return this.fetch<AppUser[]>('/auth/register/bulk', {
+            method: 'POST',
+            body: JSON.stringify(data),
+        });
     }
 
     // Topology API Methods

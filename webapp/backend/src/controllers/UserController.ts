@@ -25,6 +25,19 @@ export class UserController {
         }
     }
 
+    async createUsers(req: Request, res: Response, next: NextFunction) {
+        try {
+            const usersRegisterPayload = req.body as RegisterUserRequestPayload[];
+            const users = await this.userService.createUsers(usersRegisterPayload);
+            res.status(201).json({
+                message: 'Users created successfully',
+                data: users.map(user => ({ id: user.id })),
+            });
+        } catch (error) {
+            next(error);
+        }
+    }
+
     async validateUser(req: Request, res: Response, next: NextFunction) {
         try {
             const userLoginPayload = { ...req.body } as LoginRequestPayload

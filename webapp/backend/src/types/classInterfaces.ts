@@ -12,6 +12,7 @@ export interface IUserRepository {
 
 export interface IUserService {
     createUser(formData: RegisterUserRequestPayload): Promise<AppUser>;
+    createUsers(formData: RegisterUserRequestPayload[]): Promise<AppUser[]>;
     getUserByEmail(email: string): Promise<AppUser | null>;
     getUserByUsername(username: string): Promise<AppUser | null>;
     deleteUser(id: number): Promise<AppUser | null>;

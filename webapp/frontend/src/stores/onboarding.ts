@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { Model } from '../../../common/shared-types';
+import type { AccountType, Model } from '../../../common/shared-types';
 
 interface AdminCredentials {
     email: string;
@@ -12,7 +12,7 @@ interface NewUser {
     email: string;
     username: string;
     tempPassword: string;
-    accountType: string;
+    accountType: AccountType;
 }
 
 interface NewDevice {
