@@ -36,9 +36,9 @@ export default function ModelSelectPage() {
                     onSelect={() => setModel("single-user")}
                 />
             </div>
-            <div className="flex flex-row justify-center mx-auto w-1/4 h-20 mt-12">
+            <div className="flex flex-row justify-center mx-auto w-1/4 h-20">
                 {model ? (
-                    <button className="r-btn primary w-1/2 flex flex-row items-center justify-center gap-1" onClick={handleNext}>
+                    <button className="r-btn primary w-1/2 flex flex-row items-center justify-center gap-1 mt-12" onClick={handleNext}>
                         Continue <ArrowRight size={20} />
                     </button>
                 ) : (

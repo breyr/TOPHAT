@@ -174,9 +174,13 @@ export default function UserCreatePage() {
                                         <div className="flex flex-col items-center mt-8 w-full">
                                             <div className="w-full">
                                                 {
-                                                    model == 'multi-tenant' && !showUsersTable && (
+                                                    model == 'multi-tenant' && !showUsersTable ? (
                                                         <button className="r-btn primary w-full flex flex-row items-center justify-center gap-1" onClick={() => setShowUsersTables(true)}>
                                                             Create more users <ArrowRight size={22} />
+                                                        </button>
+                                                    ) : (
+                                                        <button className="r-btn primary w-full flex flex-row items-center justify-center gap-1" onClick={() => navigateToNextStep()}>
+                                                            Continue to Inventory <ArrowRight size={22} />
                                                         </button>
                                                     )
                                                 }
