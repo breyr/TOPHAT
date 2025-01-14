@@ -31,7 +31,7 @@ export default function RegisterUser() {
     const handleFormSubmission = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         try {
-            const response = await register(credentials.username, credentials.email, credentials.password, 'ADMIN');
+            const response = await register(credentials.username, credentials.email, credentials.password, 'ADMIN', 'ACCEPTED');
             if (typeof response !== 'boolean') {
                 setServerMessage((response as RegisterUserResponsePayload).message);
             } else {

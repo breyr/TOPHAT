@@ -1,4 +1,4 @@
-import { PrismaClient, type AppUser } from "@prisma/client";
+import { AccountStatus, PrismaClient, type AppUser } from "@prisma/client";
 import bcrypt from 'bcryptjs';
 import type { RegisterUserRequestPayload } from "../../../common/shared-types";
 import { IUserRepository } from "../types/classInterfaces";
@@ -18,10 +18,23 @@ export class PrismaUserRepository implements IUserRepository {
                 email: formData.email,
                 password: hashedPassword,
                 accountType: formData.accountType,
+                accountStatus: AccountStatus.PENDING,
                 createdAt: new Date(),
                 updatedAt: new Date(),
             }
         })
+    }
+
+    getAll(): Promise<Partial<AppUser>[]> {
+        return this.prisma.appUser.findMany({
+            select: {
+                id: true,
+                username: true,
+                email: true,
+                accountType: true,
+                accountStatus: true,
+            },
+        });
     }
 
     findByEmail(email: string): Promise<AppUser | null> {

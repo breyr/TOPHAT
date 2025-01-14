@@ -8,6 +8,7 @@ export interface IUserRepository {
     findByEmail(email: string): Promise<AppUser | null>;
     findByUsername(username: string): Promise<AppUser | null>;
     delete(id: number): Promise<AppUser | null>;
+    getAll(): Promise<Partial<AppUser>[]>;
 }
 
 export interface IUserService {
@@ -15,6 +16,7 @@ export interface IUserService {
     createUsers(formData: RegisterUserRequestPayload[]): Promise<AppUser[]>;
     getUserByEmail(email: string): Promise<AppUser | null>;
     getUserByUsername(username: string): Promise<AppUser | null>;
+    getAllUsers(): Promise<Partial<AppUser>[]>;
     deleteUser(id: number): Promise<AppUser | null>;
 }
 

@@ -25,14 +25,21 @@ enum AccountType {
   ADMIN
 }
 
+enum AccountStatus {
+  NOTCREATED
+  PENDING
+  ACCEPTED
+}
+
 model AppUser {
-  id          Int         @id @default(autoincrement())
-  username    String      @db.VarChar
-  email       String      @unique @db.VarChar
-  password    String      @db.VarChar
-  accountType AccountType
-  createdAt   DateTime    @db.Timestamp(6)
-  updatedAt   DateTime    @db.Timestamp(6)
+  id            Int           @id @default(autoincrement())
+  username      String        @db.VarChar
+  email         String        @unique @db.VarChar
+  password      String        @db.VarChar
+  accountType   AccountType
+  accountStatus AccountStatus
+  createdAt     DateTime      @db.Timestamp(6)
+  updatedAt     DateTime      @db.Timestamp(6)
 
   topologies Topology[]
 }
