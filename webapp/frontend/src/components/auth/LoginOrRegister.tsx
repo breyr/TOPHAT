@@ -15,7 +15,7 @@ export default function LoginOrRegister() {
                             <User className="text-blue-500 w-24 h-24" />
                         </div>
                         <LoginUser redirectToDashboard={false} />
-                        <button className="r-btn secondary mt-2 w-full" onClick={() => setShowLoginForm(!showLoginForm)}>Don't have an account? Register.</button>
+                        <button className="r-btn tertiary mt-2 w-full" onClick={() => setShowLoginForm(!showLoginForm)}>Don't have an account? Register.</button>
                     </div>
                     :
                     <div>
@@ -23,7 +23,7 @@ export default function LoginOrRegister() {
                             <User className="text-blue-500 w-24 h-24" />
                         </div>
                         <RegisterUser />
-                        <button className="r-btn secondary mt-2 w-full" onClick={() => setShowLoginForm(!showLoginForm)}>Already have an account? Login.</button>
+                        <button className="r-btn tertiary mt-2 w-full" onClick={() => setShowLoginForm(!showLoginForm)}>Already have an account? Login.</button>
                     </div>
             }
         </div>
