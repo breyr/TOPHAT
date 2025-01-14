@@ -1,8 +1,8 @@
-import { ArrowLeft, ArrowRight, CircleMinus, Eye, EyeOff, LogOut, User, UserRoundPlus } from "lucide-react";
+import { ArrowLeft, ArrowRight, CircleMinus, LogOut, User, UserRoundPlus } from "lucide-react";
 import React, { useState } from "react";
 import DataTable from 'react-data-table-component';
 import { useNavigate } from "react-router-dom";
-import { RegisterUserResponsePayload } from "../../../common/shared-types";
+import LoginOrRegister from "../components/auth/LoginOrRegister";
 import customStyles from "../components/table/dataTableStyles";
 import { useAuth } from "../hooks/useAuth";
 import type { AppUser } from "../lib/authenticatedApi";
@@ -11,40 +11,12 @@ import { useOnboardingStore } from "../stores/onboarding";
 
 export default function UserCreatePage() {
     const navigateTo = useNavigate();
-    const { user, register, logout, authenticatedApiClient } = useAuth();
-    const { model, step, setStep, adminCredentials, setAdminCredentials, additionalUsers, addAdditionalUser, updateAdditionalUser, removeAdditionalUser } = useOnboardingStore(
+    const { user, logout, authenticatedApiClient } = useAuth();
+    const { model, step, setStep, additionalUsers, addAdditionalUser, updateAdditionalUser, removeAdditionalUser } = useOnboardingStore(
         (state) => state, // select the entire state object for this store, can specify by using dot notation
     );
     const [showUsersTable, setShowUsersTables] = useState(false);
-    const [showPassword, setShowPassword] = useState(false);
-    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-    const [adminRegisterError, setAdminRegisterError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
-
-    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const { name, value } = e.target
-        setAdminCredentials({ [name]: value })
-    }
-
-    const togglePasswordVisibility = () => {
-        setShowPassword(!showPassword);
-    }
-
-    const toggleConfirmPasswordVisibility = () => {
-        setShowConfirmPassword(!showConfirmPassword);
-    }
-
-    // registering the new admin account
-    const handleFormSubmission = async (e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault();
-        const response = await register(adminCredentials.username, adminCredentials.email, adminCredentials.password, 'ADMIN');
-        if (typeof response !== 'boolean') {
-            setAdminRegisterError((response as RegisterUserResponsePayload).message);
-        } else {
-            // clear error on success
-            setAdminRegisterError('');
-        }
-    }
 
     // registering the users from the create additional users table
     // this will be called on the next step button if the users table is showing - make async with loading spinner
@@ -156,12 +128,14 @@ export default function UserCreatePage() {
             {
                 showUsersTable
                     ? <p className="text-lg mb-5 text-center">Add additional users, this can always be done later.</p>
-                    : <p className="text-lg mb-5">Let&apos;s get your Admin account created.</p>
+                    : <p className="text-lg mb-5">Let&apos;s get you an Admin account created.</p>
             }
             {
+                // show the login or register part of this step if we aren't showing the additional users table
                 !showUsersTable ? (
                     <section className="flex-1 w-full flex justify-center items-center">
                         {
+                            // if there is a user signed in, show the next steps buttons
                             user ? (
                                 <section>
                                     <div className="w-full max-w-xl p-10 bg-white shadow-lg rounded-lg text-center">
@@ -203,53 +177,9 @@ export default function UserCreatePage() {
                                 </section>
 
                             ) : (
-
+                                // a user isn't signed in, so the login/registration forms
                                 <div className="flex-1 w-full flex justify-center items-center">
-                                    <form onSubmit={handleFormSubmission} className="flex flex-col space-y-4 w-1/4">
-                                        <div>
-                                            <label className="font-bold mb-1 block" htmlFor="email">Email</label>
-                                            <input className="r-input large w-full" name="email" type="text" value={adminCredentials.email} onChange={handleInputChange} />
-                                        </div>
-                                        <div>
-                                            <label className="font-bold mb-1 block" htmlFor="username">Username</label>
-                                            <input className="r-input large w-full" name="username" type="text" value={adminCredentials.username} onChange={handleInputChange} />
-                                        </div>
-                                        <div className="relative">
-                                            <label className="font-bold mb-1 block" htmlFor="password">Password</label>
-                                            <input className="r-input large w-full" name="password" type={showPassword ? 'text' : 'password'} value={adminCredentials.password} onChange={handleInputChange} />
-                                            <button
-                                                type="button"
-                                                className="absolute right-2 mt-1.5 text-grey-500"
-                                                onClick={togglePasswordVisibility}
-                                                tabIndex={-1} // don't allow to be tabbed to
-                                            >
-                                                {showPassword ? <EyeOff size={24} /> : <Eye size={24} />}
-                                            </button>
-                                        </div>
-                                        <div className="relative">
-                                            <label className="font-bold mb-1 block" htmlFor="confirmPassword">Confirm Password</label>
-                                            <input
-                                                className={`r-input large w-full ${adminCredentials.password != adminCredentials.confirmPassword && adminCredentials.confirmPassword.length > 0 ? 'error' : ''}`}
-                                                name="confirmPassword" type={showConfirmPassword ? 'text' : 'password'} value={adminCredentials.confirmPassword} onChange={handleInputChange} />
-                                            <button
-                                                type="button"
-                                                className="absolute right-2 mt-1.5 text-grey-500"
-                                                onClick={toggleConfirmPasswordVisibility}
-                                                tabIndex={-1} // don't allow to be tabbed to
-                                            >
-                                                {showConfirmPassword ? <EyeOff size={24} /> : <Eye size={24} />}
-                                            </button>
-                                            {
-                                                adminCredentials.password != adminCredentials.confirmPassword && adminCredentials.confirmPassword.length > 0 && (
-                                                    <p className="italic text-red-400">Passwords must match</p>
-                                                )
-                                            }
-                                        </div>
-                                        {
-                                            adminRegisterError && <p className="italic text-red-400">{adminRegisterError}.</p>
-                                        }
-                                        <button className="r-btn primary" type="submit">Submit</button>
-                                    </form>
+                                    <LoginOrRegister />
                                 </div>
                             )
                         }
