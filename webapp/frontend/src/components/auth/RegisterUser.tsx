@@ -45,7 +45,7 @@ export default function RegisterUser() {
     }
 
     return (
-        <form onSubmit={handleFormSubmission} className="flex flex-col space-y-4">
+        <form onSubmit={handleFormSubmission} className="flex flex-col">
             <div>
                 <label className="font-bold block" htmlFor="email">Email</label>
                 <input className="r-input large w-full" name="email" type="text" value={credentials.email} onChange={handleChange} />
@@ -90,7 +90,7 @@ export default function RegisterUser() {
             {
                 serverMessage && <p className="italic text-red-400">{serverMessage}.</p>
             }
-            <button className="r-btn primary" type="submit">Submit</button>
+            <button className="r-btn primary mt-5" type="submit">Submit</button>
         </form>
     )
 }

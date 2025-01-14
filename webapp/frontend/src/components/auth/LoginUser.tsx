@@ -33,7 +33,7 @@ export default function LoginUser({ redirectToDashboard }: { redirectToDashboard
 
     return (
         <form onSubmit={handleLogin} className="flex flex-col">
-            <label className="font-bold" htmlFor="usernameOrEmail">Email / Username</label>
+            <label className="font-bold" htmlFor="usernameOrEmail">Email or Username</label>
             <input className="r-input large" name="usernameOrEmail" type="text" value={credentials.usernameOrEmail} onChange={handleChange} />
             <div className="relative">
                 <label className="font-bold block" htmlFor="password">Password</label>
