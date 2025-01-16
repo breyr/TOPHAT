@@ -7,7 +7,9 @@ export interface IUserRepository {
     create(formData: RegisterUserRequestPayload): Promise<AppUser>;
     findByEmail(email: string): Promise<AppUser | null>;
     findByUsername(username: string): Promise<AppUser | null>;
+    findById(id: number): Promise<AppUser | null>;
     delete(id: number): Promise<AppUser | null>;
+    changePassword(id: number, newPassword: string): Promise<AppUser | null>;
 }
 
 export interface IUserService {
@@ -15,7 +17,9 @@ export interface IUserService {
     createUsers(formData: RegisterUserRequestPayload[]): Promise<AppUser[]>;
     getUserByEmail(email: string): Promise<AppUser | null>;
     getUserByUsername(username: string): Promise<AppUser | null>;
+    getUserById(id: number): Promise<AppUser | null>;
     deleteUser(id: number): Promise<AppUser | null>;
+    changePassword(id: number, newPassword: string): Promise<AppUser | null>;
 }
 
 export interface ITopologyRepository {

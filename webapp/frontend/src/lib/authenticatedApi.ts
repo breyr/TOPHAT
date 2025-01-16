@@ -81,6 +81,13 @@ export class ApiClient {
         });
     }
 
+    async updatePassword(data: {userId: number | undefined, oldPassword: string, newPassword: string}) {
+        return this.fetch<void>('/auth/change-password', {
+            method: 'PUT',
+            body: JSON.stringify(data)
+        })
+    }
+
     // Topology API Methods
     async createTopology(data: Partial<Topology>) {
         return this.fetch<Topology>('/topology/', {

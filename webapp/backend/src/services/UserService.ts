@@ -53,12 +53,24 @@ export class UserService implements IUserService {
         return this.userRepository.create(formData);
     }
 
+    async changePassword(id: number, newPassword: string): Promise<AppUser | null> {
+        const user = await this.userRepository.findById(id);
+        if (!user) {
+            throw new ValidationError('User not found');
+        }
+        return this.userRepository.changePassword(id, newPassword);
+    }
+
     getUserByEmail(email: string): Promise<AppUser | null> {
         return this.userRepository.findByEmail(email);
     }
 
     getUserByUsername(username: string): Promise<AppUser | null> {
         return this.userRepository.findByUsername(username);
+    }
+
+    getUserById(id: number): Promise<AppUser | null> {
+        return this.userRepository.findById(id);
     }
 
     deleteUser(id: number): Promise<AppUser | null> {

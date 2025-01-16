@@ -8,22 +8,68 @@ interface ModalProps {
 }
 
 const SettingsModal: React.FC<ModalProps> = ({ isOpen, onClose }) => {
-  // Theme
-  const { user } = useAuth();
+  const { authenticatedApiClient, user } = useAuth();
   // Changing password
   const [oldPassword, setOldPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  // Password reset functionality
-  const [email, setEmail] = useState("");
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+
+  //esc button functionality
+  useEffect(() => {
+    const handleEsc = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        handleClose();
+      }
+    };
+    document.addEventListener("keydown", handleEsc);
+    return () => {
+      document.removeEventListener("keydown", handleEsc);
+    };
+  }, []);
+
+  const handleClose = () => {
+    setOldPassword("");
+    setNewPassword("");
+    setConfirmPassword("");
+    setError("");
+    setSuccess("");
+    onClose();
+  }
 
   // Handle form submission for password change
   const handleSubmitPassword = (e: React.FormEvent) => {
     e.preventDefault();
+    setError("");
+    setSuccess("");
+
     if (newPassword !== confirmPassword) {
-      alert("Passwords must match");
+      setError("Passwords must match");
+      return;
     } else {
       alert("Password changed successfully!");
+    }
+
+    // need to confirm that old password is actually the old password
+
+    
+    try {
+      const response = authenticatedApiClient.updatePassword({
+      userId: user?.id,
+      oldPassword,
+      newPassword,
+    });
+      if (!response) { // need to confirm the response so that the form is cleared after a success
+        setSuccess("Password changed successfully!");
+        setOldPassword("");
+        setNewPassword("");
+        setConfirmPassword("");
+    } else {
+      setError("Failed to change password");
+    }
+    } catch (error) {
+      console.error(error);
     }
   };
 
@@ -53,12 +99,9 @@ const SettingsModal: React.FC<ModalProps> = ({ isOpen, onClose }) => {
                 id="oldPassword"
                 type="password"
                 value={oldPassword}
-                onChange={(e) => setOldPassword(e.target.value)} // Need auth from backend DB confirming matching old password
+                onChange={(e) => setOldPassword(e.target.value)} 
                 className="r-input large w-full"
               />
-              {/* {oldPassword !== 'UserCurrentPass' && oldPassword !== "" && (
-                <p className="text-red-400 italic">Does not match old password</p>
-              )} */}
             </div>
             <div className="flex flex-col">
               <label className="font-bold mb-1 block">New Password</label>
