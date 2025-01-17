@@ -13,8 +13,7 @@ const SettingsModal: React.FC<ModalProps> = ({ isOpen, onClose }) => {
   const [oldPassword, setOldPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
+  const [serverMessage, setServerMessage] = useState("");
 
   //esc button functionality
   useEffect(() => {
@@ -33,43 +32,38 @@ const SettingsModal: React.FC<ModalProps> = ({ isOpen, onClose }) => {
     setOldPassword("");
     setNewPassword("");
     setConfirmPassword("");
-    setError("");
-    setSuccess("");
+    setServerMessage("");
     onClose();
   }
 
+  const validPassword = newPassword === confirmPassword && (newPassword !== "" || confirmPassword !== "");
   // Handle form submission for password change
-  const handleSubmitPassword = (e: React.FormEvent) => {
+  const handleSubmitPassword = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
-    setSuccess("");
 
+    //should never be called
     if (newPassword !== confirmPassword) {
-      setError("Passwords must match");
-      return;
-    } else {
-      alert("Password changed successfully!");
-    }
+      setServerMessage("Passwords must match");
+    }     
 
-    // need to confirm that old password is actually the old password
-
-    
     try {
-      const response = authenticatedApiClient.updatePassword({
+      const response = await authenticatedApiClient.updatePassword({
       userId: user?.id,
       oldPassword,
-      newPassword,
-    });
-      if (!response) { // need to confirm the response so that the form is cleared after a success
-        setSuccess("Password changed successfully!");
+      newPassword});
+
+      if (response.data?.success) {
         setOldPassword("");
         setNewPassword("");
         setConfirmPassword("");
-    } else {
-      setError("Failed to change password");
-    }
+        setServerMessage(response.message);
+      }
+      else{
+        setServerMessage("An error occurred");
+      }
     } catch (error) {
       console.error(error);
+      setServerMessage("Invalid old password");
     }
   };
 
@@ -79,7 +73,7 @@ const SettingsModal: React.FC<ModalProps> = ({ isOpen, onClose }) => {
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
       <div className="modal-content relative">
         <button
-          onClick={onClose}
+          onClick={handleClose}
           className="absolute top-2 right-2 bg-white rounded-full hover:bg-gray-200"
           style={{ zIndex: 10 }}
         >
@@ -131,9 +125,10 @@ const SettingsModal: React.FC<ModalProps> = ({ isOpen, onClose }) => {
               )}
             </div>
 
-            <button type="submit" className="r-btn primary mb-3">
+            <button disabled={!validPassword} type="submit" className="r-btn primary mb-3">
               Change Password
             </button>
+            <span>{serverMessage}</span>
           </form>
         </div>
       </div>

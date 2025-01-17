@@ -82,7 +82,7 @@ export class ApiClient {
     }
 
     async updatePassword(data: {userId: number | undefined, oldPassword: string, newPassword: string}) {
-        return this.fetch<void>('/auth/change-password', {
+        return this.fetch<{ message: string, success: boolean }>('/auth/change-password', {
             method: 'PUT',
             body: JSON.stringify(data)
         })

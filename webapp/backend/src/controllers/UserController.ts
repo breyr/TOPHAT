@@ -69,7 +69,7 @@ export class UserController {
         try {
             const { userId, oldPassword, newPassword } = req.body;
         
-            // Get user first
+            // Get user first, this basically should never fail
             const user = await this.userService.getUserById(userId);
             if (!user) {
                 throw new ValidationError('User not found');
@@ -84,7 +84,8 @@ export class UserController {
             await this.userService.changePassword(userId, newPassword);
             
             res.status(200).json({
-                message: 'Password updated successfully'
+                message: 'Password updated successfully',
+                data: {success: true}
             });
         } catch (error) {
             next(error);
