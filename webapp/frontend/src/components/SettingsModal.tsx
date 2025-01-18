@@ -1,4 +1,4 @@
-import { CircleX } from "lucide-react";
+import { CircleX, Eye, EyeOff } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useAuth } from "../hooks/useAuth";
 
@@ -14,6 +14,8 @@ const SettingsModal: React.FC<ModalProps> = ({ isOpen, onClose }) => {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [serverMessage, setServerMessage] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+
 
   //esc button functionality
   useEffect(() => {
@@ -101,17 +103,26 @@ const SettingsModal: React.FC<ModalProps> = ({ isOpen, onClose }) => {
               <label className="font-bold mb-1 block">New Password</label>
               <input
                 id="newPassword"
-                type="password"
+                type={showPassword ? 'text' : 'password'}
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
-                className="r-input large w-full"
+                className="r-input large w-full pr-10"
               />
+              <button
+                name="viewPassword"
+                type="button"
+                className="absolute right-8 mt-8 pt-0.5 text-grey-500"
+                onClick={() => setShowPassword(!showPassword)}
+                tabIndex={-1} // don't allow to be tabbed to
+              >
+                {showPassword ? <EyeOff size={24} /> : <Eye size={24} />}
+              </button>
             </div>
             <div className="flex flex-col">
               <label className="font-bold mb-1 block">Confirm Password</label>
               <input
                 id="confirmPassword"
-                type="password"
+                type={showPassword ? 'text' : 'password'}
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 className={`r-input large w-full ${
@@ -120,6 +131,15 @@ const SettingsModal: React.FC<ModalProps> = ({ isOpen, onClose }) => {
                     : ""
                 }`}
               />
+              <button
+                name="viewPassword"
+                type="button"
+                className="absolute right-8 mt-8 pt-0.5 text-grey-500"
+                onClick={() => setShowPassword(!showPassword)}
+                tabIndex={-1} // don't allow to be tabbed to
+              >
+                {showPassword ? <EyeOff size={24} /> : <Eye size={24} />}
+              </button>
               {newPassword !== confirmPassword && confirmPassword !== "" && (
                 <p className="text-red-400 italic">Passwords must match</p>
               )}
