@@ -14,8 +14,15 @@ const SettingsModal: React.FC<ModalProps> = ({ isOpen, onClose }) => {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [serverMessage, setServerMessage] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
+  const [showPassword, setShowPassword] = useState({ viewOldPassword: false, viewPassword: false, viewConfirmPassword: false });
 
+  const handleVisibilityChange = (e: React.MouseEvent<HTMLButtonElement>) => {
+    const { name } = e.currentTarget;
+    setShowPassword(prevState => ({
+        ...prevState,
+        [name]: !showPassword[name]
+    }))
+}
 
   //esc button functionality
   useEffect(() => {
@@ -93,17 +100,26 @@ const SettingsModal: React.FC<ModalProps> = ({ isOpen, onClose }) => {
               <label className="font-bold mb-1 block">Old Password</label>
               <input
                 id="oldPassword"
-                type="password"
+                type={showPassword.viewOldPassword ? 'text' : 'password'}
                 value={oldPassword}
                 onChange={(e) => setOldPassword(e.target.value)} 
                 className="r-input large w-full"
               />
+              <button
+                name="viewOldPassword"
+                type="button"
+                className="absolute right-8 mt-8 pt-0.5 text-grey-500"
+                onClick={handleVisibilityChange}
+                tabIndex={-1} 
+              >
+                {showPassword.viewOldPassword ? <EyeOff size={24} /> : <Eye size={24} />}
+              </button>
             </div>
             <div className="flex flex-col">
               <label className="font-bold mb-1 block">New Password</label>
               <input
                 id="newPassword"
-                type={showPassword ? 'text' : 'password'}
+                type={showPassword.viewPassword ? 'text' : 'password'}
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
                 className="r-input large w-full pr-10"
@@ -112,17 +128,17 @@ const SettingsModal: React.FC<ModalProps> = ({ isOpen, onClose }) => {
                 name="viewPassword"
                 type="button"
                 className="absolute right-8 mt-8 pt-0.5 text-grey-500"
-                onClick={() => setShowPassword(!showPassword)}
-                tabIndex={-1} // don't allow to be tabbed to
+                onClick={handleVisibilityChange}
+                tabIndex={-1} 
               >
-                {showPassword ? <EyeOff size={24} /> : <Eye size={24} />}
+                {showPassword.viewPassword ? <EyeOff size={24} /> : <Eye size={24} />}
               </button>
             </div>
             <div className="flex flex-col">
               <label className="font-bold mb-1 block">Confirm Password</label>
               <input
                 id="confirmPassword"
-                type={showPassword ? 'text' : 'password'}
+                type={showPassword.viewConfirmPassword ? 'text' : 'password'}
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 className={`r-input large w-full ${
@@ -132,13 +148,13 @@ const SettingsModal: React.FC<ModalProps> = ({ isOpen, onClose }) => {
                 }`}
               />
               <button
-                name="viewPassword"
+                name="viewConfirmPassword"
                 type="button"
                 className="absolute right-8 mt-8 pt-0.5 text-grey-500"
-                onClick={() => setShowPassword(!showPassword)}
-                tabIndex={-1} // don't allow to be tabbed to
+                onClick={handleVisibilityChange}
+                tabIndex={-1}
               >
-                {showPassword ? <EyeOff size={24} /> : <Eye size={24} />}
+                {showPassword.viewConfirmPassword ? <EyeOff size={24} /> : <Eye size={24} />}
               </button>
               {newPassword !== confirmPassword && confirmPassword !== "" && (
                 <p className="text-red-400 italic">Passwords must match</p>
