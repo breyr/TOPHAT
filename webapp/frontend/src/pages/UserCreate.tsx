@@ -4,37 +4,21 @@ import { useNavigate } from "react-router-dom";
 import LoginOrRegister from "../components/auth/LoginOrRegister";
 import UsersTable from "../components/table/UsersTable";
 import { useAuth } from "../hooks/useAuth";
-import type { AppUser } from "../lib/authenticatedApi";
 import { useOnboardingStore } from "../stores/onboarding";
 
 export default function UserCreatePage() {
     const navigateTo = useNavigate();
-    const { user, logout, authenticatedApiClient } = useAuth();
-    const { model, step, setStep, additionalUsers } = useOnboardingStore(
+    const { user, logout } = useAuth();
+    const { model, step, setStep } = useOnboardingStore(
         (state) => state, // select the entire state object for this store, can specify by using dot notation
     );
     const [showUsersTable, setShowUsersTables] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
 
-    // registering the users from the create additional users table
-    // this will be called on the next step button if the users table is showing - make async with loading spinner
-    const handleBulkUserCreation = async () => {
-        const usersToRegister: AppUser[] = additionalUsers.map(user => ({
-            username: user.email.split('@')[0],
-            email: user.email,
-            password: user.tempPassword,
-            accountType: user.accountType,
-        }));
-        await authenticatedApiClient.registerUserBulk(usersToRegister);
-    }
-
     // move user to next step
     const navigateToNextStep = async () => {
         setIsLoading(true);
         try {
-            if (showUsersTable && additionalUsers.length > 0) {
-                await handleBulkUserCreation();
-            }
             setStep(step + 1);
             navigateTo('/onboard/inventory');
         } catch (error) {
@@ -50,7 +34,7 @@ export default function UserCreatePage() {
             {
                 showUsersTable
                     ? <p className="text-lg mb-5 text-center">Add additional users, this can always be done later.</p>
-                    : <p className="text-lg mb-5">Let&apos;s get you an Admin account created.</p>
+                    : <p className="text-lg mb-5">Let&apos;s get you an Owner account created.</p>
             }
             {
                 // show the login or register part of this step if we aren't showing the additional users table

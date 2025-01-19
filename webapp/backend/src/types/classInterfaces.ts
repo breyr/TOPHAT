@@ -4,20 +4,21 @@ import type { CreateTopologyRequestPayload, RegisterUserRequestPayload } from ".
 import { UpdateTopologyDTO } from "./types";
 
 export interface IUserRepository {
-    create(formData: RegisterUserRequestPayload): Promise<AppUser>;
+    create(formData: RegisterUserRequestPayload): Promise<Partial<AppUser>>;
     findByEmail(email: string): Promise<AppUser | null>;
     findByUsername(username: string): Promise<AppUser | null>;
-    delete(id: number): Promise<AppUser | null>;
+    delete(id: number): Promise<Partial<AppUser> | null>;
     getAll(): Promise<Partial<AppUser>[]>;
+    update(id: number, data: Partial<AppUser>): Promise<Partial<AppUser>>;
 }
 
 export interface IUserService {
-    createUser(formData: RegisterUserRequestPayload): Promise<AppUser>;
-    createUsers(formData: RegisterUserRequestPayload[]): Promise<AppUser[]>;
+    createUser(formData: RegisterUserRequestPayload): Promise<Partial<AppUser>>;
     getUserByEmail(email: string): Promise<AppUser | null>;
     getUserByUsername(username: string): Promise<AppUser | null>;
     getAllUsers(): Promise<Partial<AppUser>[]>;
-    deleteUser(id: number): Promise<AppUser | null>;
+    deleteUser(id: number): Promise<Partial<AppUser> | null>;
+    updateUser(id: number, data: Partial<AppUser>): Promise<Partial<AppUser>>;
 }
 
 export interface ITopologyRepository {

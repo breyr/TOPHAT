@@ -9,45 +9,52 @@ export class UserService implements IUserService {
     constructor(userRepository: IUserRepository) {
         this.userRepository = userRepository
     }
-
-    async createUsers(formDataArray: RegisterUserRequestPayload[]): Promise<AppUser[]> {
-        const createdUsers: AppUser[] = [];
-        for (const formData of formDataArray) {
-            // validate email
-            if (!validateEmail(formData.email)) {
-                throw new ValidationError(`Invalid email format for ${formData.email}`);
-            }
-            // check if existing email
-            const existingUserWithEmail = await this.userRepository.findByEmail(formData.email);
-            if (existingUserWithEmail) {
-                throw new ValidationError(`User with email ${formData.email} already exists`);
-            }
-            // check if existing username
-            const existingUserWithUsername = await this.userRepository.findByUsername(formData.username);
-            if (existingUserWithUsername) {
-                throw new ValidationError(`User with username ${formData.username} already exists`);
-            }
-            // create user
-            const createdUser = await this.userRepository.create(formData);
-            createdUsers.push(createdUser);
+    async updateUser(id: number, data: Partial<AppUser>): Promise<Partial<AppUser>> {
+        // validate email if it exists
+        if (data.email && !validateEmail(data.email)) {
+            throw new ValidationError('Invalid email format');
         }
-        return createdUsers;
+
+        // check if existing email if it exists
+        if (data.email) {
+            const existingUserWithEmail = await this.userRepository.findByEmail(data.email);
+            if (existingUserWithEmail && existingUserWithEmail.id !== id) {
+                throw new ValidationError('User with this email already exists');
+            }
+        }
+
+        // check if existing username if it exists
+        if (data.username) {
+            const existingUserWithUsername = await this.userRepository.findByUsername(data.username);
+            if (existingUserWithUsername && existingUserWithUsername.id !== id) {
+                throw new ValidationError('User with this username already exists');
+            }
+        }
+
+        // update user
+        return this.userRepository.update(id, data);
     }
 
-    async createUser(formData: RegisterUserRequestPayload): Promise<AppUser> {
-        // validate email
-        if (!validateEmail(formData.email)) {
-            throw new ValidationError('Invalid email format')
+    async createUser(formData: RegisterUserRequestPayload): Promise<Partial<AppUser>> {
+        // validate email if it exists
+        if (formData.email && !validateEmail(formData.email)) {
+            throw new ValidationError('Invalid email format');
         }
-        // check if existing email
-        const existingUserWithEmail = await this.userRepository.findByEmail(formData.email);
-        if (existingUserWithEmail) {
-            throw new ValidationError('User with this email already exists')
+
+        // check if existing email if it exists
+        if (formData.email) {
+            const existingUserWithEmail = await this.userRepository.findByEmail(formData.email);
+            if (existingUserWithEmail) {
+                throw new ValidationError('User with this email already exists');
+            }
         }
-        // check if existing username
-        const existingUserWithUsername = await this.userRepository.findByUsername(formData.username);
-        if (existingUserWithUsername) {
-            throw new ValidationError('User with this username already exists')
+
+        // check if existing username if it exists
+        if (formData.username) {
+            const existingUserWithUsername = await this.userRepository.findByUsername(formData.username);
+            if (existingUserWithUsername) {
+                throw new ValidationError('User with this username already exists');
+            }
         }
         // create user
         return this.userRepository.create(formData);
@@ -65,7 +72,7 @@ export class UserService implements IUserService {
         return this.userRepository.getAll();
     }
 
-    deleteUser(id: number): Promise<AppUser | null> {
+    deleteUser(id: number): Promise<Partial<AppUser> | null> {
         return this.userRepository.delete(id);
     }
 

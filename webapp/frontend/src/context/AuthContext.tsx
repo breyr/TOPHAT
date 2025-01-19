@@ -15,7 +15,7 @@ interface AuthContextType {
     token: string | null;
     login: (usernameOrEmail: string, password: string) => Promise<{ success: boolean; message?: string }>;
     logout: () => void;
-    register: (username: string, email: string, password: string, accountType: AccountType, accountStatus: AccountStatus) => Promise<RegisterUserResponsePayload | boolean>;
+    register: (username: string, email: string, password: string, tempPassword: string, accountType: AccountType, accountStatus: AccountStatus, autoLogin: boolean) => Promise<RegisterUserResponsePayload>;
     authenticatedApiClient: ApiClient;
 }
 
@@ -92,7 +92,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
 
     // registration helper
-    const register = async (username: string, email: string, password: string, accountType: AccountType, accountStatus: AccountStatus): Promise<RegisterUserResponsePayload | boolean> => {
+    const register = async (username: string, email: string, password: string, tempPassword: string, accountType: AccountType, accountStatus: AccountStatus, autoLogin: boolean): Promise<RegisterUserResponsePayload> => {
         // attempt to register and login
         try {
             const response = await fetch('/api/auth/register', {
@@ -100,23 +100,24 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ username, email, password, accountType, accountStatus })
+                body: JSON.stringify({ username, email, password, tempPassword, accountType, accountStatus })
             });
 
             const resJson: RegisterUserResponsePayload = await response.json();
 
             // validation errors
             if (!response.ok) {
-                return resJson
+                return resJson;
             }
 
             // call login immediately after a successful registration
-            login(username, password);
+            if (autoLogin) login(username, password);
+
+            return resJson;
         } catch (error) {
             console.error('Login error:', error);
+            return { message: 'Login error', data: {} } // user wasn't created
         }
-        // the user got logged in
-        return true;
     }
 
     const getToken = useCallback(() => {

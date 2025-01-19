@@ -1,6 +1,6 @@
 // TYPES
 //
-export type AccountType = 'USER' | 'ADMIN'
+export type AccountType = 'USER' | 'ADMIN' | 'OWNER' // owner should only be used when creating the owner account
 export type AccountStatus = 'NOTCREATED' | 'PENDING' | 'ACCEPTED'
 export type DeviceType = 'LAB' | 'INTERCONNECT'
 export type IconType = 'ROUTER' | 'SWITCH' | 'EXTERNAL' | 'SERVER'
@@ -51,9 +51,19 @@ export interface RegisterUserRequestPayload {
 export interface RegisterUserResponsePayload {
     message: string;
     data: {
-        id: number;
+        user?: PartialAppUser
     }
 }
+export interface PartialAppUser {
+    id: number;
+    username: string;
+    email: string;
+    password: string;
+    tempPassword: string;
+    accountType: AccountType;
+    accountStatus: AccountStatus;
+}
+
 // this is more of an interface for the frontend project
 export interface UserJwtPayload {
     id: number

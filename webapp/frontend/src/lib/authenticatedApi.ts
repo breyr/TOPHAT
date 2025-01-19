@@ -1,31 +1,16 @@
-import type { AccountStatus, AccountType, CreateConnectionRequestPayload, Device, DeviceType, IconType, Topology } from "../../../common/shared-types";
+import type { CreateConnectionRequestPayload, Device, DeviceType, IconType, PartialAppUser, Topology } from "../../../common/shared-types";
 
 type ApiConfig = {
     baseUrl: string;
     getToken: () => string | null;
 };
 type ApiError = {
-    message: string;
+    error: string;
     status?: number;
 };
 type ApiResponse<T> = {
     message: string;
     data?: T;
-}
-export interface AppUser {
-    id: number;
-    username: string;
-    email: string;
-    password: string;
-    accountType: AccountType;
-    accountStatus: AccountStatus;
-}
-
-export interface PartialAppUser {
-    id: number;
-    email: string;
-    accountType: AccountType;
-    accountStatus: AccountStatus;
 }
 
 export class ApiClient {
@@ -55,17 +40,17 @@ export class ApiClient {
         });
 
         if (!response.ok) {
-            const error: ApiError = {
-                message: `Error ${response.status}: ${response.statusText}`,
+            const res: ApiError = {
+                error: `Error ${response.status}: ${response.statusText}`,
                 status: response.status,
             };
 
             if (response.status === 401) {
                 // maybe trigger a logout or token refresh here
-                error.message = 'Your session has expired. Please log in again.';
+                res.error = 'Your session has expired. Please log in again.';
             }
 
-            throw error;
+            throw res;
         }
 
         // check if response has JSON
@@ -83,15 +68,25 @@ export class ApiClient {
     }
 
     // User API Methods
-    async registerUserBulk(data: AppUser[]) {
-        return this.fetch<AppUser[]>('/auth/register/bulk', {
-            method: 'POST',
-            body: JSON.stringify(data),
+    async getAllUsers() {
+        return this.fetch<PartialAppUser[]>('/auth/users/');
+    }
+
+    async deleteUser(id: number) {
+        return this.fetch<{ message: string, data?: number }>(`/auth/users/${id}`, {
+            method: 'DELETE',
         });
     }
 
-    async getAllUsers() {
-        return this.fetch<PartialAppUser[]>('/auth/users/');
+    async updateUser(id: number, data: Partial<PartialAppUser>) {
+        return this.fetch<{ message: string, data?: number }>(`/auth/users/${id}`, {
+            method: 'PUT',
+            body: JSON.stringify(data)
+        });
+    }
+
+    async getUserByEmail(email: string) {
+        return this.fetch<{ message?: string, data?: string }>(`/auth/users/email/${email}`);
     }
 
     // Topology API Methods

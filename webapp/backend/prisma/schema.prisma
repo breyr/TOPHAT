@@ -23,6 +23,7 @@ enum IconType {
 enum AccountType {
   USER
   ADMIN
+  OWNER
 }
 
 enum AccountStatus {
@@ -34,8 +35,9 @@ enum AccountStatus {
 model AppUser {
   id            Int           @id @default(autoincrement())
   username      String        @db.VarChar
-  email         String        @unique @db.VarChar
+  email         String        @db.VarChar
   password      String        @db.VarChar
+  tempPassword  String        @db.VarChar
   accountType   AccountType
   accountStatus AccountStatus
   createdAt     DateTime      @db.Timestamp(6)

@@ -3,6 +3,7 @@ import bcrypt from 'bcryptjs';
 import { NextFunction, Request, Response } from "express";
 import type { LoginRequestPayload, LoginResponsePayload, RegisterUserRequestPayload } from '../../../common/shared-types';
 import { DIContainer } from "../config/DIContainer";
+import { AuthenticatedRequest } from '../types/types';
 import { createJwtToken } from '../utils/jwt';
 import { validateEmail, ValidationError } from "../utils/validation";
 
@@ -15,25 +16,10 @@ export class UserController {
             const user = await this.userService.createUser(userRegisterPayload)
             res.status(201).json({
                 message: 'User created successfully',
-                data: {
-                    id: user.id
-                }
+                data: { user }
             });
         } catch (error) {
             // pass error to errorHandler middleware
-            next(error);
-        }
-    }
-
-    async createUsers(req: Request, res: Response, next: NextFunction) {
-        try {
-            const usersRegisterPayload = req.body as RegisterUserRequestPayload[];
-            const users = await this.userService.createUsers(usersRegisterPayload);
-            res.status(201).json({
-                message: 'Users created successfully',
-                data: users.map(user => ({ id: user.id })),
-            });
-        } catch (error) {
             next(error);
         }
     }
@@ -65,5 +51,60 @@ export class UserController {
         }
     }
 
+    async getAllUsers(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+        try {
+            const users = await this.userService.getAllUsers();
+            res.status(200).json({ data: users });
+        } catch (error) {
+            // pass error to errorHandler middleware
+            next(error);
+        }
+    }
+
+    async getUserByEmail(req: Request, res: Response, next: NextFunction) {
+        try {
+            const email = req.params.email;
+            const user = await this.userService.getUserByEmail(email);
+            if (!user) {
+                res.status(404).json({ message: 'User not found' });
+                return;
+            }
+            res.status(200).json({ data: user.email }); // just return the email of the user if found
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    async deleteUser(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+        const userId = parseInt(req.params.id);
+        try {
+            const user = await this.userService.deleteUser(userId);
+            if (!user) {
+                res.status(404).json({ message: 'User not found' });
+            }
+            res.status(200).json({ message: 'User deleted successfully', data: user?.id });
+        } catch (error) {
+            // pass error to errorHandler middleware
+            next(error);
+        }
+    }
+
+    async updateUser(req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> {
+        try {
+            const userId = parseInt(req.params.id);
+            const userData = { ...req.body } as Partial<AppUser>;
+            const user = await this.userService.updateUser(userId, userData);
+            if (!user) {
+                res.status(404).json({ message: 'User not found' });
+                return;
+            }
+            res.status(200).json({
+                message: 'User updated successfully',
+                data: user.id,
+            });
+        } catch (error) {
+            next(error);
+        }
+    }
 
 }
