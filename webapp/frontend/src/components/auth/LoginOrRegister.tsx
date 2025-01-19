@@ -7,7 +7,7 @@ export default function LoginOrRegister() {
     const [showLoginForm, setShowLoginForm] = useState(true);
 
     return (
-        <div className="p-10 bg-white shadow-lg rounded-lg w-1/5">
+        <div className="p-10 bg-white shadow-lg rounded-lg min-w-1/4 w-1/3">
             {
                 showLoginForm ?
                     <div>

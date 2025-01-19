@@ -1,4 +1,4 @@
-import type { AccountType, CreateConnectionRequestPayload, Device, DeviceType, IconType, Topology } from "../../../common/shared-types";
+import type { AccountStatus, AccountType, CreateConnectionRequestPayload, Device, DeviceType, IconType, Topology } from "../../../common/shared-types";
 
 type ApiConfig = {
     baseUrl: string;
@@ -13,10 +13,19 @@ type ApiResponse<T> = {
     data?: T;
 }
 export interface AppUser {
+    id: number;
     username: string;
     email: string;
     password: string;
     accountType: AccountType;
+    accountStatus: AccountStatus;
+}
+
+export interface PartialAppUser {
+    id: number;
+    email: string;
+    accountType: AccountType;
+    accountStatus: AccountStatus;
 }
 
 export class ApiClient {
@@ -86,6 +95,10 @@ export class ApiClient {
             method: 'PUT',
             body: JSON.stringify(data)
         })
+    }
+  
+    async getAllUsers() {
+        return this.fetch<PartialAppUser[]>('/auth/users/');
     }
 
     // Topology API Methods

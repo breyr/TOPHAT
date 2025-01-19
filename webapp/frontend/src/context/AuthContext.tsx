@@ -1,6 +1,6 @@
 import { jwtDecode, JwtPayload } from 'jwt-decode';
 import { createContext, ReactNode, useCallback, useEffect, useMemo, useState } from 'react';
-import type { AccountType, LoginResponsePayload, RegisterUserResponsePayload } from '../../../common/shared-types.ts';
+import type { AccountStatus, AccountType, LoginResponsePayload, RegisterUserResponsePayload } from '../../../common/shared-types.ts';
 import { ApiClient } from "../lib/authenticatedApi.ts";
 
 export interface CustomJwtPayload extends JwtPayload {
@@ -15,7 +15,7 @@ interface AuthContextType {
     token: string | null;
     login: (usernameOrEmail: string, password: string) => Promise<{ success: boolean; message?: string }>;
     logout: () => void;
-    register: (username: string, email: string, password: string, accountType: AccountType) => Promise<RegisterUserResponsePayload | boolean>;
+    register: (username: string, email: string, password: string, accountType: AccountType, accountStatus: AccountStatus) => Promise<RegisterUserResponsePayload | boolean>;
     authenticatedApiClient: ApiClient;
 }
 
@@ -92,7 +92,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
 
     // registration helper
-    const register = async (username: string, email: string, password: string, accountType: AccountType): Promise<RegisterUserResponsePayload | boolean> => {
+    const register = async (username: string, email: string, password: string, accountType: AccountType, accountStatus: AccountStatus): Promise<RegisterUserResponsePayload | boolean> => {
         // attempt to register and login
         try {
             const response = await fetch('/api/auth/register', {
@@ -100,7 +100,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ username, email, password, accountType })
+                body: JSON.stringify({ username, email, password, accountType, accountStatus })
             });
 
             const resJson: RegisterUserResponsePayload = await response.json();

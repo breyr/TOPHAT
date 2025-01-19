@@ -72,6 +72,10 @@ export class UserService implements IUserService {
     getUserById(id: number): Promise<AppUser | null> {
         return this.userRepository.findById(id);
     }
+  
+    getAllUsers(): Promise<Partial<AppUser>[]> {
+        return this.userRepository.getAll();
+    }
 
     deleteUser(id: number): Promise<AppUser | null> {
         return this.userRepository.delete(id);

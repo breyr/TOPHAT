@@ -1,6 +1,7 @@
 // TYPES
 //
 export type AccountType = 'USER' | 'ADMIN'
+export type AccountStatus = 'NOTCREATED' | 'PENDING' | 'ACCEPTED'
 export type DeviceType = 'LAB' | 'INTERCONNECT'
 export type IconType = 'ROUTER' | 'SWITCH' | 'EXTERNAL' | 'SERVER'
 export type Model = 'multi-tenant' | 'single-user' | null

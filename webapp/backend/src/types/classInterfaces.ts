@@ -10,6 +10,7 @@ export interface IUserRepository {
     findById(id: number): Promise<AppUser | null>;
     delete(id: number): Promise<AppUser | null>;
     changePassword(id: number, newPassword: string): Promise<AppUser | null>;
+    getAll(): Promise<Partial<AppUser>[]>;
 }
 
 export interface IUserService {
@@ -18,6 +19,7 @@ export interface IUserService {
     getUserByEmail(email: string): Promise<AppUser | null>;
     getUserByUsername(username: string): Promise<AppUser | null>;
     getUserById(id: number): Promise<AppUser | null>;
+    getAllUsers(): Promise<Partial<AppUser>[]>;
     deleteUser(id: number): Promise<AppUser | null>;
     changePassword(id: number, newPassword: string): Promise<AppUser | null>;
 }
