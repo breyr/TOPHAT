@@ -1,14 +1,14 @@
-import {useEffect, useState} from "react";
+import { Loader2 } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Topology } from "../../../common/shared-types";
 import TopologyCard from "../components/TopologyCard";
 import { useAuth } from "../hooks/useAuth";
-import {Topology} from "../types/types";
-import {Loader2} from "lucide-react";
 
 export default function UserArchivedTopologiesPage() {
     const { token, authenticatedApiClient } = useAuth();
     const [archivedTopologies, setArchivedTopologies] = useState([] as Topology[]);
     const [isLoading, setIsLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
+    const [_error, setError] = useState<string | null>(null);
 
     // get user's archived topologies on page load by making authenticated request
     useEffect(() => {
@@ -60,7 +60,7 @@ export default function UserArchivedTopologiesPage() {
         <section className="pt-4 flex flex-row flex-wrap gap-x-8">
             {isLoading ? (
                 <div className="flex items-center justify-center min-h-[200px]">
-                    <Loader2 className="h-8 w-8 animate-spin text-gray-500"/>
+                    <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
                 </div>
             ) : (
                 archivedTopologies.length !== 0 ? (
@@ -68,7 +68,7 @@ export default function UserArchivedTopologiesPage() {
                         <TopologyCard key={topology.id} {...topology} onDelete={() => handleDelete(topology.id)} onArchive={() => handleArchive(topology.id)} />
                     ))
                 ) : (
-                <p>No archived topologies found.</p>
+                    <p>No archived topologies found.</p>
                 )
             )}
         </section>

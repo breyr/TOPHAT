@@ -32,7 +32,7 @@ export default function DashboardLayout() {
                         Archived
                     </Link>
                     {
-                        user?.account_type == 'admin'
+                        user?.accountType === 'ADMIN' || user?.accountType === 'OWNER'
                         &&
                         <>
                             <Link to="/dashboard/inventory" className={getTabClass("/inventory")}>
