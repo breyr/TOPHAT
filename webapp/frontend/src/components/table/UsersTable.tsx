@@ -243,7 +243,7 @@ export default function UsersTable() {
             name: 'Account Status',
             selector: row => row.accountStatus,
             cell: (row) => (
-                <span>{formatStatus(row.accountStatus)}</span>
+                <span tabIndex={-1}>{formatStatus(row.accountStatus)}</span>
             ),
         },
         {
@@ -252,6 +252,7 @@ export default function UsersTable() {
                 <div className="flex flex-row justify-center">
                     <button
                         type="button"
+                        tabIndex={-1}
                         className="text-red-500 hover:text-red-700"
                         onClick={() => handleRowDeleteClick(index)}
                     >
