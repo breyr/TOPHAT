@@ -4,7 +4,7 @@ import { DIContainer } from './config/DIContainer';
 import { errorHandler } from './middleware/errorHandler';
 import { connectionRouter } from './routes/connectionRoutes';
 import { deviceRouter } from './routes/deviceRoutes';
-import { topologyRouter } from './routes/topologyRoutes';
+import { topologyRouter } from './routes/TopologyRoutes';
 import { userRouter } from './routes/userRoutes';
 
 dotenv.config();

@@ -74,13 +74,13 @@ function ConnectionsTable({ interconnectDevices, labDevices }: ConnectionsTableP
         setConnections((prevConnections) =>
             prevConnections.filter((connection) => {
                 if (!labDeviceNames.has(connection.labDeviceName)) {
-                    // Delete the connection if the lab device is deleted
-                    deleteConnection(connection.id);
+                    // delete the connection if the lab device is deleted
+                    deleteConnection(connection.id!);
                     return false;
                 }
                 if (connection.interconnectDeviceName && !interconnectDeviceNames.has(connection.interconnectDeviceName)) {
                     // Clear interconnect device information if the interconnect device is deleted
-                    updateConnection(connection.id, {
+                    updateConnection(connection.id!, {
                         interconnectDeviceName: '',
                         interconnectDevicePort: ''
                     });
@@ -88,7 +88,7 @@ function ConnectionsTable({ interconnectDevices, labDevices }: ConnectionsTableP
                 }
                 if (connection.interconnectDeviceName && !interconnectDevicePorts.get(connection.interconnectDeviceName)?.has(connection.interconnectDevicePort)) {
                     // Clear interconnect device port if the port is deleted
-                    updateConnection(connection.id, {
+                    updateConnection(connection.id!, {
                         interconnectDevicePort: ''
                     });
                     return true;
@@ -134,6 +134,11 @@ function ConnectionsTable({ interconnectDevices, labDevices }: ConnectionsTableP
     const updateConnection = async (connectionId: number, updatedData: Partial<Connection>) => {
         try {
             await authenticatedApiClient.updateConnection(connectionId, updatedData);
+            setConnections((prev) => prev.map((connection) =>
+                connection.id === connectionId
+                    ? { ...connection, interconnectDeviceName: '', interconnectDevicePort: '' }
+                    : connection
+            ));
         } catch (error) {
             console.error('Error updating connection:', error);
         }
