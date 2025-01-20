@@ -23,7 +23,7 @@ export default function OnboardInventoryPage() {
         <section className="flex flex-col h-full w-full pt-8 items-center">
             <h1 className="text-4xl font-bold mb-4">Device Inventory</h1>
             <DeviceManagement />
-            <button className="r-btn primary w-1/5 flex flex-row items-center justify-center gap-1" onClick={handleNext}>
+            <button className="mt-8 r-btn primary w-1/5 flex flex-row items-center justify-center gap-1" onClick={handleNext}>
                 Continue <ArrowRight size={20} />
             </button>
         </section>
