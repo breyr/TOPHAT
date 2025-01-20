@@ -5,6 +5,7 @@ import { AuthenticatedRequest } from '../types/types';
 const router = express.Router();
 const userController = new UserController();
 
+router.put('/change-password', (req, res, next) => userController.changePassword(req, res, next))
 router.get('/users', (req: AuthenticatedRequest, res, next) => userController.getAllUsers(req, res, next));
 router.get('/users/email/:email', (req: AuthenticatedRequest, res, next) => userController.getUserByEmail(req, res, next));
 router.delete('/users/:id', (req: AuthenticatedRequest, res, next) => userController.deleteUser(req, res, next));

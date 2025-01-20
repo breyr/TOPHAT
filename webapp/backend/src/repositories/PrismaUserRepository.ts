@@ -77,6 +77,12 @@ export class PrismaUserRepository implements IUserRepository {
         })
     }
 
+    findById(id: number): Promise<AppUser | null> {
+        return this.prisma.appUser.findUnique({
+            where: { id },
+        })
+    }
+
     delete(id: number): Promise<Partial<AppUser> | null> {
         return this.prisma.appUser.delete({
             where: { id },
@@ -84,6 +90,17 @@ export class PrismaUserRepository implements IUserRepository {
                 id: true,
             }
         })
+    }
+
+    async changePassword(userId: number, newPassword: string): Promise<AppUser | null> {
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+        return this.prisma.appUser.update({
+            where: { id: userId },
+            data: { 
+                password: hashedPassword,
+                updatedAt: new Date()
+            }
+        });
     }
 
 }

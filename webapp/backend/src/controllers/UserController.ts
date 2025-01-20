@@ -51,6 +51,32 @@ export class UserController {
         }
     }
 
+    async changePassword(req: Request, res: Response, next: NextFunction) {
+        try {
+            const { userId, oldPassword, newPassword } = req.body;
+        
+            // Get user first, this basically should never fail
+            const user = await this.userService.getUserById(userId);
+            if (!user) {
+                throw new ValidationError('User not found');
+            }
+            // Validate old password
+            const isValidPassword = await bcrypt.compare(oldPassword, user.password);
+            if (!isValidPassword) {
+                throw new ValidationError('Invalid old password');
+            }
+
+            // Change password if validation passes
+            await this.userService.changePassword(userId, newPassword);
+            
+            res.status(200).json({
+                message: 'Password updated successfully',
+                data: {success: true}
+            });
+        } catch (error) {
+            next(error);
+        }
+
     async getAllUsers(req: AuthenticatedRequest, res: Response, next: NextFunction) {
         try {
             const users = await this.userService.getAllUsers();

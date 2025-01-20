@@ -7,6 +7,8 @@ export interface IUserRepository {
     create(formData: RegisterUserRequestPayload): Promise<Partial<AppUser>>;
     findByEmail(email: string): Promise<AppUser | null>;
     findByUsername(username: string): Promise<AppUser | null>;
+    findById(id: number): Promise<AppUser | null>;
+    changePassword(id: number, newPassword: string): Promise<AppUser | null>;
     delete(id: number): Promise<Partial<AppUser> | null>;
     getAll(): Promise<Partial<AppUser>[]>;
     update(id: number, data: Partial<AppUser>): Promise<Partial<AppUser>>;
@@ -16,7 +18,9 @@ export interface IUserService {
     createUser(formData: RegisterUserRequestPayload): Promise<Partial<AppUser>>;
     getUserByEmail(email: string): Promise<AppUser | null>;
     getUserByUsername(username: string): Promise<AppUser | null>;
+    getUserById(id: number): Promise<AppUser | null>;
     getAllUsers(): Promise<Partial<AppUser>[]>;
+    changePassword(id: number, newPassword: string): Promise<AppUser | null>;
     deleteUser(id: number): Promise<Partial<AppUser> | null>;
     updateUser(id: number, data: Partial<AppUser>): Promise<Partial<AppUser>>;
 }
