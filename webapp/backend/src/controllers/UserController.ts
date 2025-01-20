@@ -76,6 +76,7 @@ export class UserController {
         } catch (error) {
             next(error);
         }
+    }
 
     async getAllUsers(req: AuthenticatedRequest, res: Response, next: NextFunction) {
         try {
