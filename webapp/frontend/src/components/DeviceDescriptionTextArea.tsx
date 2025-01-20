@@ -2,11 +2,12 @@ import { RotateCcw, Save } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 
 interface DevicePortsTableProps {
+    deviceId: number | undefined;
     descriptionText: string;
-    onUpdateDescription: (updatedPorts: string) => void;
+    onUpdateDescription: (deviceId: number, updatedPorts: string) => void;
 }
 
-const DeviceDescriptionTextArea: React.FC<DevicePortsTableProps> = ({ descriptionText, onUpdateDescription }) => {
+const DeviceDescriptionTextArea: React.FC<DevicePortsTableProps> = ({ deviceId, descriptionText, onUpdateDescription }) => {
 
     const [deviceDesc, setDeviceDesc] = useState<string>();
     const [initialDeviceDesc, setInitialDeviceDesc] = useState<string>();
@@ -22,7 +23,9 @@ const DeviceDescriptionTextArea: React.FC<DevicePortsTableProps> = ({ descriptio
     }, [deviceDesc, initialDeviceDesc]);
 
     const save = () => {
-        onUpdateDescription(deviceDesc ?? '');
+        if (deviceId) {
+            onUpdateDescription(deviceId, deviceDesc ?? '');
+        }
     };
 
     const revert = () => {

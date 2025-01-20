@@ -4,8 +4,9 @@ import DataTable from 'react-data-table-component';
 import customStyles from './dataTableStyles';
 
 interface DevicePortsTableProps {
+    deviceId: number | undefined;
     ports: string;
-    onUpdatePorts: (updatedPorts: string) => void;
+    onUpdatePorts: (deviceId: number, updatedPorts: string) => void;
 }
 
 interface Port {
@@ -13,7 +14,7 @@ interface Port {
     range: string;
 }
 
-const DevicePortsTable: React.FC<DevicePortsTableProps> = ({ ports, onUpdatePorts }) => {
+const DevicePortsTable: React.FC<DevicePortsTableProps> = ({ deviceId, ports, onUpdatePorts }) => {
 
     const [devicePorts, setDevicePorts] = useState<Port[]>([]);
     const [initialPorts, setInitialPorts] = useState<string>('');
@@ -75,7 +76,9 @@ const DevicePortsTable: React.FC<DevicePortsTableProps> = ({ ports, onUpdatePort
             return `${port.prefix}|${port.range}`;
         });
         const portsToSave = portStrings.join(',');
-        onUpdatePorts(portsToSave);
+        if (deviceId) {
+            onUpdatePorts(deviceId, portsToSave);
+        }
     }
 
     const columns = [

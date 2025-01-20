@@ -1,7 +1,7 @@
 import { User } from "lucide-react";
 import { useState } from "react";
 import LoginUser from "./LoginUser";
-import RegisterUser from "./RegisterUser";
+import RegisterUser from "./RegisterOwner";
 
 export default function LoginOrRegister() {
     const [showLoginForm, setShowLoginForm] = useState(true);

@@ -1,5 +1,7 @@
+import UsersTable from "../components/table/UsersTable";
+
 export default function UserAdministrationPage() {
     return (
-        <p>User Administration</p>
+        <UsersTable />
     )
 }

@@ -10,12 +10,12 @@ export class PrismaDeviceRepository implements IDeviceRepository {
     }
 
     async create(requestData: Device): Promise<Device> {
-        if (requestData.password) {
-            requestData.password = await bcrypt.hash(requestData.password, 10);
-        }
-        if (requestData.secretPassword) {
-            requestData.secretPassword = await bcrypt.hash(requestData.secretPassword, 10);
-        }
+        // if (requestData.password) {
+        //     requestData.password = await bcrypt.hash(requestData.password, 10);
+        // }
+        // if (requestData.secretPassword) {
+        //     requestData.secretPassword = await bcrypt.hash(requestData.secretPassword, 10);
+        // }
 
         const deviceData: any = {
             userId: requestData.userId || null,
@@ -45,12 +45,12 @@ export class PrismaDeviceRepository implements IDeviceRepository {
     }
 
     async update(deviceId: number, requestData: Partial<Device>): Promise<Device> {
-        if (requestData.password) {
-            requestData.password = await bcrypt.hash(requestData.password, 10);
-        }
-        if (requestData.secretPassword) {
-            requestData.secretPassword = await bcrypt.hash(requestData.secretPassword, 10);
-        }
+        // if (requestData.password) {
+        //     requestData.password = await bcrypt.hash(requestData.password, 10);
+        // }
+        // if (requestData.secretPassword) {
+        //     requestData.secretPassword = await bcrypt.hash(requestData.secretPassword, 10);
+        // }
         return this.prisma.device.update({
             where: { id: deviceId },
             data: requestData,

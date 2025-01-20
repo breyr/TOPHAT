@@ -1,9 +1,8 @@
 import { Eye, EyeOff } from "lucide-react";
 import { useState } from "react";
-import type { RegisterUserResponsePayload } from "../../../../common/shared-types";
 import { useAuth } from "../../hooks/useAuth";
 
-export default function RegisterUser() {
+export default function RegisterOwner() {
     const { register } = useAuth();
     const [credentials, setCredentials] = useState({ email: "", username: "", password: "", confirmPassword: "" });
     const [showPassword, setShowPassword] = useState({ viewPassword: false, viewConfirmPassword: false });
@@ -31,9 +30,9 @@ export default function RegisterUser() {
     const handleFormSubmission = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         try {
-            const response = await register(credentials.username, credentials.email, credentials.password, 'ADMIN', 'ACCEPTED');
-            if (typeof response !== 'boolean') {
-                setServerMessage((response as RegisterUserResponsePayload).message);
+            const response = await register(credentials.username, credentials.email, credentials.password, '', 'OWNER', 'ACCEPTED', true);
+            if (response.message !== "User created successfully") {
+                setServerMessage(response.message);
             } else {
                 // clear error on success
                 setServerMessage('');
@@ -42,7 +41,7 @@ export default function RegisterUser() {
             // handle error if needed
             setServerMessage('An error occurred during registration.');
         }
-    }
+    };
 
     return (
         <form onSubmit={handleFormSubmission} className="flex flex-col">

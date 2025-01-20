@@ -1,6 +1,6 @@
 // TYPES
 //
-export type AccountType = 'USER' | 'ADMIN'
+export type AccountType = 'USER' | 'ADMIN' | 'OWNER' // owner should only be used when creating the owner account
 export type AccountStatus = 'NOTCREATED' | 'PENDING' | 'ACCEPTED'
 export type DeviceType = 'LAB' | 'INTERCONNECT'
 export type IconType = 'ROUTER' | 'SWITCH' | 'EXTERNAL' | 'SERVER'
@@ -51,9 +51,19 @@ export interface RegisterUserRequestPayload {
 export interface RegisterUserResponsePayload {
     message: string;
     data: {
-        id: number;
+        user?: PartialAppUser
     }
 }
+export interface PartialAppUser {
+    id: number;
+    username: string;
+    email: string;
+    password: string;
+    tempPassword: string;
+    accountType: AccountType;
+    accountStatus: AccountStatus;
+}
+
 // this is more of an interface for the frontend project
 export interface UserJwtPayload {
     id: number
@@ -83,26 +93,6 @@ export interface CreateTopologyRequestPayload {
 
 // Device DTOs
 //
-
-// interface representing one record in the Device table within Prisma
-// null means the field is optional - userId and topologyId are FKs, but are not set upon creation
-// userId and topologyId are meant for tracking only and serve no use as a real FK, but is set as such in the database
-export interface Device {
-    id: number;
-    userId: number | null;
-    topologyId: number | null;
-    name: string;
-    model: string;
-    serialNumber: string;
-    ipAddress: string | null;
-    description: string | null;
-    password: string | null;
-    username: string | null;
-    secretPassword: string | null;
-    ports: string;
-    type: DeviceType;
-    icon: IconType | null;
-}
 
 export interface CreateDeviceRequestPayload {
     userId: number;
