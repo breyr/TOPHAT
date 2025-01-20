@@ -289,6 +289,8 @@ export default function UsersTable() {
                 columns={columns}
                 data={users}
                 customStyles={customStyles}
+                pagination
+                paginationRowsPerPageOptions={[5, 10, 15]}
             />
         </>
     );

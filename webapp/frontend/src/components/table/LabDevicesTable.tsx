@@ -190,7 +190,7 @@ export default function LabDevicesTable({
 
     const renderTypeSelect = (row: Device) => {
         const isEditing = editingRows[row.id];
-        const value = isEditing ? toTitleCase(editingRows[row.id].currentData.icon) : toTitleCase(row.icon);
+        const value = isEditing ? editingRows[row.id].currentData.icon : toTitleCase(row.icon);
 
         return isEditing ? (
             <select
