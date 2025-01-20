@@ -164,6 +164,9 @@ export class ApiClient {
     }
 
     // Connection API Methods
+    async getAllConnections() {
+        return this.fetch<Connection[]>('/connections/');
+    }
     async createOrUpdateConnection(data: CreateConnectionRequestPayload & { id?: number }) {
         const url = data.id ? `/connections/${data.id}` : '/connections';
         const method = data.id ? 'PUT' : 'POST';
