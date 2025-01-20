@@ -185,4 +185,12 @@ export class ApiClient {
             body: JSON.stringify(data)
         })
     }
+
+    // AppConfig API Methods - consist of key value pairs
+    async setAppConfig(key: string, data: string) {
+        return this.fetch<{ key: string, value: string }>(`/config/${key}`, {
+            method: 'PUT',
+            body: JSON.stringify({ value: data })
+        })
+    }
 }

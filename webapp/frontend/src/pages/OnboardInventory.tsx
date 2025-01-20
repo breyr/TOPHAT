@@ -1,17 +1,19 @@
 import { ArrowRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import DeviceManagement from "../components/DeviceManagement";
+import { useAuth } from "../hooks/useAuth";
 import { useOnboardingStore } from "../stores/onboarding";
-
 
 export default function OnboardInventoryPage() {
     const { step, setStep } = useOnboardingStore(
         (state) => state,
     )
     const navigateTo = useNavigate();
+    const { authenticatedApiClient } = useAuth();
 
     const handleNext = async () => {
         try {
+            await authenticatedApiClient.setAppConfig('OnboardComplete', 'true');
             setStep(step + 1);
             navigateTo('/onboard/finish');
         } catch (error) {

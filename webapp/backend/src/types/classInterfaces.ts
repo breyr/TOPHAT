@@ -1,5 +1,5 @@
 // holds interfaces similar to C#
-import { AppUser, Connection, Device, DeviceType, IconType, Topology } from "@prisma/client";
+import { AppConfig, AppUser, Connection, Device, DeviceType, IconType, Topology } from "@prisma/client";
 import type { CreateTopologyRequestPayload, RegisterUserRequestPayload } from "../../../common/shared-types";
 import { UpdateTopologyDTO } from "./types";
 
@@ -80,4 +80,14 @@ export interface IConnectionService {
     getConnectionById(connectionId: number): Promise<Connection | null>;
     getConnectionsByLabDeviceName(labDeviceName: string): Promise<Connection[]>;
     getConnectionsByInterconnectDeviceName(interconnectDeviceName: string): Promise<Connection[]>;
+}
+
+export interface IAppConfigRepository {
+    findByKey(key: string): Promise<AppConfig | null>;
+    upsertConfig(key: string, value: string): Promise<AppConfig>;
+}
+
+export interface IAppConfigService {
+    updateConfig(key: string, value: string): Promise<AppConfig>;
+    getConfigByKey(key: string): Promise<AppConfig | null>;
 }

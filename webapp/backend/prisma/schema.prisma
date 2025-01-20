@@ -85,3 +85,9 @@ model Connection {
   interconnectDeviceName String @db.Text
   interconnectDevicePort String @db.Text
 }
+
+model AppConfig {
+  id    Int    @id @default(autoincrement())
+  key   String @unique
+  value String
+}
