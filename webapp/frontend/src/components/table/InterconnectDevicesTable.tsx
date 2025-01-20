@@ -1,45 +1,120 @@
 import { CircleMinus, CirclePlus } from 'lucide-react';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import DataTable from 'react-data-table-component';
-import { InterconnectDevice, useOnboardingStore } from "../../stores/onboarding";
+import { DeviceType } from '../../../../common/shared-types';
+import { useAuth } from '../../hooks/useAuth';
+import { debounce } from '../../lib/helpers';
+import { Device } from '../../models/Device';
 import DeviceModal from '../DeviceModal';
 import customStyles from './dataTableStyles';
 
-export default function InterconnectDevicesTable() {
-    const { interconnectDevices, addInterconnectDevice, updateInterconnectDevice, removeInterconnectDevice } = useOnboardingStore(
-        (state) => state, // select the entire state object for this store, can specify by using dot notation
-    );
+interface InterconnectDevicesTableProps {
+    interconnectDevices: Device[];
+    setInterconnectDevices: React.Dispatch<React.SetStateAction<Device[]>>;
+}
+
+export default function InterconnectDevicesTable({
+    interconnectDevices,
+    setInterconnectDevices
+}: InterconnectDevicesTableProps) {
+    const { authenticatedApiClient } = useAuth();
     const [isOpen, setIsOpen] = useState(false);
-    const [selectedIndex, setSelectedIndex] = useState<number>(-1);
-    const [selectedDevice, setSelectedDevice] = useState<InterconnectDevice | undefined>();
+    const [selectedDevice, setSelectedDevice] = useState<Device | undefined>();
     const [currentPage, setCurrentPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(5);
+    const pendingUpdates = useRef<{ [key: string]: NodeJS.Timeout }>({});
 
-    const addNewRow = () => {
-        addInterconnectDevice({
-            ipAddress: '',
-            username: '',
-            password: '',
-            secretPassword: '',
-            type: 'interconnect',
-            deviceName: '',
-            model: '',
-            serialNumber: '',
-            ports: ''
-        });
+    useEffect(() => {
+        const fetchDevices = async () => {
+            try {
+                const res = await authenticatedApiClient.getDevicesByType('INTERCONNECT');
+                setInterconnectDevices(res.data || []);
+            } catch (error) {
+                console.error("Failed to fetch interconnect devices:", error);
+            }
+        };
+
+        fetchDevices();
+    }, [authenticatedApiClient]);
+
+    const addNewRow = async () => {
+        const newDevice = new Device(
+            Date.now(), // need an arbitrary id, this won't actually be used to create the device
+            null,
+            null,
+            '',
+            '',
+            '',
+            '',
+            null,
+            '',
+            '',
+            '',
+            '',
+            'INTERCONNECT' as DeviceType,
+            null
+        );
+
+        // attempt to add to database
+        const res = await authenticatedApiClient.createDevice(newDevice);
+        if (res.data) {
+            setInterconnectDevices(prevDevices => [
+                ...prevDevices,
+                res.data!
+            ]);
+        }
     };
+
+    const updateDevice = useCallback(
+        debounce(async (index: number, name: string, value: string) => {
+            const deviceToUpdate = interconnectDevices[index];
+            if (deviceToUpdate) {
+                await authenticatedApiClient.updateDevice(deviceToUpdate.id, { [name]: value });
+            }
+        }, 1000),
+        [interconnectDevices]
+    );
 
     const handleTableInputChange = (index: number, e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
-        updateInterconnectDevice(index, { [name]: value });
+        const updateKey = `${index}-${name}`;
+
+        // Clear any existing timeout for this field
+        if (pendingUpdates.current[updateKey]) {
+            clearTimeout(pendingUpdates.current[updateKey]);
+        }
+
+        // Update local state immediately
+        setInterconnectDevices(prevDevices => {
+            const updatedDevices = [...prevDevices];
+            const device = updatedDevices[index];
+            if (device) {
+                (device as any)[name] = value;
+            }
+            return updatedDevices;
+        });
+
+        // Set new timeout for this update
+        pendingUpdates.current[updateKey] = setTimeout(() => {
+            updateDevice(index, name, value);
+            delete pendingUpdates.current[updateKey];
+        }, 1000);
     };
 
-    const handleRowDeleteClick = (index: number) => {
-        removeInterconnectDevice(index);
+    const handleRowDeleteClick = async (index: number) => {
+        const deviceToDelete = interconnectDevices[index];
+        if (deviceToDelete.id) {
+            try {
+                await authenticatedApiClient.deleteDevice(deviceToDelete.id);
+            } catch (error) {
+                console.error("Failed to delete device:", error);
+                return;
+            }
+        }
+        setInterconnectDevices(prevDevices => prevDevices.filter((_, i) => i !== index));
     };
 
-    const openModal = useCallback((row: InterconnectDevice, index: number) => {
-        setSelectedIndex(index);
+    const openModal = useCallback((row: Device) => {
         setSelectedDevice(row);
         setIsOpen(true);
     }, []);
@@ -48,15 +123,15 @@ export default function InterconnectDevicesTable() {
         {
             name: 'Device Name',
             sortable: true,
-            selector: row => row.deviceName,
+            selector: row => row.name,
             cell: (row, localIndex: number) => {
                 const globalIndex = currentPage * rowsPerPage + localIndex;
 
                 return (
                     <input
                         type="text"
-                        value={row.deviceName}
-                        name="deviceName"
+                        value={row.name}
+                        name="name"
                         placeholder="Device name"
                         onChange={(e) => handleTableInputChange(globalIndex, e)}
                         className="w-full focus:outline-none"
@@ -180,11 +255,9 @@ export default function InterconnectDevicesTable() {
         },
         {
             name: 'Ports',
-            cell: (row, localIndex: number) => {
-                const globalIndex = currentPage * rowsPerPage + localIndex;
-
+            cell: (row) => {
                 return (
-                    <button onClick={() => openModal(row, globalIndex)} className='border-b-blue-400 border-b-2 flex flex-row items-center'>
+                    <button onClick={() => openModal(row)} className='border-b-blue-400 border-b-2 flex flex-row items-center'>
                         Configure
                     </button>
                 )
@@ -231,8 +304,16 @@ export default function InterconnectDevicesTable() {
                     setCurrentPage(0); // reset to the first page when rows per page changes
                 }}
                 customStyles={customStyles}
+                keyField="id" // Ensure each row has a unique key
             />
-            {isOpen && <DeviceModal renderTable={true} setIsOpen={setIsOpen} deviceIndex={selectedIndex} deviceType='interconnect' deviceInformation={selectedDevice} />}
+            {isOpen && (
+                <DeviceModal
+                    renderTable={true}
+                    setIsOpen={setIsOpen}
+                    deviceType='INTERCONNECT'
+                    deviceInformation={selectedDevice}
+                />
+            )}
         </section>
     );
 }

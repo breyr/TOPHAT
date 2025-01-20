@@ -94,26 +94,6 @@ export interface CreateTopologyRequestPayload {
 // Device DTOs
 //
 
-// interface representing one record in the Device table within Prisma
-// null means the field is optional - userId and topologyId are FKs, but are not set upon creation
-// userId and topologyId are meant for tracking only and serve no use as a real FK, but is set as such in the database
-export interface Device {
-    id: number;
-    userId: number | null;
-    topologyId: number | null;
-    name: string;
-    model: string;
-    serialNumber: string;
-    ipAddress: string | null;
-    description: string | null;
-    password: string | null;
-    username: string | null;
-    secretPassword: string | null;
-    ports: string;
-    type: DeviceType;
-    icon: IconType | null;
-}
-
 export interface CreateDeviceRequestPayload {
     userId: number;
     topologyId: number;

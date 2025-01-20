@@ -260,7 +260,6 @@ export default function UsersTable() {
                     </button>
                 </div>
             ),
-            button: true,
             width: '56px',
         },
     ];

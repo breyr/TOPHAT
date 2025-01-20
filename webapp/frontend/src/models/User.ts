@@ -1,5 +1,4 @@
-import { AccountStatus, AccountType } from "../../../common/shared-types";
-import { PartialAppUser } from "../lib/authenticatedApi";
+import { AccountStatus, AccountType, PartialAppUser } from "../../../common/shared-types";
 
 export class User {
     id: number;

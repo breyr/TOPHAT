@@ -2,13 +2,15 @@ import { useEffect, useMemo, useState } from 'react';
 import DataTable from 'react-data-table-component';
 import { Connection, CreateConnectionRequestPayload } from '../../../../common/shared-types';
 import { useAuth } from '../../hooks/useAuth';
-import { useOnboardingStore } from '../../stores/onboarding';
+import { Device } from '../../models/Device';
 import customStyles from './dataTableStyles';
 
-function ConnectionsTable() {
-    const { labDevices, interconnectDevices } = useOnboardingStore(
-        (state) => state,
-    );
+interface ConnectionsTableProps {
+    interconnectDevices: Device[];
+    labDevices: Device[];
+}
+
+function ConnectionsTable({ interconnectDevices, labDevices }: ConnectionsTableProps) {
     const { authenticatedApiClient } = useAuth();
     const [connections, setConnections] = useState<Connection[]>([]);
     const [usedPorts, setUsedPorts] = useState<Record<string, Set<string>>>({});
@@ -29,7 +31,7 @@ function ConnectionsTable() {
         const map: Record<string, string[]> = {};
         interconnectDevices.forEach((d) => {
             const ports = d.ports.split(',').flatMap((portDef) => generatePorts(portDef));
-            map[d.deviceName] = ports;
+            map[d.name] = ports;
         });
         return map;
     }, [interconnectDevices]);
@@ -39,7 +41,7 @@ function ConnectionsTable() {
         const newConnections: Connection[] = labDevices.flatMap((device) =>
             device.ports.split(',').flatMap((portDef) =>
                 generatePorts(portDef).map((port) => ({
-                    labDeviceName: device.deviceName,
+                    labDeviceName: device.name,
                     labDevicePort: port,
                     interconnectDeviceName: '',
                     interconnectDevicePort: '', // Initially empty
@@ -63,17 +65,36 @@ function ConnectionsTable() {
         setUsedPorts(updatedUsedPorts);
     }, [connections]);
 
-    // handle cleanup of connections when a device is deleted
+    // handle cleanup of connections when a device or ports are modified
     useEffect(() => {
-        const labDeviceNames = new Set(labDevices.map((d) => d.deviceName));
-        const interconnectDeviceNames = new Set(interconnectDevices.map((d) => d.deviceName));
-
+        const labDeviceNames = new Set(labDevices.map((d) => d.name));
+        const interconnectDeviceNames = new Set(interconnectDevices.map((d) => d.name));
+        const interconnectDevicePorts = new Map(interconnectDevices.map((d) => [d.name, new Set(d.ports.split(',').flatMap((portDef) => generatePorts(portDef)))]));
+        
         setConnections((prevConnections) =>
-            prevConnections.filter(
-                (connection) =>
-                    labDeviceNames.has(connection.labDeviceName) &&
-                    (!connection.interconnectDeviceName || interconnectDeviceNames.has(connection.interconnectDeviceName))
-            )
+            prevConnections.filter((connection) => {
+                if (!labDeviceNames.has(connection.labDeviceName)) {
+                    // Delete the connection if the lab device is deleted
+                    deleteConnection(connection.id);
+                    return false;
+                }
+                if (connection.interconnectDeviceName && !interconnectDeviceNames.has(connection.interconnectDeviceName)) {
+                    // Clear interconnect device information if the interconnect device is deleted
+                    updateConnection(connection.id, {
+                        interconnectDeviceName: '',
+                        interconnectDevicePort: ''
+                    });
+                    return true;
+                }
+                if (connection.interconnectDeviceName && !interconnectDevicePorts.get(connection.interconnectDeviceName)?.has(connection.interconnectDevicePort)) {
+                    // Clear interconnect device port if the port is deleted
+                    updateConnection(connection.id, {
+                        interconnectDevicePort: ''
+                    });
+                    return true;
+                }
+                return true;
+            })
         );
     }, [labDevices, interconnectDevices]);
 
@@ -99,6 +120,22 @@ function ConnectionsTable() {
             });
         } catch (error) {
             console.error('Error saving connection:', error);
+        }
+    };
+
+    const deleteConnection = async (connectionId: number) => {
+        try {
+            await authenticatedApiClient.deleteConnection(connectionId);
+        } catch (error) {
+            console.error('Error deleting connection:', error);
+        }
+    };
+
+    const updateConnection = async (connectionId: number, updatedData: Partial<Connection>) => {
+        try {
+            await authenticatedApiClient.updateConnection(connectionId, updatedData);
+        } catch (error) {
+            console.error('Error updating connection:', error);
         }
     };
 
@@ -150,8 +187,8 @@ function ConnectionsTable() {
                     >
                         <option value="">Select Device</option>
                         {interconnectDevices.map((device) => (
-                            <option key={device.deviceName} value={device.deviceName}>
-                                {device.deviceName}
+                            <option key={device.name} value={device.name}>
+                                {device.name}
                             </option>
                         ))}
                     </select>

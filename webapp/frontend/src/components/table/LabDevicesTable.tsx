@@ -1,67 +1,143 @@
 import { CircleMinus, CirclePlus } from 'lucide-react';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import DataTable from 'react-data-table-component';
-import { LabDevice, useOnboardingStore } from "../../stores/onboarding";
+import { useAuth } from '../../hooks/useAuth';
+import { debounce } from '../../lib/helpers';
+import { Device } from '../../models/Device';
 import DeviceModal from '../DeviceModal';
 import customStyles from './dataTableStyles';
 
-export default function LabDevicesTable() {
-    const { labDevices, addLabDevice, updateLabDevice, removeLabDevice } = useOnboardingStore(
-        (state) => state, // select the entire state object for this store, can specify by using dot notation
-    );
+interface LabDevicesTableProps {
+    labDevices: Device[];
+    setLabDevices: React.Dispatch<React.SetStateAction<Device[]>>;
+}
+
+
+export default function LabDevicesTable({
+    labDevices,
+    setLabDevices
+}: LabDevicesTableProps) {
+    const { authenticatedApiClient } = useAuth();
     const [isPortModalOpen, setIsPortModalOpen] = useState(false);
     const [isDescriptionModalOpen, setIsDescriptionModalOpen] = useState(false);
-    const [selectedIndex, setSelectedIndex] = useState<number>(-1);
-    const [selectedDevice, setSelectedDevice] = useState<LabDevice | undefined>();
+    const [selectedDevice, setSelectedDevice] = useState<Device | undefined>();
     const [currentPage, setCurrentPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(5);
+    const pendingUpdates = useRef<{ [key: string]: NodeJS.Timeout }>({});
 
-    const addNewRow = () => {
-        addLabDevice({
-            type: 'lab',
-            deviceName: '',
-            icon: '',
-            model: '',
-            serialNumber: '',
-            description: '',
-            ports: ''
-        });
-    }
+    useEffect(() => {
+        const fetchDevices = async () => {
+            try {
+                const res = await authenticatedApiClient.getDevicesByType('LAB');
+                setLabDevices(res.data || []);
+            } catch (error) {
+                console.error("Failed to fetch lab devices:", error);
+            }
+        };
+
+        fetchDevices();
+    }, [authenticatedApiClient]);
+
+    const addNewRow = async () => {
+        const newDevice = new Device(
+            Date.now(), // need an arbitrary id, this won't actually be used to create the device
+            null,
+            null,
+            '',
+            '',
+            '',
+            '',
+            '',
+            null,
+            null,
+            null,
+            '',
+            'LAB',
+            'SWITCH'
+        );
+
+        // attempt to add to database
+        const res = await authenticatedApiClient.createDevice(newDevice);
+        if (res.data) {
+            setLabDevices(prevDevices => [
+                ...prevDevices,
+                res.data!
+            ]);
+        }
+    };
+
+    const updateDevice = useCallback(
+        debounce(async (index: number, name: string, value: string) => {
+            const deviceToUpdate = labDevices[index];
+            if (deviceToUpdate) {
+                await authenticatedApiClient.updateDevice(deviceToUpdate.id, { [name]: value });
+            }
+        }, 1000),
+        [labDevices]
+    );
 
     const handleTableInputChange = (index: number, e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
-        updateLabDevice(index, { [name]: value });
+        const updateKey = `${index}-${name}`;
+
+        // Clear any existing timeout for this field
+        if (pendingUpdates.current[updateKey]) {
+            clearTimeout(pendingUpdates.current[updateKey]);
+        }
+
+        // Update local state immediately
+        setLabDevices(prevDevices => {
+            const updatedDevices = [...prevDevices];
+            const device = updatedDevices[index];
+            if (device) {
+                (device as any)[name] = value;
+            }
+            return updatedDevices;
+        });
+
+        // Set new timeout for this update
+        pendingUpdates.current[updateKey] = setTimeout(() => {
+            updateDevice(index, name, value);
+            delete pendingUpdates.current[updateKey];
+        }, 1000);
     };
 
-    const handleRowDeleteClick = (index: number) => {
-        removeLabDevice(index);
+    const handleRowDeleteClick = async (index: number) => {
+        const deviceToDelete = labDevices[index];
+        if (deviceToDelete.id) {
+            try {
+                await authenticatedApiClient.deleteDevice(deviceToDelete.id);
+            } catch (error) {
+                console.error("Failed to delete device:", error);
+                return;
+            }
+        }
+        setLabDevices(prevDevices => prevDevices.filter((_, i) => i !== index));
     };
 
-    const openPortModal = useCallback((row: LabDevice, index: number) => {
-        setSelectedIndex(index);
+    const openPortModal = useCallback((row: Device) => {
         setSelectedDevice(row);
         setIsPortModalOpen(true);
     }, []);
 
-    const openDescriptionModal = useCallback((row: LabDevice, index: number) => {
-        setSelectedIndex(index);
+    const openDescriptionModal = useCallback((row: Device) => {
         setSelectedDevice(row);
         setIsDescriptionModalOpen(true);
-    }, [])
+    }, []);
 
     const columns = [
         {
             name: 'Device Name',
             sortable: true,
-            selector: row => row.deviceName,
+            selector: row => row.name,
             cell: (row, localIndex: number) => {
                 const globalIndex = currentPage * rowsPerPage + localIndex;
 
                 return (
                     <input
                         type="text"
-                        value={row.deviceName}
-                        name="deviceName"
+                        value={row.name}
+                        name="name"
                         placeholder="Device name"
                         onChange={(e) => handleTableInputChange(globalIndex, e)}
                         className="w-full focus:outline-none"
@@ -84,10 +160,10 @@ export default function LabDevicesTable() {
                         className="bg-transparent focus:outline-none hover:cursor-pointer"
                     >
                         <option value="" disabled>Select</option>
-                        <option value="router">Router</option>
-                        <option value="switch">Switch</option>
-                        <option value="external">External</option>
-                        <option value="server">Server</option>
+                        <option value="ROUTER">Router</option>
+                        <option value="SWITCH">Switch</option>
+                        <option value="EXTERNAL">External</option>
+                        <option value="SERVER">Server</option>
                     </select>
                 )
             }
@@ -132,11 +208,9 @@ export default function LabDevicesTable() {
         },
         {
             name: 'Description',
-            cell: (row, localIndex: number) => {
-                const globalIndex = currentPage * rowsPerPage + localIndex;
-
+            cell: (row) => {
                 return (
-                    <button onClick={() => openDescriptionModal(row, globalIndex)} className='border-b-blue-400 border-b-2 flex flex-row items-center'>
+                    <button onClick={() => openDescriptionModal(row)} className='border-b-blue-400 border-b-2 flex flex-row items-center'>
                         Edit
                     </button>
                 )
@@ -144,11 +218,9 @@ export default function LabDevicesTable() {
         },
         {
             name: 'Ports',
-            cell: (row, localIndex: number) => {
-                const globalIndex = currentPage * rowsPerPage + localIndex;
-
+            cell: (row) => {
                 return (
-                    <button onClick={() => openPortModal(row, globalIndex)} className='border-b-blue-400 border-b-2 flex flex-row items-center'>
+                    <button onClick={() => openPortModal(row)} className='border-b-blue-400 border-b-2 flex flex-row items-center'>
                         Configure
                     </button>
                 )
@@ -196,8 +268,8 @@ export default function LabDevicesTable() {
                 }}
                 customStyles={customStyles}
             />
-            {isDescriptionModalOpen && <DeviceModal renderTable={false} setIsOpen={setIsDescriptionModalOpen} deviceIndex={selectedIndex} deviceType='lab' deviceInformation={selectedDevice} />}
-            {isPortModalOpen && <DeviceModal renderTable={true} setIsOpen={setIsPortModalOpen} deviceIndex={selectedIndex} deviceType='lab' deviceInformation={selectedDevice} />}
+            {isDescriptionModalOpen && <DeviceModal renderTable={false} setIsOpen={setIsDescriptionModalOpen} deviceType='LAB' deviceInformation={selectedDevice} />}
+            {isPortModalOpen && <DeviceModal renderTable={true} setIsOpen={setIsPortModalOpen} deviceType='LAB' deviceInformation={selectedDevice} />}
         </section>
     );
 }
