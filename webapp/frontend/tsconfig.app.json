@@ -23,6 +23,11 @@
     "noFallthroughCasesInSwitch": true,
     "noImplicitAny": false,
   },
+  "references": [
+    {
+      "path": "../common"
+    }
+  ],
   "include": [
     "src"
   ]

@@ -13,11 +13,18 @@ export function generateTempPassword(length: number = 12): string {
 export function debounce<T extends (...args: any[]) => void>(func: T, wait: number) {
     let timeout: ReturnType<typeof setTimeout> | undefined;
 
-    return function(...args: any[]) {
+    return function (...args: any[]) {
         // @ts-expect-error `this` needs a type
         // eslint-disable-next-line @typescript-eslint/no-this-alias
         const context = this;
         clearTimeout(timeout);
         timeout = setTimeout(() => func.apply(context, args), wait);
     }
+}
+
+export function toTitleCase(str) {
+    return str.replace(
+        /\w\S*/g,
+        text => text.charAt(0).toUpperCase() + text.substring(1).toLowerCase()
+    );
 }

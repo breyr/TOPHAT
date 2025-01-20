@@ -1,73 +1,106 @@
-import { PrismaClient } from "@prisma/client";
+import { AccountStatus, PrismaClient, type AppUser } from "@prisma/client";
 import bcrypt from 'bcryptjs';
+import type { RegisterUserRequestPayload } from "../../../common/shared-types";
 import { IUserRepository } from "../types/classInterfaces";
-import { CreateUserDTO, UserResponse } from "../types/types";
 
-export class PrismaUserRespository implements IUserRepository {
+export class PrismaUserRepository implements IUserRepository {
     private prisma: PrismaClient;
 
     constructor(prismaClient: PrismaClient) {
         this.prisma = prismaClient
     }
+    async update(id: number, data: Partial<AppUser>): Promise<Partial<AppUser>> {
+        // this method does not update passwords
+        return this.prisma.appUser.update({
+            where: { id },
+            data: {
+                ...data,
+                updatedAt: new Date(),
+            },
+            select: {
+                id: true,
+                username: true,
+                email: true,
+                tempPassword: true,
+                accountType: true,
+                accountStatus: true,
+            }
+        });
+    }
 
-    create(formData: CreateUserDTO): Promise<UserResponse> {
+    create(formData: RegisterUserRequestPayload): Promise<Partial<AppUser>> {
         const hashedPassword = bcrypt.hashSync(formData.password, 10);
-        return this.prisma.user.create({
+        return this.prisma.appUser.create({
             data: {
                 username: formData.username,
                 email: formData.email,
                 password: hashedPassword,
-                account_type: formData.account_type,
-                created_at: new Date(),
-                updated_at: new Date(),
+                tempPassword: formData.accountType !== 'OWNER' ? formData.password : '', // set tempPassword to be the users generated password or nothing if the user is an owner bc the owner account sets their own password at account creation
+                accountType: formData.accountType,
+                accountStatus: AccountStatus.PENDING,
+                createdAt: new Date(),
+                updatedAt: new Date(),
             },
             select: {
                 id: true,
-                email: true,
                 username: true,
-                password: true,
-                account_type: true
+                email: true,
+                tempPassword: true,
+                accountType: true,
+                accountStatus: true,
             }
         })
     }
 
-    findByEmail(email: string): Promise<UserResponse | null> {
-        return this.prisma.user.findFirst({
+    getAll(): Promise<Partial<AppUser>[]> {
+        return this.prisma.appUser.findMany({
+            select: {
+                id: true,
+                username: true,
+                email: true,
+                tempPassword: true,
+                accountType: true,
+                accountStatus: true,
+            },
+        });
+    }
+
+    findByEmail(email: string): Promise<AppUser | null> {
+        return this.prisma.appUser.findFirst({
             where: { email },
-            select: {
-                id: true,
-                email: true,
-                username: true,
-                password: true,
-                account_type: true
-            }
         })
     }
 
-    findByUsername(username: string): Promise<UserResponse | null> {
-        return this.prisma.user.findFirst({
+    findByUsername(username: string): Promise<AppUser | null> {
+        return this.prisma.appUser.findFirst({
             where: { username },
-            select: {
-                id: true,
-                email: true,
-                username: true,
-                password: true,
-                account_type: true
-            }
         })
     }
 
-    delete(id: number): Promise<UserResponse | null> {
-        return this.prisma.user.delete({
+    findById(id: number): Promise<AppUser | null> {
+        return this.prisma.appUser.findUnique({
+            where: { id },
+        })
+    }
+
+    delete(id: number): Promise<Partial<AppUser> | null> {
+        return this.prisma.appUser.delete({
             where: { id },
             select: {
                 id: true,
-                email: true,
-                username: true,
-                password: true,
-                account_type: true
             }
         })
+    }
+
+    async changePassword(userId: number, newPassword: string): Promise<AppUser | null> {
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+        return this.prisma.appUser.update({
+            where: { id: userId },
+            data: { 
+                password: hashedPassword,
+                updatedAt: new Date()
+            }
+        });
     }
 
 }

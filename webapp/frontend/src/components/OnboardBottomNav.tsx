@@ -13,7 +13,7 @@ export default function OnboardBottomNav() {
     const isStep4 = step == 4
 
     return (
-        <nav className="w-5/12 mx-auto">
+        <nav className="w-5/12 mx-auto py-8">
             <div className="flex items-center">
                 <span
                     className={`font-bold rounded-full size-10 border-2 border-[#1d69cc] flex justify-center items-center ${isStep1 ? 'bg-[#1d69cc] text-gray-200' : 'text--[#1d69cc]'}`}>

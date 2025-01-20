@@ -1,39 +1,38 @@
-import React from 'react';
 import { ArrowRight } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useState } from 'react';
 import { useNavigate } from "react-router-dom";
+import LoginUser from "../components/auth/LoginUser";
 import { useAuth } from "../hooks/useAuth";
 
 export default function IndexPage() {
-    const navigateTo = useNavigate();
-    const [username, setUsername] = useState("");
-    const [password, setPassword] = useState("");
-    const [message, setMessage] = useState("");
-    const { user, login } = useAuth();
+    const navigate = useNavigate();
+    const { user } = useAuth();
+    const [onboardComplete, setOnboardComplete] = useState<boolean | null>(null);
+
 
     // on mount if the token exists redirect to the dashboard
     useEffect(() => {
         if (user) {
-            navigateTo("/dashboard/");
+            navigate("/dashboard/")
         }
-    }, [user, navigateTo]);
+    }, [user, navigate]);
 
-    // handle login
-    const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault();
-        const { success, message } = await login(username, password);
-        if (success) {
-            navigateTo('/dashboard/')
-        } else {
-            // if not successful there will be a message returned from the backend that we can use
-            setMessage(message!);
-        }
-    }
+    useEffect(() => {
+        const fetchConfig = async () => {
+            try {
+                const response = await fetch('/api/config/OnboardComplete');
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                const data = await response.json();
+                setOnboardComplete(data.data.value === 'true');
+            } catch (error) {
+                console.error('Error fetching config:', error);
+            }
+        };
 
-    // handle navigating to onboarding
-    function handleNext() {
-        navigateTo('/onboard/');
-    }
+        fetchConfig();
+    }, []);
 
     return (
         <section className="h-lvh flex flex-col p-[1.875rem]">
@@ -43,21 +42,14 @@ export default function IndexPage() {
                 </div>
                 <div className="flex-1 flex flex-col justify-center">
                     <section className="px-16">
-                        <h1 className="text-[2rem] mb-0">Capstone Testbed</h1>
-                        <div className="flex flex-row items-center">
+                        <h1 className="text-[2rem] mb-2">Capstone Testbed</h1>
+                        {!onboardComplete && <div className="flex flex-row items-center">
                             <p>First time setup?</p>
-                            <p className="r-btn tertiary flex items-center hover:cursor-pointer" onClick={handleNext}>
+                            <p className="r-btn tertiary flex items-center hover:cursor-pointer" onClick={() => navigate("/onboard/")}>
                                 Complete onboarding <ArrowRight size={18} />
                             </p>
-                        </div>
-                        <form onSubmit={handleLogin} className="flex flex-col mt-10 mb-6">
-                            <label className="font-bold" htmlFor="email">Email / Username</label>
-                            <input className="r-input large" name="email" type="text" value={username} onChange={(e) => setUsername(e.target.value)} />
-                            <label className="font-bold mt-4" htmlFor="password">Password</label>
-                            <input className="r-input large" name="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
-                            <button type="submit" className="r-btn primary mt-5">Log In</button>
-                            <span>{message}</span>
-                        </form>
+                        </div>}
+                        <LoginUser redirectToDashboard={true} />
                         <div className="flex justify-center">
                             <button className="r-btn tertiary">Need help signing in?</button>
                         </div>

@@ -1,6 +1,7 @@
 import { NextFunction, Response } from "express";
+import type { CreateTopologyRequestPayload } from "../../../common/shared-types";
 import { DIContainer } from "../config/DIContainer";
-import { AuthenticatedRequest, CreateTopologyDTO, UpdateTopologyDTO } from "../types/types";
+import { AuthenticatedRequest, UpdateTopologyDTO } from "../types/types";
 import { checkForTopologyId, checkForUserId } from "../utils/validation";
 
 export class TopologyController {
@@ -9,7 +10,7 @@ export class TopologyController {
     async createTopology(req: AuthenticatedRequest, res: Response, next: NextFunction) {
         try {
             const userId = checkForUserId(req);
-            const createTopologyDTO = { ...req.body } as CreateTopologyDTO;
+            const createTopologyDTO = { ...req.body } as CreateTopologyRequestPayload;
             const topology = await this.topologyService.createTopology(userId, createTopologyDTO);
             res.status(201).json({
                 message: 'Topology created successfully',

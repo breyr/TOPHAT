@@ -1,9 +1,9 @@
 import { Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
+import type { Topology } from "../../../common/shared-types";
 import CreateTopology from "../components/CreateTopology";
 import TopologyCard from "../components/TopologyCard";
 import { useAuth } from "../hooks/useAuth";
-import { Topology } from "../types/types";
 
 export default function UserTopologiesPage() {
     const { token, authenticatedApiClient } = useAuth();
@@ -23,12 +23,15 @@ export default function UserTopologiesPage() {
                 setTopologies(response.data?.filter(topology => !topology.archived) ?? []);
             } catch (e) {
                 setError(e instanceof Error ? e.message : 'An error occurred');
-                console.error(e);
             } finally {
                 setIsLoading(false);
             }
         })();
     }, [token, authenticatedApiClient]);
+
+    useEffect(() => {
+        console.debug(error);
+    }, [error]);
 
     const handleDelete = async (topologyId: number) => {
         if (!token) {
@@ -48,7 +51,7 @@ export default function UserTopologiesPage() {
             return;
         }
         try {
-            const response = await authenticatedApiClient.updateTopology(topologyId,{
+            const response = await authenticatedApiClient.updateTopology(topologyId, {
                 archived: true
             });
             // update topologies list on success
@@ -68,7 +71,7 @@ export default function UserTopologiesPage() {
             ) : (
                 topologies.length !== 0 && (
                     topologies.map((topology) => (
-                        <TopologyCard key={topology.id} {...topology} onDelete={() => handleDelete(topology.id)}  onArchive={() => handleArchive(topology.id)} />
+                        <TopologyCard key={topology.id} {...topology} onDelete={() => handleDelete(topology.id)} onArchive={() => handleArchive(topology.id)} />
                     ))
                 )
             )}

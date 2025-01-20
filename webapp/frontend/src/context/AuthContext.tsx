@@ -1,27 +1,28 @@
-import { jwtDecode } from 'jwt-decode';
+import { jwtDecode, JwtPayload } from 'jwt-decode';
 import { createContext, ReactNode, useCallback, useEffect, useMemo, useState } from 'react';
+import type { AccountStatus, AccountType, LoginResponsePayload, RegisterUserResponsePayload } from '../../../common/shared-types.ts';
 import { ApiClient } from "../lib/authenticatedApi.ts";
-import { UserJwtPayload } from "../types/types";
+
+export interface CustomJwtPayload extends JwtPayload {
+    id: number;
+    username: string;
+    email: string;
+    accountType: AccountType;
+}
 
 interface AuthContextType {
-    user: UserJwtPayload | null;
+    user: CustomJwtPayload | null;
     token: string | null;
     login: (usernameOrEmail: string, password: string) => Promise<{ success: boolean; message?: string }>;
     logout: () => void;
+    register: (username: string, email: string, password: string, tempPassword: string, accountType: AccountType, accountStatus: AccountStatus, autoLogin: boolean) => Promise<RegisterUserResponsePayload>;
     authenticatedApiClient: ApiClient;
-}
-
-interface LoginResponse {
-    message?: string;
-    data?: {
-        token: string;
-    };
 }
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-    const [authState, setAuthState] = useState<{ token: string | null, user: UserJwtPayload | null }>(
+    const [authState, setAuthState] = useState<{ token: string | null, user: CustomJwtPayload | null }>(
         { token: null, user: null },
     );
 
@@ -34,11 +35,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     useEffect(() => {
         const token = sessionStorage.getItem("token");
         if (token) {
-            const user = jwtDecode<UserJwtPayload>(token);
+            const user = jwtDecode<CustomJwtPayload>(token);
             setAuthState({ token, user });
 
             // check token expiration
-            const expirationTime = user.exp * 1000;
+            const expirationTime = user.exp! * 1000;
             const currentTime = Date.now();
 
             if (expirationTime < currentTime) {
@@ -67,7 +68,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                 body: JSON.stringify({ usernameOrEmail, password }),
             });
 
-            const resJson: LoginResponse = await response.json();
+            const resJson: LoginResponsePayload = await response.json();
 
             if (!response.ok) {
                 return {
@@ -78,7 +79,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
             if (resJson.data?.token) {
                 const token = resJson.data.token;
-                setAuthState({ token, user: jwtDecode<UserJwtPayload>(token) });
+                setAuthState({ token, user: jwtDecode<CustomJwtPayload>(token) });
                 sessionStorage.setItem('token', token);
                 return { success: true };
             }
@@ -87,6 +88,35 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         } catch (error) {
             console.error('Login error:', error);
             return { success: false, message: 'An error occurred during login.' };
+        }
+    }
+
+    // registration helper
+    const register = async (username: string, email: string, password: string, tempPassword: string, accountType: AccountType, accountStatus: AccountStatus, autoLogin: boolean): Promise<RegisterUserResponsePayload> => {
+        // attempt to register and login
+        try {
+            const response = await fetch('/api/auth/register', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ username, email, password, tempPassword, accountType, accountStatus })
+            });
+
+            const resJson: RegisterUserResponsePayload = await response.json();
+
+            // validation errors
+            if (!response.ok) {
+                return resJson;
+            }
+
+            // call login immediately after a successful registration
+            if (autoLogin) login(username, password);
+
+            return resJson;
+        } catch (error) {
+            console.error('Login error:', error);
+            return { message: 'Login error', data: {} } // user wasn't created
         }
     }
 
@@ -107,6 +137,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                 token: authState.token,
                 login,
                 logout,
+                register,
                 authenticatedApiClient,
             }}
         >

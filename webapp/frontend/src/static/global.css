@@ -551,6 +551,16 @@ table input[type="checkbox"]:checked {
     border-radius: 0.5rem;
 }
 
+/* ==== ACCORDION ==== */
+.accordion-header {
+    font-family: var(--font-body);
+    font-weight: 600;
+    font-size: 0.875rem;
+    color: var(--color-grey-700);
+    padding: 0;
+    margin: 0;
+}
+
 /* ==== FOOTER ==== */
 footer {
     margin-top: 1.25rem;
@@ -560,4 +570,9 @@ footer {
     display: flex;
     justify-content: space-between;
     align-items: center;
+}
+
+.rotate-180 {
+    transform: rotate(180deg);
+    transition: transform 0.2s ease-out;
 }

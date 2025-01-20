@@ -1,15 +1,9 @@
-import React, { useEffect, useState } from "react";
-import { Topology } from "../types/types";
+import { CircleX } from "lucide-react";
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from "react-router-dom";
+import { Topology } from '../../../common/shared-types.ts';
 import useContextMenu from "../hooks/useContextMenu.ts";
-import { Trash2, Archive, CircleX } from "lucide-react";
 import DeletionModal from "./DeletionModal.tsx";
-// TODO add archival mechanism
-
-interface BufferLike {
-  type: "Buffer";
-  data: number[];
-}
 
 interface TopologyProps extends Topology {
   onDelete: (topologyId: number) => void;
@@ -20,13 +14,12 @@ const TopologyCard: React.FC<TopologyProps> = ({
   id,
   name,
   thumbnail,
-  expires_on,
   archived: initialArchived,
-  updated_at,
+  updatedAt,
   onDelete,
   onArchive
 }) => {
-  const { menuOpen, menuPos, showMenu, hideMenu } = useContextMenu();
+  const { menuOpen, hideMenu } = useContextMenu();
   const navigateTo = useNavigate();
   const [thumbnailSrc, setThumbnailSrc] = useState<string | null>(null);
   const [archived, setArchived] = useState(initialArchived);
@@ -61,23 +54,22 @@ const TopologyCard: React.FC<TopologyProps> = ({
   // handle conversion of thumbnail
   useEffect(() => {
     if (!thumbnail) return;
+    try {
+      // Convert the object to a Uint8Array
+      const byteArray = new Uint8Array(Object.values(thumbnail));
 
-    // Type assertion to handle the buffer-like object
-    const bufferObj = thumbnail as unknown as BufferLike;
+      // Convert Uint8Array to binary string
+      const binaryString = Array.from(byteArray)
+        .map(byte => String.fromCharCode(byte))
+        .join('');
 
-    if (bufferObj.type === "Buffer" && Array.isArray(bufferObj.data)) {
-      try {
-        // convert binary buffer to base64 string
-        const base64String = btoa(
-          Array.from(bufferObj.data)
-            .map((byte) => String.fromCharCode(byte))
-            .join("")
-        );
-        const thumbnailSourceString = `data:image/jpg;base64,${base64String}`;
-        setThumbnailSrc(thumbnailSourceString);
-      } catch (error) {
-        console.error("Error converting to base64:", error);
-      }
+      // Convert binary string to base64
+      const base64String = btoa(binaryString);
+
+      const thumbnailSourceString = `data:image/jpg;base64,${base64String}`;
+      setThumbnailSrc(thumbnailSourceString);
+    } catch (error) {
+      console.error('Error converting to base64:', error);
     }
   }, [thumbnail]);
 
@@ -108,16 +100,15 @@ const TopologyCard: React.FC<TopologyProps> = ({
             <div className="flex flex-col">
               <p className="text-xs text-gray-500">Last Modified</p>
               <p className="text-xs text-gray-500">
-                {new Date(updated_at).toLocaleDateString()}
+                {new Date(updatedAt).toLocaleDateString()}
               </p>
             </div>
             <span
               onClick={toggleArchived}
-              className={`inline-flex items-center px-2 py-0.5 text-xs font-medium rounded-full ${
-                archived
-                  ? "bg-red-100 text-red-700 hover:bg-red-300"
-                  : "bg-green-100 text-green-700 hover:bg-green-300"
-              }`}
+              className={`inline-flex items-center px-2 py-0.5 text-xs font-medium rounded-full ${archived
+                ? "bg-red-100 text-red-700 hover:bg-red-300"
+                : "bg-green-100 text-green-700 hover:bg-green-300"
+                }`}
             >
               {archived ? "Archived" : "Active"}
             </span>
@@ -132,6 +123,6 @@ const TopologyCard: React.FC<TopologyProps> = ({
       />
     </div>
   );
-};
+}
 
 export default TopologyCard;

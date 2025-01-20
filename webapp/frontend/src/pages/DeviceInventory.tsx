@@ -1,5 +1,9 @@
+import DeviceManagement from "../components/DeviceManagement";
+
 export default function DeviceInventoryPage() {
     return (
-        <p>Devices</p>
+        <div className="mt-8">
+            <DeviceManagement />
+        </div>
     )
 }

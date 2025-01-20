@@ -22,16 +22,20 @@ export default function TopologyName() {
                 const topologyId = parseInt(id ?? "");
                 if (isNaN(topologyId)) {
                     // TODO show error
+                    const topologyId = parseInt(id ?? "");
+                    if (isNaN(topologyId)) {
+                        // TODO show error
+                    }
+                    const response = await authenticatedApiClient.getTopology(topologyId);
+                    setTopologyName(response.data!.name);
+                    setLastUpdated(id!, response.data!.updatedAt);
+                    initialNameRef.current = response.data!.name;
                 }
-                const response = await authenticatedApiClient.getTopology(topologyId);
-                setTopologyName(response.data!.name);
-                setLastUpdated(id!, response.data!.updated_at);
-                initialNameRef.current = response.data!.name;
             } catch (error) {
                 console.error("Failed to fetch topology data:", error);
             }
         })();
-    }, [id, token]);
+    }, [id, token, authenticatedApiClient, setLastUpdated]);
 
     useEffect(() => {
         if (spanRef.current) {
@@ -67,6 +71,7 @@ export default function TopologyName() {
     const handleBlur = async () => {
         setIsEditing(false);
         if (topologyName !== initialNameRef.current) {
+            await updateTopologyName();
             await updateTopologyName();
         }
     };
