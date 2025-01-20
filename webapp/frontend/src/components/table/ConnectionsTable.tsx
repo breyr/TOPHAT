@@ -70,7 +70,7 @@ function ConnectionsTable({ interconnectDevices, labDevices }: ConnectionsTableP
         const labDeviceNames = new Set(labDevices.map((d) => d.name));
         const interconnectDeviceNames = new Set(interconnectDevices.map((d) => d.name));
         const interconnectDevicePorts = new Map(interconnectDevices.map((d) => [d.name, new Set(d.ports.split(',').flatMap((portDef) => generatePorts(portDef)))]));
-        
+
         setConnections((prevConnections) =>
             prevConnections.filter((connection) => {
                 if (!labDeviceNames.has(connection.labDeviceName)) {

@@ -6,6 +6,7 @@ import customStyles from './dataTableStyles';
 interface DevicePortsTableProps {
     deviceId: number | undefined;
     ports: string;
+    isEditable: boolean; // New prop to determine if the table is in edit mode
     onUpdatePorts: (deviceId: number, updatedPorts: string) => void;
 }
 
@@ -14,7 +15,7 @@ interface Port {
     range: string;
 }
 
-const DevicePortsTable: React.FC<DevicePortsTableProps> = ({ deviceId, ports, onUpdatePorts }) => {
+const DevicePortsTable: React.FC<DevicePortsTableProps> = ({ deviceId, ports, onUpdatePorts, isEditable }) => {
 
     const [devicePorts, setDevicePorts] = useState<Port[]>([]);
     const [initialPorts, setInitialPorts] = useState<string>('');
@@ -22,13 +23,10 @@ const DevicePortsTable: React.FC<DevicePortsTableProps> = ({ deviceId, ports, on
     const [currentPage, setCurrentPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(5);
 
-    // initialize devicePorts and initialPorts when the component mounts
     useEffect(() => {
         if (ports.trim()) {
             const portArr = ports.split(',').map((portStr) => {
                 const [prefix, range] = portStr.split('|');
-
-                // return a Port object
                 return {
                     prefix: prefix.trim(),
                     range: range
@@ -42,10 +40,9 @@ const DevicePortsTable: React.FC<DevicePortsTableProps> = ({ deviceId, ports, on
         }
     }, [ports]);
 
-    // check if devicePorts is different from initialPorts when devicePorts changes
     useEffect(() => {
         const currentPorts = devicePorts.map((port) => `${port.prefix}|${port.range}`).join(',');
-        setIsSaveDisabled(currentPorts === initialPorts); // disable Save button if no changes
+        setIsSaveDisabled(currentPorts === initialPorts);
     }, [devicePorts, initialPorts]);
 
     const addNewRow = () => {
@@ -53,7 +50,6 @@ const DevicePortsTable: React.FC<DevicePortsTableProps> = ({ deviceId, ports, on
             prefix: '',
             range: ''
         };
-
         setDevicePorts((prevPorts) => [...prevPorts, blankPort]);
     };
 
@@ -70,11 +66,7 @@ const DevicePortsTable: React.FC<DevicePortsTableProps> = ({ deviceId, ports, on
     };
 
     const save = () => {
-        // save the ports to the index of the device that we are editing currently
-        const portStrings = devicePorts.map(port => {
-            // combine prefix and port range in the format prefix|startNumber-endNumber
-            return `${port.prefix}|${port.range}`;
-        });
+        const portStrings = devicePorts.map(port => `${port.prefix}|${port.range}`);
         const portsToSave = portStrings.join(',');
         if (deviceId) {
             onUpdatePorts(deviceId, portsToSave);
@@ -88,8 +80,7 @@ const DevicePortsTable: React.FC<DevicePortsTableProps> = ({ deviceId, ports, on
             selector: row => row.prefix,
             cell: (row, localIndex: number) => {
                 const globalIndex = currentPage * rowsPerPage + localIndex;
-
-                return (
+                return isEditable ? (
                     <input
                         type="text"
                         value={row.prefix}
@@ -98,7 +89,9 @@ const DevicePortsTable: React.FC<DevicePortsTableProps> = ({ deviceId, ports, on
                         onChange={(e) => handleTableInputChange(globalIndex, e)}
                         className="w-full focus:outline-none"
                     />
-                )
+                ) : (
+                    <span>{row.prefix}</span>
+                );
             }
         },
         {
@@ -106,19 +99,18 @@ const DevicePortsTable: React.FC<DevicePortsTableProps> = ({ deviceId, ports, on
             selector: (row) => row.range,
             cell: (row, localIndex: number) => {
                 const globalIndex = currentPage * rowsPerPage + localIndex;
-
-                return (
-                    <div className="flex items-center space-x-2">
-                        <input
-                            type="text"
-                            value={row.range}
-                            name="range"
-                            placeholder="1-46"
-                            onChange={(e) => handleTableInputChange(globalIndex, e)}
-                            className="w-full focus:outline-none"
-                        />
-                    </div>
-                )
+                return isEditable ? (
+                    <input
+                        type="text"
+                        value={row.range}
+                        name="range"
+                        placeholder="1-46"
+                        onChange={(e) => handleTableInputChange(globalIndex, e)}
+                        className="w-full focus:outline-none"
+                    />
+                ) : (
+                    <span>{row.range}</span>
+                );
             },
         },
         {
@@ -130,8 +122,7 @@ const DevicePortsTable: React.FC<DevicePortsTableProps> = ({ deviceId, ports, on
             name: '',
             cell: (_row, localIndex) => {
                 const globalIndex = currentPage * rowsPerPage + localIndex;
-
-                return (
+                return isEditable ? (
                     <div className="flex flex-row justify-end">
                         <button
                             type="button"
@@ -141,7 +132,7 @@ const DevicePortsTable: React.FC<DevicePortsTableProps> = ({ deviceId, ports, on
                             <CircleMinus />
                         </button>
                     </div>
-                )
+                ) : null;
             },
             width: '56px'
         },
@@ -154,29 +145,31 @@ const DevicePortsTable: React.FC<DevicePortsTableProps> = ({ deviceId, ports, on
                 data={devicePorts}
                 pagination
                 paginationRowsPerPageOptions={[5, 10, 15]}
-                onChangePage={(page) => setCurrentPage(page - 1)} // RDT pages aren't 0 indexed
+                onChangePage={(page) => setCurrentPage(page - 1)}
                 onChangeRowsPerPage={(newRowsPerPage) => {
                     setRowsPerPage(newRowsPerPage);
-                    setCurrentPage(0); // reset to the first page when rows per page changes
+                    setCurrentPage(0);
                 }}
                 customStyles={customStyles}
             />
-            <div className='flex flex-row justify-end pt-6'>
-                <div className="flex flex-row justify-end items-center">
+            {isEditable && (
+                <div className='flex flex-row justify-end pt-6'>
+                    <div className="flex flex-row justify-end items-center">
+                        <button
+                            className="r-btn tertiary flex flex-row items-center gap-2"
+                            onClick={addNewRow}>
+                            <CirclePlus /> Add Port Range
+                        </button>
+                    </div>
                     <button
-                        className="r-btn tertiary flex flex-row items-center gap-2"
-                        onClick={addNewRow}>
-                        <CirclePlus /> Add Port Range
+                        onClick={save}
+                        disabled={isSaveDisabled}
+                        className={`r-btn text-green-600 hover:text-green-700 flex flex-row items-center gap-1 ${isSaveDisabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    >
+                        <Save /> Save
                     </button>
                 </div>
-                <button
-                    onClick={save}
-                    disabled={isSaveDisabled}
-                    className={`r-btn text-green-600 hover:text-green-700 flex flex-row items-center gap-1 ${isSaveDisabled ? 'opacity-50 cursor-not-allowed' : ''}`}
-                >
-                    <Save /> Save
-                </button>
-            </div>
+            )}
         </section>
     )
 }
