@@ -1,5 +1,6 @@
 import { ArrowLeft } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { useEffect } from 'react';
 import { useOnboardingStore } from '../stores/onboarding';
 
 export default function OnboardTopNav() {
@@ -8,6 +9,7 @@ export default function OnboardTopNav() {
         (state) => state, // select the entire state object for this store, can specify by using dot notation
     );
     const nav = useNavigate();
+    const location = useLocation();
 
     const goBack = () => {
         if (step == 1) {
@@ -17,6 +19,20 @@ export default function OnboardTopNav() {
             nav(-1)
         }
     }
+
+    useEffect(() => {
+        // Update the step based on the current location
+        const path = location.pathname;
+        if (path.includes('users')) {
+            setStep(2);
+        } else if (path.includes('inventory')) {
+            setStep(3);
+        } else if (path.includes('finish')) {
+            setStep(4);
+        } else {
+            setStep(1);
+        }
+    }, [location, setStep]);
 
     return (
         <nav className='relative flex flex-row justify-between items-center'>

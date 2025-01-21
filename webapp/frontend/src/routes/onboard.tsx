@@ -1,6 +1,6 @@
 import { Outlet } from "react-router-dom";
 import OnboardBottomNav from "../components/OnboardBottomNav";
-import OnboardTopNav from "../components/OnboardTapNav";
+import OnboardTopNav from "../components/OnboardTopNav";
 
 export default function OnboardLayout() {
     return (
