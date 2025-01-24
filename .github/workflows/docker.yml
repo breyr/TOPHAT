@@ -11,11 +11,15 @@ jobs:
         steps:
             - name: checkout
               uses: actions/checkout@v4
-            - name: build images
+            - name: build backend image
               run: |
-                docker build ./webapp/backend/ -t breyr/top-backend:${{ env.VERSION }}
-                docker build ./webapp/frontend/ -t breyr/top-frontend:${{ env.VERSION }}
-                docker build ./interconnect-api/ -t breyr/top-interconnectapi:${{ env.VERSION }}
+                docker build -f webapp/backend/Dockerfile -t breyr/top-backend:${{ env.VERSION }} .
+            - name: build frontend image
+              run: |
+                docker build -f webapp/frontend/Dockerfile -t breyr/top-frontend:${{ env.VERSION }} .
+            - name: build interconnect-api image
+              run: |
+                docker build -f interconnect-api/Dockerfile -t breyr/top-interconnectapi:${{ env.VERSION }} .
             - name: push images
               run: |
                 docker login -u breyr -p ${{ secrets.DOCKER_HUB_TOKEN }}
