@@ -5,6 +5,7 @@ RUN npm install
 RUN npm install prisma --save-dev
 COPY . .
 RUN npx prisma generate
+RUN npm run build
 
 FROM node:22.9-alpine as runtime
 WORKDIR /app
