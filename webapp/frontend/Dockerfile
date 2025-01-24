@@ -2,7 +2,11 @@
 FROM node:22.9 as build
 WORKDIR /app
 COPY package*.json ./
-RUN npm ruin build
+COPY ../common ./common
+RUN npm install
+COPY . .
+RUN npm run build
+
 # production stage
 FROM nginx:alpine
 COPY --from=build /app/dist /usr/share/nginx/html
