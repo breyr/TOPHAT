@@ -19,6 +19,14 @@ Use JIRA to create a new branch from `dev`
    1. `/common`
    2. `/backend`
    3. `/frontend`
+  
+### Starting Development Environment
+
+1. Run `docker compose -f compose.dev.yaml up --build`
+
+   This runs the postgres db and interconnect api container.
+   
+2. Run `npm run dev` within `/backend` first and then `/frontend`, order matters.
 
 ### Pull Requests
 
