@@ -2,10 +2,12 @@ name: Build and Publish image to Docker Hub
 on:
     pull_request:
         branches:
-            - 'r*'
+            - main
+        types:
+            - closed
 jobs:
     publish_image:
-        if: github.event.pull_request.merged == true
+        if: github.event.pull_request.merged == true && startsWith(github.head_ref, 'r')
         runs-on: ubuntu-latest
         steps:
           - name: checkout
