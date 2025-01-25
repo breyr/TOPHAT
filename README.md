@@ -6,6 +6,20 @@ Tasks can be found [here](https://redinfra.atlassian.net/jira/software/projects/
 
 Use JIRA to create a new branch from `dev`
 
+### Setting Up
+
+1. Clone the repo
+2. Add a .env file within `/backend` with the following:
+   
+   ```
+   DATABASE_URL="postgres://demo:demo@localhost:5432/demo"
+   SECRET_KEY="my_secret_key"
+   ```
+4. Run `npm install` in the following locations:
+   1. `/common`
+   2. `/backend`
+   3. `/frontend`
+
 ### Pull Requests
 
 When you are ready to submit a pull request, make sure you merge from your branch into `dev`.
