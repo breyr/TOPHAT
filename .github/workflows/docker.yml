@@ -1,0 +1,26 @@
+name: Build and Publish image to Docker Hub
+on:
+    pull_request:
+        branches:
+            - main
+jobs:
+    publish_image:
+        runs-on: ubuntu-latest
+        steps:
+            - name: checkout
+              uses: actions/checkout@v4
+            - name: build backend image
+              run: |
+                docker build -f backend/Dockerfile -t breyr/top-backend:latest .
+            - name: build frontend image
+              run: |
+                docker build -f frontend/Dockerfile -t breyr/top-frontend:latest .
+            - name: build interconnect-api image
+              run: |
+                docker build -f interconnect-api/Dockerfile -t breyr/top-interconnectapi:latest .
+            - name: push images
+              run: |
+                docker login -u breyr -p ${{ secrets.DOCKER_HUB_TOKEN }}
+                docker push breyr/top-backend:latest
+                docker push breyr/top-frontend:latest
+                docker push breyr/top-interconnectapi:latest

@@ -1,0 +1,10 @@
+.env
+node_modules
+dist
+.git
+.gitignore
+Dockerfile
+compose.yaml
+backend
+interconnect-api
+*.md

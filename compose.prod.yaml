@@ -1,0 +1,44 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres
+    container_name: postgres
+    environment:
+      POSTGRES_USER: demo
+      POSTGRES_PASSWORD: demo
+      POSTGRES_DB: demo
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  backend:
+    image: breyr/top-backend:latest
+    container_name: backend
+    environment:
+      DATABASE_URL: postgres://demo:demo@postgres:5432/demo
+      SECRET_KEY: your_secret
+    ports:
+      - "3000:3000"
+    depends_on:
+      - postgres
+
+  frontend:
+    image: breyr/top-frontend:latest
+    container_name: frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+
+  interconnect-api:
+    image: breyr/top-interconnectapi:latest
+    container_name: interconnect-api
+    ports:
+      - "4000:4000"
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:

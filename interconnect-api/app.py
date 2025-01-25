@@ -154,4 +154,4 @@ def clear_link(req: LinkRequest):
 
 if __name__ == "__main__":
     # Run with: uvicorn app:app --reload --host 0.0.0.0 --port 8000
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host="0.0.0.0", port=4000)
