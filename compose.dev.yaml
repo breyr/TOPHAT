@@ -1,0 +1,27 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres
+    container_name: postgres
+    environment:
+      POSTGRES_USER: demo
+      POSTGRES_PASSWORD: demo
+      POSTGRES_DB: demo
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  interconnect-api:
+    build:
+      context: .
+      dockerfile: interconnect-api/Dockerfile
+    container_name: interconnect-api
+    ports:
+      - "4000:4000"
+    depends_on:
+      - postgres
+
+volumes:
+  postgres_data:

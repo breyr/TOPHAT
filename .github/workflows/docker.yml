@@ -1,0 +1,37 @@
+name: Build and Publish image to Docker Hub
+on:
+    pull_request:
+        branches:
+            - main
+        types:
+            - closed
+jobs:
+    publish_image:
+        if: github.event.pull_request.merged == true && startsWith(github.head_ref, 'r')
+        runs-on: ubuntu-latest
+        steps:
+          - name: checkout
+            uses: actions/checkout@v4
+
+          - name: Extract branch name
+            id: extract_branch
+            run: echo "BRANCH_NAME=$(echo ${GITHUB_HEAD_REF})" >> $GITHUB_ENV
+
+          - name: build backend image
+            run: |
+              docker build -f backend/Dockerfile -t breyr/top-backend:${{ env.BRANCH_NAME }} .
+            
+          - name: build frontend image
+            run: |
+              docker build -f frontend/Dockerfile -t breyr/top-frontend:${{ env.BRANCH_NAME }} .
+            
+          - name: build interconnect-api image
+            run: |
+              docker build -f interconnect-api/Dockerfile -t breyr/top-interconnectapi:${{ env.BRANCH_NAME }} .
+            
+          - name: push images
+            run: |
+              docker login -u breyr -p ${{ secrets.DOCKER_HUB_TOKEN }}
+              docker push breyr/top-backend:${{ env.BRANCH_NAME }}
+              docker push breyr/top-frontend:${{ env.BRANCH_NAME }}
+              docker push breyr/top-interconnectapi:${{ env.BRANCH_NAME }}
