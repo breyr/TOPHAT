@@ -1,7 +1,31 @@
-# Capstone Testbed
-
-This is where we will develop rough ideas before creating a prod grade repo.
+# T.O.P. (Topology Orchestration Platform)
 
 Tasks can be found [here](https://redinfra.atlassian.net/jira/software/projects/RED/boards/1)
 
-When developing please create a branch associated with your Jira ticket just so we don't have collisions :)
+## Developing
+
+Use JIRA to create a new branch from `dev`
+
+### Pull Requests
+
+When you are ready to submit a pull request, make sure you merge from your branch into `dev`.
+
+## Releases
+
+Peridocially we will create release branches from `dev`. These branches will follow these naming conventions:
+
+`r-devtest` or `r-<Major>-<Minor>-<Build>`
+
+**`devtest`** is used for rapid iteration for testing docker images, or you could test locally.
+
+**`<Major>-<Minor>-<Build>`** is used to create a new image per release, tagged with `r-<Major>-<Minor>-<Build>`
+
+## Images
+
+Images are automatically built when release branches get merged into main.
+
+[TOP Backend](https://hub.docker.com/r/breyr/top-backend)
+
+[TOP Frontend](https://hub.docker.com/r/breyr/top-frontend)
+
+[TOP InterconnectAPI](https://hub.docker.com/r/breyr/top-interconnectapi)
