@@ -5,7 +5,7 @@ import { useOnboardingStore } from '../stores/onboarding';
 
 export default function OnboardTopNav() {
 
-    const { step, setStep, model } = useOnboardingStore(
+    const { step, setStep } = useOnboardingStore(
         (state) => state, // select the entire state object for this store, can specify by using dot notation
     );
     const nav = useNavigate();
@@ -23,12 +23,10 @@ export default function OnboardTopNav() {
     useEffect(() => {
         // Update the step based on the current location
         const path = location.pathname;
-        if (path.includes('users')) {
+        if (path.includes('inventory')) {
             setStep(2);
-        } else if (path.includes('inventory')) {
-            setStep(3);
         } else if (path.includes('finish')) {
-            setStep(4);
+            setStep(3);
         } else {
             setStep(1);
         }
@@ -39,13 +37,6 @@ export default function OnboardTopNav() {
             <button onClick={goBack} className="flex flex-row items-center text-md gap-1 text-blue-500 font-bold hover:text-blue-600">
                 <ArrowLeft size={20} /> Go {step == 1 ? 'back to login' : 'to previous step'}
             </button>
-            {
-                model && step != 1 && (
-                    <p className="r-chip absolute right-0">
-                        {model}
-                    </p>
-                )
-            }
         </nav>
     )
 }
