@@ -5,7 +5,6 @@ import { AuthProvider } from './context/AuthContext.tsx'
 import DeviceInventoryPage from './pages/DeviceInventory.tsx'
 import FinishOnboard from './pages/FinishOnboard.tsx'
 import IndexPage from './pages/Index.tsx'
-import ModelSelectPage from './pages/ModelSelect.tsx'
 import OnboardInventory from './pages/OnboardInventory.tsx'
 import UserAdministrationPage from './pages/UserAdministration.tsx'
 import UserCreatePage from './pages/UserCreate.tsx'
@@ -25,10 +24,6 @@ const router = createBrowserRouter([
     path: "/onboard",
     element: <OnboardLayout />,
     children: [
-      {
-        path: "",
-        element: <ModelSelectPage />
-      },
       {
         path: "users",
         element: <UserCreatePage />

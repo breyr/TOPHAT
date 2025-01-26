@@ -4,7 +4,6 @@ export type AccountType = 'USER' | 'ADMIN' | 'OWNER' // owner should only be use
 export type AccountStatus = 'NOTCREATED' | 'PENDING' | 'ACCEPTED'
 export type DeviceType = 'LAB' | 'INTERCONNECT'
 export type IconType = 'ROUTER' | 'SWITCH' | 'EXTERNAL' | 'SERVER'
-export type Model = 'multi-tenant' | 'single-user' | null
 type Node = {
     id: string;
     type: string;

@@ -1,14 +1,11 @@
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
-import type { Model } from '../../../common/src/index';
 
 type OnboardingState = {
     step: number;
-    model: Model;
 }
 
 type OnboardingActions = {
-    setModel: (model: Model) => void;
     setStep: (step: number) => void;
 }
 
@@ -20,7 +17,6 @@ export const useOnboardingStore = create<OnboardingStore>()(
             step: 1,
             model: null,
             setStep: (step) => set({ step }),
-            setModel: (model) => set({ model }),
         }),
         {
             name: 'onboarding-state',
