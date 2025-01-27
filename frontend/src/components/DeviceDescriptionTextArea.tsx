@@ -5,7 +5,7 @@ interface DeviceDescriptionTextAreaProps {
     deviceId: number | undefined;
     descriptionText: string;
     isEditable: boolean;
-    onUpdateDescription: (deviceId: number, updatedDescription: string) => void;
+    onUpdateDescription: (updatedDescription: string) => void;
 }
 
 const DeviceDescriptionTextArea: React.FC<DeviceDescriptionTextAreaProps> = ({ deviceId, descriptionText, isEditable, onUpdateDescription }) => {
@@ -25,7 +25,7 @@ const DeviceDescriptionTextArea: React.FC<DeviceDescriptionTextAreaProps> = ({ d
 
     const save = () => {
         if (deviceId) {
-            onUpdateDescription(deviceId, deviceDesc ?? '');
+            onUpdateDescription(deviceDesc ?? '');
         }
     };
 

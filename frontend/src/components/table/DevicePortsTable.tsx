@@ -7,7 +7,7 @@ interface DevicePortsTableProps {
     deviceId: number | undefined;
     ports: string;
     isEditable: boolean; // New prop to determine if the table is in edit mode
-    onUpdatePorts: (deviceId: number, updatedPorts: string) => void;
+    onUpdatePorts: (updatedPorts: string) => void;
 }
 
 interface Port {
@@ -69,7 +69,7 @@ const DevicePortsTable: React.FC<DevicePortsTableProps> = ({ deviceId, ports, on
         const portStrings = devicePorts.map(port => `${port.prefix}|${port.range}`);
         const portsToSave = portStrings.join(',');
         if (deviceId) {
-            onUpdatePorts(deviceId, portsToSave);
+            onUpdatePorts(portsToSave);
         }
     }
 
