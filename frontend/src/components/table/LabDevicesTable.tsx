@@ -1,5 +1,5 @@
 import { CircleMinus, CirclePlus, Edit, Save, X } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import DataTable from 'react-data-table-component';
 import { useAuth } from '../../hooks/useAuth';
 import { toTitleCase } from '../../lib/helpers';
@@ -25,19 +25,6 @@ export default function LabDevicesTable({
     const [isDescriptionModalOpen, setIsDescriptionModalOpen] = useState(false);
     const [selectedDevice, setSelectedDevice] = useState<Device | undefined>();
     const [editingRows, setEditingRows] = useState<Record<number, EditableRow>>({});
-
-    useEffect(() => {
-        const fetchDevices = async () => {
-            try {
-                const res = await authenticatedApiClient.getDevicesByType('LAB');
-                setLabDevices(res.data || []);
-            } catch (error) {
-                console.error("Failed to fetch lab devices:", error);
-            }
-        };
-
-        fetchDevices();
-    }, [authenticatedApiClient]);
 
     const addNewRow = async () => {
         const tempId = Date.now();
@@ -110,7 +97,6 @@ export default function LabDevicesTable({
                 );
                 handleCancelEdit(row);
             }
-            console.log(editingRow.data);
         } catch (error) {
             console.error("Failed to update device:", error);
         }

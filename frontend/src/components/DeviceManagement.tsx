@@ -1,9 +1,10 @@
 import { Accordion, AccordionItem as Item } from "@szhsin/react-accordion";
 import { ChevronDown, EthernetPort, Server, SquareTerminal } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import ConnectionsTable from "../components/table/ConnectionsTable";
 import InterconnectDevicesTable from "../components/table/InterconnectDevicesTable";
 import LabDevicesTable from "../components/table/LabDevicesTable";
+import { useAuth } from "../hooks/useAuth";
 import { Device } from "../models/Device";
 
 interface AccordionItemProps {
@@ -38,9 +39,31 @@ const AccordionItem = ({ header, isFirst, isLast, children, ...rest }: Accordion
 );
 
 export default function DeviceManagement() {
-
+    const { authenticatedApiClient } = useAuth();
     const [interconnectDevices, setInterconnectDevices] = useState<Device[]>([]);
     const [labDevices, setLabDevices] = useState<Device[]>([]);
+
+    useEffect(() => {
+        const fetchInterconnectDevices = async () => {
+            try {
+                const res = await authenticatedApiClient.getDevicesByType('INTERCONNECT');
+                setInterconnectDevices(res.data || []);
+            } catch (error) {
+                console.error("Failed to fetch interconnect devices:", error);
+            }
+        };
+        const fetchLabDevices = async () => {
+            try {
+                const res = await authenticatedApiClient.getDevicesByType('LAB');
+                setLabDevices(res.data || []);
+            } catch (error) {
+                console.error("Failed to fetch lab devices:", error);
+            }
+        };
+
+        fetchInterconnectDevices();
+        fetchLabDevices();
+    }, [authenticatedApiClient]);
 
     return (
         <div className="flex-grow w-full">

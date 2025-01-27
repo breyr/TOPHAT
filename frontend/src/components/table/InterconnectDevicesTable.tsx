@@ -1,5 +1,5 @@
 import { CircleMinus, CirclePlus, Edit, Save, X } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import DataTable from 'react-data-table-component';
 import { DeviceType } from '../../../../common/src/index';
 import { useAuth } from '../../hooks/useAuth';
@@ -24,23 +24,6 @@ export default function InterconnectDevicesTable({
     const [isOpen, setIsOpen] = useState(false);
     const [selectedDevice, setSelectedDevice] = useState<Device | undefined>();
     const [editingRows, setEditingRows] = useState<Record<number, EditableRow>>({});
-
-    useEffect(() => {
-        const fetchDevices = async () => {
-            try {
-                const res = await authenticatedApiClient.getDevicesByType('INTERCONNECT');
-                setInterconnectDevices(res.data || []);
-            } catch (error) {
-                console.error("Failed to fetch interconnect devices:", error);
-            }
-        };
-
-        fetchDevices();
-    }, [authenticatedApiClient]);
-
-    useEffect(() => {
-        console.log("Editing rows data:", editingRows);
-    }, [editingRows]);
 
     const addNewRow = async () => {
         const tempId = Date.now();
@@ -118,7 +101,6 @@ export default function InterconnectDevicesTable({
                 );
                 handleCancelEdit(row);
             }
-            console.log(editingRow.data);
         } catch (error) {
             console.error("Failed to update device:", error);
         }
