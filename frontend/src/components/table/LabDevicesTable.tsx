@@ -1,5 +1,5 @@
 import { CircleMinus, CirclePlus, Edit, Save, X } from 'lucide-react';
-import { useCallback, useEffect, useState } from 'react';
+import { useState } from 'react';
 import DataTable from 'react-data-table-component';
 import { useAuth } from '../../hooks/useAuth';
 import { toTitleCase } from '../../lib/helpers';
@@ -13,9 +13,7 @@ interface LabDevicesTableProps {
 }
 
 interface EditableRow {
-    id: number;
-    originalData: Device;
-    currentData: Device;
+    data: Device;
 }
 
 export default function LabDevicesTable({
@@ -28,22 +26,10 @@ export default function LabDevicesTable({
     const [selectedDevice, setSelectedDevice] = useState<Device | undefined>();
     const [editingRows, setEditingRows] = useState<Record<number, EditableRow>>({});
 
-    useEffect(() => {
-        const fetchDevices = async () => {
-            try {
-                const res = await authenticatedApiClient.getDevicesByType('LAB');
-                setLabDevices(res.data || []);
-            } catch (error) {
-                console.error("Failed to fetch lab devices:", error);
-            }
-        };
-
-        fetchDevices();
-    }, [authenticatedApiClient]);
-
     const addNewRow = async () => {
+        const tempId = Date.now();
         const newDevice = new Device(
-            Date.now(),
+            tempId,
             null,
             null,
             '',
@@ -59,10 +45,15 @@ export default function LabDevicesTable({
             'SWITCH'
         );
 
+        // optimistically update the UI with the new device
+        setLabDevices(prevDevices => [...prevDevices, newDevice]);
+        handleEditClick(newDevice);
+
         try {
             const res = await authenticatedApiClient.createDevice(newDevice);
             if (res.data) {
-                setLabDevices(prevDevices => [...prevDevices, res.data!]);
+                // update the device in the UI with the actual ID from the database
+                setLabDevices(prevDevices => prevDevices.map(device => device.id === tempId ? res.data! : device));
                 // Start editing the new row immediately
                 handleEditClick(res.data);
             }
@@ -75,9 +66,7 @@ export default function LabDevicesTable({
         setEditingRows(prev => ({
             ...prev,
             [row.id]: {
-                id: row.id,
-                originalData: { ...row },
-                currentData: { ...row }
+                data: { ...row },
             }
         }));
     };
@@ -91,29 +80,22 @@ export default function LabDevicesTable({
     };
 
     const handleSaveEdit = async (row: Device) => {
+        // get the row from our hashmap that has the updated data
         const editingRow = editingRows[row.id];
+        // if that row doesn't exist:
+        // this means that row was never edited and the user didn't click the save button
         if (!editingRow) return;
-
         try {
-            // fetch the latest device data to get the updated ports
-            const latestDevice = await authenticatedApiClient.getDeviceById(row.id);
-            if (latestDevice.data) {
-                // merge the latest ports data with the current editing data
-                const updatedData = {
-                    ...editingRow.currentData,
-                    ports: latestDevice.data.ports
-                };
-
-                // save the merged data
-                const updatedDevice = await authenticatedApiClient.updateDevice(row.id, updatedData);
-                if (updatedDevice.data) {
-                    setLabDevices(prevDevices =>
-                        prevDevices.map(device =>
-                            device.id === row.id ? updatedDevice.data! : device
-                        )
-                    );
-                    handleCancelEdit(row);
-                }
+            // save the edited device data
+            const updatedDevice = await authenticatedApiClient.updateDevice(row.id, editingRow.data);
+            // update the device data within interconnectDevices state
+            if (updatedDevice.data) {
+                setLabDevices(prevDevices =>
+                    prevDevices.map(device =>
+                        device.id === row.id ? updatedDevice.data! : device
+                    )
+                );
+                handleCancelEdit(row);
             }
         } catch (error) {
             console.error("Failed to update device:", error);
@@ -125,8 +107,8 @@ export default function LabDevicesTable({
             ...prev,
             [row.id]: {
                 ...prev[row.id],
-                currentData: {
-                    ...prev[row.id].currentData,
+                data: {
+                    ...prev[row.id].data,
                     [name]: value
                 }
             }
@@ -146,33 +128,45 @@ export default function LabDevicesTable({
         }
     };
 
-    const openPortModal = useCallback(async (row: Device) => {
-        try {
-            const latestDevice = await authenticatedApiClient.getDeviceById(row.id);
-            if (latestDevice.data) {
-                setSelectedDevice(latestDevice.data);
-                setIsPortModalOpen(true);
+    const handleUpdatePorts = (deviceId: number, updatedPorts: string) => {
+        setEditingRows(prev => ({
+            ...prev,
+            [deviceId]: {
+                ...prev[deviceId],
+                data: {
+                    ...prev[deviceId].data,
+                    ports: updatedPorts
+                }
             }
-        } catch (error) {
-            console.error("Failed to fetch device data:", error);
-        }
-    }, [authenticatedApiClient]);
+        }));
+    };
 
-    const openDescriptionModal = useCallback(async (row: Device) => {
-        try {
-            const latestDevice = await authenticatedApiClient.getDeviceById(row.id);
-            if (latestDevice.data) {
-                setSelectedDevice(latestDevice.data);
-                setIsDescriptionModalOpen(true);
+    const handleUpdateDescription = (deviceId: number, updatedDescription: string) => {
+        setEditingRows(prev => ({
+            ...prev,
+            [deviceId]: {
+                ...prev[deviceId],
+                data: {
+                    ...prev[deviceId].data,
+                    description: updatedDescription
+                }
             }
-        } catch (error) {
-            console.error("Failed to fetch device data:", error);
-        }
-    }, [authenticatedApiClient]);
+        }));
+    };
+
+    const openPortModal = (row: Device) => {
+        setSelectedDevice(row);
+        setIsPortModalOpen(true);
+    };
+
+    const openDescriptionModal = (row: Device) => {
+        setSelectedDevice(row);
+        setIsDescriptionModalOpen(true);
+    };
 
     const renderCell = (row: Device, name: string, placeholder: string) => {
         const isEditing = editingRows[row.id];
-        const value = isEditing ? editingRows[row.id].currentData[name] : row[name];
+        const value = isEditing ? editingRows[row.id].data[name] : row[name];
 
         return isEditing ? (
             <input
@@ -190,7 +184,7 @@ export default function LabDevicesTable({
 
     const renderTypeSelect = (row: Device) => {
         const isEditing = editingRows[row.id];
-        const value = isEditing ? editingRows[row.id].currentData.icon : toTitleCase(row.icon);
+        const value = isEditing ? editingRows[row.id].data.icon : toTitleCase(row.icon);
 
         return isEditing ? (
             <select
@@ -325,6 +319,8 @@ export default function LabDevicesTable({
                     setIsOpen={setIsDescriptionModalOpen}
                     deviceInformation={selectedDevice}
                     isContentEditable={!!editingRows[selectedDevice.id]}
+                    editingData={editingRows[selectedDevice.id]?.data}
+                    onUpdateDescription={handleUpdateDescription}
                 />
             )}
             {isPortModalOpen && selectedDevice && (
@@ -333,6 +329,8 @@ export default function LabDevicesTable({
                     setIsOpen={setIsPortModalOpen}
                     deviceInformation={selectedDevice}
                     isContentEditable={!!editingRows[selectedDevice.id]}
+                    editingData={editingRows[selectedDevice.id]?.data}
+                    onUpdatePorts={handleUpdatePorts}
                 />
             )}
         </section>

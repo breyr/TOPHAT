@@ -1,4 +1,5 @@
-import type { Connection, CreateConnectionRequestPayload, DeviceType, IconType, PartialAppUser, Topology } from "../../../common/src/index";
+import type { CreateConnectionRequestPayload, DeviceType, IconType, PartialAppUser, Topology } from "../../../common/src/index";
+import { Connection } from "../models/Connection";
 import { Device } from "../models/Device";
 
 type ApiConfig = {
@@ -167,23 +168,30 @@ export class ApiClient {
     async getAllConnections() {
         return this.fetch<Connection[]>('/connections/');
     }
-    async createOrUpdateConnection(data: CreateConnectionRequestPayload & { id?: number }) {
-        const url = data.id ? `/connections/${data.id}` : '/connections';
-        const method = data.id ? 'PUT' : 'POST';
-        return this.fetch<{ id: number }>(url, {
-            method,
-            body: JSON.stringify(data),
-        });
+
+    async createConnectionBulk(data: CreateConnectionRequestPayload[]) {
+        return this.fetch<Connection[]>('/connections/create/bulk', {
+            method: 'POST',
+            body: JSON.stringify(data)
+        })
     }
 
-    async deleteConnection(id: number) {
-        return this.fetch<Connection>(`/connections/${id}`, {
-            method: 'DELETE'
+    async deleteConnectionBulk(data: Connection[]) {
+        return this.fetch<{ count: number }>('/connections/delete/bulk', {
+            method: 'DELETE',
+            body: JSON.stringify(data)
         })
     }
 
     async updateConnection(id: number, data: Partial<Connection>) {
         return this.fetch<Connection>(`/connections/${id}`, {
+            method: 'PUT',
+            body: JSON.stringify(data)
+        })
+    }
+
+    async updateConnectionBulk(data: Connection[]) {
+        return this.fetch<Connection[]>('/connections/update/bulk', {
             method: 'PUT',
             body: JSON.stringify(data)
         })

@@ -273,17 +273,21 @@ export default function UsersTable() {
                 >
                     <UserRoundPlus /> Add User
                 </button>
-                <button
-                    className="r-btn tertiary flex flex-row items-center gap-2"
-                    title="Click to download a CSV file of PENDING user information."
-                    onClick={handleDownloadUserInfo}
-                >
-                    {isDownloading ?
-                        <Loader2 className="h-8 w-8 animate-spin text-gray-500" /> :
-                        <Download />
-                    }
-                    Download
-                </button>
+                {
+                    // only show the download button if we have user data
+                    users.length > 0 &&
+                    <button
+                        className="r-btn tertiary flex flex-row items-center gap-2"
+                        title="Click to download a CSV file of PENDING user information."
+                        onClick={handleDownloadUserInfo}
+                    >
+                        {isDownloading ?
+                            <Loader2 className="h-8 w-8 animate-spin text-gray-500" /> :
+                            <Download />
+                        }
+                        Download
+                    </button>
+                }
             </div>
             <DataTable
                 columns={columns}
