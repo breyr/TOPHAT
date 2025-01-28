@@ -19,6 +19,19 @@ export class ConnectionController {
         }
     }
 
+    async createConnectionBulk(req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> {
+        try {
+            const connectionData = req.body as Connection[];
+            const connections = await this.connectionService.createConnectionBulk(connectionData);
+            res.status(201).json({
+                message: 'Connections created successfully',
+                data: connections,
+            });
+        } catch (error) {
+            next(error);
+        }
+    }
+
     async deleteConnection(req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> {
         try {
             const { id: connectionId } = req.params;
@@ -30,6 +43,19 @@ export class ConnectionController {
             res.status(200).json({
                 message: 'Connection deleted successfully',
                 data: connection,
+            });
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    async deleteConnectionBulk(req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> {
+        try {
+            const connectionData = req.body as Connection[];
+            const connections = await this.connectionService.deleteConnectionBulk(connectionData);
+            res.status(200).json({
+                message: 'Connections deleted successfully',
+                data: connections,
             });
         } catch (error) {
             next(error);
@@ -48,6 +74,20 @@ export class ConnectionController {
             res.status(200).json({
                 message: 'Connection updated successfully',
                 data: connection,
+            });
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    async updateConnectionBulk(req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> {
+        try {
+            const connectionData = req.body as Connection[];
+            console.log(connectionData);
+            const connections = await this.connectionService.updateConnectionBulk(connectionData);
+            res.status(200).json({
+                message: 'Connections updated successfully',
+                data: connections,
             });
         } catch (error) {
             next(error);

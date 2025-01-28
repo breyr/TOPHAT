@@ -1,6 +1,6 @@
 // holds interfaces similar to C#
 import { AppConfig, AppUser, Connection, Device, DeviceType, IconType, Topology } from "@prisma/client";
-import type { CreateTopologyRequestPayload, RegisterUserRequestPayload } from "../../../common/src/index";
+import type { CreateConnectionRequestPayload, CreateTopologyRequestPayload, RegisterUserRequestPayload } from "../../../common/src/index";
 import { UpdateTopologyDTO } from "./types";
 
 export interface IUserRepository {
@@ -64,8 +64,11 @@ export interface IDeviceService {
 
 export interface IConnectionRepository {
     create(requestData: Connection): Promise<Connection>;
+    createBulk(requestData: Partial<Connection>[]): Promise<Connection[]>;
     delete(connectionId: number): Promise<Connection | null>;
+    deleteBulk(requestData: Connection[]): Promise<{ count: number }>;
     update(connectionId: number, requestData: Partial<Connection>): Promise<Connection>;
+    updateBulk(requestData: Connection[]): Promise<Connection[]>;
     findAll(): Promise<Connection[]>;
     findById(connectionId: number): Promise<Connection | null>;
     findByLabDeviceName(labDeviceName: string): Promise<Connection[]>;
@@ -74,8 +77,11 @@ export interface IConnectionRepository {
 
 export interface IConnectionService {
     createConnection(requestData: Connection): Promise<Connection>;
+    createConnectionBulk(requestData: Partial<Connection>[]): Promise<Connection[]>;
     deleteConnection(connectionId: number): Promise<Connection | null>;
+    deleteConnectionBulk(requestData: Connection[]): Promise<{ count: number }>;
     updateConnection(connectionId: number, requestData: Partial<Connection>): Promise<Connection>;
+    updateConnectionBulk(requestData: Connection[]): Promise<Connection[]>;
     getAllConnections(): Promise<Connection[]>;
     getConnectionById(connectionId: number): Promise<Connection | null>;
     getConnectionsByLabDeviceName(labDeviceName: string): Promise<Connection[]>;
