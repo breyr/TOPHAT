@@ -8,6 +8,7 @@ export interface CustomJwtPayload extends JwtPayload {
     username: string;
     email: string;
     accountType: AccountType;
+    accountStatus: AccountStatus;
 }
 
 interface AuthContextType {
