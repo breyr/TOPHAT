@@ -1,8 +1,14 @@
+from enum import Enum
 import uvicorn
-from fastapi import FastAPI, HTTPException
+from fastapi import Depends, FastAPI, HTTPException
 from pydantic import BaseModel
 from netmiko import ConnectHandler
+from dotenv import load_dotenv
+import jwt
+import os
 
+load_dotenv()
+SECRET_KEY = os.environ.get("SECRET_KEY")
 app = FastAPI()
 
 
@@ -16,6 +22,37 @@ class LinkRequest(BaseModel):
     secret: str
 
 
+class AccountType(str, Enum):
+    USER = "USER"
+    ADMIN = "ADMIN"
+    OWNER = "OWNER"
+
+
+class AccountStatus(str, Enum):
+    NOTCREATED = "NOTCREATED"
+    PENDING = "PENDING"
+    ACCEPTED = "ACCEPTED"
+
+
+class JwtPayload:
+    id: int
+    username: str
+    email: str
+    accountType: AccountType
+    accountStatus: AccountStatus
+
+
+# helper function for decoding JWTs
+def decode_jwt(token: str) -> JwtPayload:
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
+        return JwtPayload(**payload)
+    except jwt.ExpiredSignatureError:
+        raise HTTPException(status_code=401, detail="Token has expired")
+    except jwt.InvalidTokenError:
+        raise HTTPException(status_code=401, detail="Invalid token")
+
+
 def generate_vlan_id(port1: str, port2: str) -> int:
     """
     Generate a unique vlan ID for the pair of ports.
@@ -24,8 +61,8 @@ def generate_vlan_id(port1: str, port2: str) -> int:
     we can still apply the uniqueness formula (p1 - 1)*48 + p2.
     """
     # Extract last numeric segment from each port
-    last_number1 = int(port1.split('/')[-1])
-    last_number2 = int(port2.split('/')[-1])
+    last_number1 = int(port1.split("/")[-1])
+    last_number2 = int(port2.split("/")[-1])
 
     # Sort them if order doesn't matter
     p1, p2 = sorted([last_number1, last_number2])
@@ -62,11 +99,13 @@ def generate_clear_link_config(port: str):
         f"interface {port}",
         " shutdown",
         " no description",
-        " no switchport access vlan"
+        " no switchport access vlan",
     ]
 
 
-def apply_config_to_device(host: str, username: str, password: str, secret: str, config_commands: list) -> str:
+def apply_config_to_device(
+    host: str, username: str, password: str, secret: str, config_commands: list
+) -> str:
     """
     Connect to a device using Netmiko, enter enable mode, send config, save, and disconnect.
     Returns the output from the config session for logging/debugging.
@@ -77,11 +116,7 @@ def apply_config_to_device(host: str, username: str, password: str, secret: str,
         "username": username,
         "password": password,
         "secret": secret,
-        "disabled_algorithms": {
-            "kex": [],
-            "crypto": [],
-            "mac": []
-        },
+        "disabled_algorithms": {"kex": [], "crypto": [], "mac": []},
     }
 
     try:
@@ -99,7 +134,7 @@ def apply_config_to_device(host: str, username: str, password: str, secret: str,
 
 
 @app.post("/create_link")
-def create_link(req: LinkRequest):
+def create_link(req: LinkRequest, payload: JwtPayload = Depends(decode_jwt)):
     """
     Create a new L2 Tunneling link between two ports on two separate devices.
     """
@@ -111,22 +146,24 @@ def create_link(req: LinkRequest):
 
     try:
         output1 = apply_config_to_device(
-            req.ip1, req.username, req.password, req.secret, config_device1)
+            req.ip1, req.username, req.password, req.secret, config_device1
+        )
         output2 = apply_config_to_device(
-            req.ip2, req.username, req.password, req.secret, config_device2)
+            req.ip2, req.username, req.password, req.secret, config_device2
+        )
 
         return {
             "status": "success",
             "message": f"Link created successfully with vlan ID {vlan_id}",
             "device1_output": output1,
-            "device2_output": output2
+            "device2_output": output2,
         }
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
 
 @app.post("/clear_link")
-def clear_link(req: LinkRequest):
+def clear_link(req: LinkRequest, payload: JwtPayload = Depends(decode_jwt)):
     """
     Remove the L2 Tunneling link configuration and shut down the ports.
     """
@@ -138,15 +175,17 @@ def clear_link(req: LinkRequest):
 
     try:
         output1 = apply_config_to_device(
-            req.ip1, req.username, req.password, req.secret, config_device1)
+            req.ip1, req.username, req.password, req.secret, config_device1
+        )
         output2 = apply_config_to_device(
-            req.ip2, req.username, req.password, req.secret, config_device2)
+            req.ip2, req.username, req.password, req.secret, config_device2
+        )
 
         return {
             "status": "success",
             "message": f"Link cleared successfully for vlan ID {plan_id}",
             "device1_output": output1,
-            "device2_output": output2
+            "device2_output": output2,
         }
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))

@@ -2,3 +2,5 @@ fastapi
 uvicorn
 netmiko
 pydantic
+python-dotenv
+PyJWT

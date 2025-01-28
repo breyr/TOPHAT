@@ -18,6 +18,8 @@ services:
       context: .
       dockerfile: interconnect-api/Dockerfile
     container_name: interconnect-api
+    environment:
+      SECRET_KEY: my_secret_key
     ports:
       - "4000:4000"
     depends_on:
