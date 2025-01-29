@@ -1,14 +1,14 @@
 import React, { useEffect, useState } from "react";
 import { Eye, EyeOff, User as USER } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 interface ModalProps {
   onSubmit: () => void;
 }
 
 const UserSetupModal: React.FC<ModalProps> = ({ onSubmit }) => {
-  const { authenticatedApiClient, user } = useAuth();
+  const { authenticatedApiClient, user, updateUser } = useAuth();
   const navigateTo = useNavigate();
   const [showPassword, setShowPassword] = useState({ viewPassword: false, viewConfirmPassword: false });
   const [newPassword, setNewPassword] = useState("");
@@ -38,13 +38,10 @@ const UserSetupModal: React.FC<ModalProps> = ({ onSubmit }) => {
         const userResponse = await authenticatedApiClient.updateUser(user.id, { username: username, email: user.email, accountStatus: 'ACCEPTED' });
         if (passwordResponse.data?.success && userResponse.data?.success) {
           onSubmit();
-        } else if (!passwordResponse.data?.success){
-
-        } else if (!userResponse.data?.success) {
-
-        }
+          updateUser({ ...user, username, accountStatus: 'ACCEPTED' });
+        } 
         else {
-          setServerMessage("An error occurred during account setup.");
+          setServerMessage("Username already exists. Try another one.");
         }
       }
       else {
@@ -52,8 +49,8 @@ const UserSetupModal: React.FC<ModalProps> = ({ onSubmit }) => {
       }
 
     } catch(error) {
-      console.error('Error during account setup:', error);
-      setServerMessage("An error occurred during account setup.");
+      setServerMessage("Username already exists. Try another one."); //this is the only error message we can get from the backend
+      console.log(error);
     }
   }
 

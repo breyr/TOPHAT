@@ -54,20 +54,44 @@ export default function UsersTable() {
                 setErrors(prev => ({ ...prev, [index]: 'Failed to check email uniqueness' }));
                 return;
             }
-        }
 
-        setErrors(prev => {
-            const newErrors = { ...prev };
-            delete newErrors[index];
-            return newErrors;
-        });
 
-        if (userToUpdate.accountStatus !== 'NOTCREATED') {
-            await authenticatedApiClient.updateUser(userToUpdate.id, {
-                [name]: value,
+            setErrors(prev => {
+                const newErrors = { ...prev };
+                delete newErrors[index];
+                return newErrors;
             });
+
+            if (userToUpdate.accountStatus !== 'NOTCREATED') {
+                await authenticatedApiClient.updateUser(userToUpdate.id, {
+                    email: value,
+                });
+            }
+
+            // Update local state
+            setUsers(prevUsers => {
+                const updatedUsers = [...prevUsers];
+                const user = updatedUsers[index];
+                if (user) {
+                    user.email = value;
+                }
+                return updatedUsers;
+            });
+        } else {
+            setErrors(prev => {
+                const newErrors = { ...prev };
+                delete newErrors[index];
+                return newErrors;
+            });
+
+            if (userToUpdate.accountStatus !== 'NOTCREATED') {
+                await authenticatedApiClient.updateUser(userToUpdate.id, {
+                    [name]: value,
+                });
+            }
         }
     }, [users, authenticatedApiClient]);
+
 
     const handleTableInputChange = useCallback((index: number, e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
