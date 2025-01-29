@@ -1,16 +1,20 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import DashboardNav from "../components/DashboardNav";
 import { useAuth } from "../hooks/useAuth";
+import UserSetupModal from "../components/UserSetupModal";
 
 export default function DashboardLayout() {
     const location = useLocation();
     const navigateTo = useNavigate();
     const { user } = useAuth();
+    const [showUserSetup, setShowUserSetup] = useState(false);
 
     useEffect(() => {
         if (!user) {
             navigateTo("/");
+        } else if (user.accountStatus === 'PENDING') {
+            setShowUserSetup(true);
         }
     }, [user, navigateTo]); // useNavigate is a stable reference so this is okay
 
@@ -48,6 +52,7 @@ export default function DashboardLayout() {
                     <Outlet />
                 </div>
             </section>
+            {showUserSetup && <UserSetupModal onSubmit={() => setShowUserSetup(false)} />} 
         </section>
     );
 }

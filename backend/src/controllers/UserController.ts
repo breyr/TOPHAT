@@ -39,7 +39,7 @@ export class UserController {
                 throw new ValidationError('Invalid credentials')
             }
             // create token
-            const token = createJwtToken(user.id, user.username, user.email, user.accountType)
+            const token = createJwtToken(user.id, user.username, user.email, user.accountType, user.accountStatus);
             const responsePayload: LoginResponsePayload = {
                 message: 'Login successful',
                 data: { token }
@@ -54,18 +54,20 @@ export class UserController {
     async changePassword(req: Request, res: Response, next: NextFunction) {
         try {
             const { userId, oldPassword, newPassword } = req.body;
-
+            let isValidPassword;
             // Get user first, this basically should never fail
             const user = await this.userService.getUserById(userId);
             if (!user) {
                 throw new ValidationError('User not found');
             }
-            // Validate old password
-            const isValidPassword = await bcrypt.compare(oldPassword, user.password);
+            if(oldPassword !== undefined){
+                isValidPassword = await bcrypt.compare(oldPassword, user.password);
+            }else{
+                isValidPassword = true; //true since oldPassword is not required for first time setup, and would be the only time undefined
+            }
             if (!isValidPassword) {
                 throw new ValidationError('Invalid old password');
             }
-
             // Change password if validation passes
             await this.userService.changePassword(userId, newPassword);
 
@@ -122,12 +124,12 @@ export class UserController {
             const userData = { ...req.body } as Partial<AppUser>;
             const user = await this.userService.updateUser(userId, userData);
             if (!user) {
-                res.status(404).json({ message: 'User not found' });
+                res.status(404).json({ message: 'User not found', success: false });
                 return;
             }
             res.status(200).json({
                 message: 'User updated successfully',
-                data: user.id,
+                data: { id: user.id, success: true}
             });
         } catch (error) {
             next(error);

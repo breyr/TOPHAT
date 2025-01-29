@@ -161,7 +161,7 @@ const SettingsModal: React.FC<ModalProps> = ({ isOpen, onClose }) => {
               )}
             </div>
 
-            <button disabled={!validPassword} type="submit" className="r-btn primary mb-3">
+            <button disabled={!validPassword || oldPassword === ""} type="submit" className="r-btn primary mb-3">
               Change Password
             </button>
             <span>{serverMessage}</span>
