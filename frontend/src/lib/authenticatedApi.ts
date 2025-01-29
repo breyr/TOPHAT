@@ -80,7 +80,7 @@ export class ApiClient {
         });
     }
 
-    async updatePassword(data: { userId: number | undefined, oldPassword: string, newPassword: string }) {
+    async updatePassword(data: { userId: number | undefined, oldPassword?: string, newPassword: string }) {
         return this.fetch<{ message: string, success: boolean }>('/auth/change-password', {
             method: 'PUT',
             body: JSON.stringify(data)
@@ -88,7 +88,7 @@ export class ApiClient {
     }
 
     async updateUser(id: number, data: Partial<PartialAppUser>) {
-        return this.fetch<{ message: string, data?: number }>(`/auth/users/${id}`, {
+        return this.fetch<{ message: string, data?: number, success: boolean }>(`/auth/users/${id}`, {
             method: 'PUT',
             body: JSON.stringify(data)
         });

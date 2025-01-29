@@ -8,6 +8,7 @@ export interface CustomJwtPayload extends JwtPayload {
     username: string;
     email: string;
     accountType: AccountType;
+    accountStatus: AccountStatus;
 }
 
 interface AuthContextType {
@@ -16,6 +17,7 @@ interface AuthContextType {
     login: (usernameOrEmail: string, password: string) => Promise<{ success: boolean; message?: string }>;
     logout: () => void;
     register: (username: string, email: string, password: string, tempPassword: string, accountType: AccountType, accountStatus: AccountStatus, autoLogin: boolean) => Promise<RegisterUserResponsePayload>;
+    updateUser: (updatedUser: CustomJwtPayload) => void;
     authenticatedApiClient: ApiClient;
 }
 
@@ -124,6 +126,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         return authState.token;
     }, [authState.token]);
 
+    const updateUser = (updatedUser: CustomJwtPayload) => {
+        setAuthState((prevState) => ({
+            ...prevState,
+            user: updatedUser,
+        }));
+    };
+
     // authenticate api client
     const authenticatedApiClient = useMemo(() => new ApiClient({
         baseUrl: '/api',
@@ -138,6 +147,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                 login,
                 logout,
                 register,
+                updateUser,
                 authenticatedApiClient,
             }}
         >
