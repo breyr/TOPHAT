@@ -147,3 +147,21 @@ export interface UpdateConnectionRequestPayload {
     interconnectDeviceName?: string;
     interconnectDevicePort?: string;
 }
+
+// Interconnect DTOs
+export interface LinkRequest {
+    ip1: string
+    ip2: string
+    port1: string
+    port2: string
+    username: string
+    password: string
+    secret: string
+}
+
+export interface LinkResponse {
+    status: string;
+    message: string;
+    device1_output: string;
+    device2_output: string;
+}

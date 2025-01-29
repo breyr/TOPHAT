@@ -1,9 +1,8 @@
-import type { CreateConnectionRequestPayload, DeviceType, IconType, PartialAppUser, Topology } from "../../../common/src/index";
+import type { CreateConnectionRequestPayload, DeviceType, IconType, LinkRequest, LinkResponse, PartialAppUser, Topology } from "../../../common/src/index";
 import { Connection } from "../models/Connection";
 import { Device } from "../models/Device";
 
 type ApiConfig = {
-    baseUrl: string;
     getToken: () => string | null;
 };
 type ApiError = {
@@ -16,11 +15,9 @@ type ApiResponse<T> = {
 }
 
 export class ApiClient {
-    private readonly baseUrl: string;
     private readonly getToken: () => string | null;
 
     constructor(config: ApiConfig) {
-        this.baseUrl = config.baseUrl;
         this.getToken = config.getToken;
     }
 
@@ -36,7 +33,7 @@ export class ApiClient {
             ...options?.headers,
         }
 
-        const response = await fetch(`${this.baseUrl}${endpoint}`, {
+        const response = await fetch(endpoint, {
             ...options,
             headers
         });
@@ -71,14 +68,15 @@ export class ApiClient {
 
     // User API Methods
     async getAllUsers() {
-        return this.fetch<PartialAppUser[]>('/auth/users/');
+        return this.fetch<PartialAppUser[]>('/api/auth/users/');
     }
 
     async deleteUser(id: number) {
-        return this.fetch<{ message: string, data?: number }>(`/auth/users/${id}`, {
+        return this.fetch<{ message: string, data?: number }>(`/api/auth/users/${id}`, {
             method: 'DELETE',
         });
     }
+
 
     async updatePassword(data: { userId: number | undefined, oldPassword?: string, newPassword: string }) {
         return this.fetch<{ message: string, success: boolean }>('/auth/change-password', {
@@ -95,19 +93,19 @@ export class ApiClient {
     }
 
     async getUserByEmail(email: string) {
-        return this.fetch<{ message?: string, data?: string }>(`/auth/users/email/${email}`);
+        return this.fetch<{ message?: string, data?: string }>(`/api/auth/users/email/${email}`);
     }
 
     // Topology API Methods
     async createTopology(data: Partial<Topology>) {
-        return this.fetch<Topology>('/topology/', {
+        return this.fetch<Topology>('/api/topology/', {
             method: 'POST',
             body: JSON.stringify(data),
         });
     }
 
     async getAllTopologies() {
-        return this.fetch<Topology[]>('/topology/');
+        return this.fetch<Topology[]>('/api/topology/');
     }
 
     async getTopology(id: number) {
@@ -115,83 +113,83 @@ export class ApiClient {
     }
 
     async updateTopology(id: number, data: Partial<Topology>) {
-        return this.fetch<Topology>(`/topology/${id}`, {
+        return this.fetch<Topology>(`/api/topology/${id}`, {
             method: 'PUT',
             body: JSON.stringify(data)
         });
     }
 
     async deleteTopology(id: number) {
-        return this.fetch<{ topologyId: number }>(`/topology/${id}`, {
+        return this.fetch<{ topologyId: number }>(`/api/topology/${id}`, {
             method: 'DELETE'
         });
     }
 
     // Device API Methods
     async createDevice(data: Partial<Device>) {
-        return this.fetch<Device>('/devices/', {
+        return this.fetch<Device>('/api/devices/', {
             method: 'POST',
             body: JSON.stringify(data),
         });
     }
 
     async getAllDevices() {
-        return this.fetch<Device[]>('/devices/');
+        return this.fetch<Device[]>('/api/devices/');
     }
 
     async getDeviceById(id: number) {
-        return this.fetch<Device>(`/devices/${id}`);
+        return this.fetch<Device>(`/api/devices/${id}`);
     }
 
     async updateDevice(id: number, data: Partial<Device>) {
-        return this.fetch<Device>(`/devices/${id}`, {
+        return this.fetch<Device>(`/api/devices/${id}`, {
             method: 'PUT',
             body: JSON.stringify(data)
         });
     }
 
     async deleteDevice(id: number) {
-        return this.fetch<{ deviceId: number }>(`/devices/${id}`, {
+        return this.fetch<{ deviceId: number }>(`/api/devices/${id}`, {
             method: 'DELETE'
         });
     }
 
     async getDevicesByType(deviceType: DeviceType) {
-        return this.fetch<Device[]>(`/devices/type/${deviceType}`);
+        return this.fetch<Device[]>(`/api/devices/type/${deviceType}`);
     }
 
     async getDevicesByIcon(deviceIcon: IconType) {
-        return this.fetch<Device[]>(`/devices/icon/${deviceIcon}`);
+        return this.fetch<Device[]>(`/api/devices/icon/${deviceIcon}`);
     }
 
     // Connection API Methods
     async getAllConnections() {
-        return this.fetch<Connection[]>('/connections/');
+        return this.fetch<Connection[]>('/api/connections/');
     }
 
     async createConnectionBulk(data: CreateConnectionRequestPayload[]) {
-        return this.fetch<Connection[]>('/connections/create/bulk', {
+        return this.fetch<Connection[]>('/api/connections/create/bulk', {
             method: 'POST',
             body: JSON.stringify(data)
         })
     }
 
     async deleteConnectionBulk(data: Connection[]) {
-        return this.fetch<{ count: number }>('/connections/delete/bulk', {
+        return this.fetch<{ count: number }>('/api/connections/delete/bulk', {
             method: 'DELETE',
             body: JSON.stringify(data)
         })
     }
 
     async updateConnection(id: number, data: Partial<Connection>) {
-        return this.fetch<Connection>(`/connections/${id}`, {
+        return this.fetch<Connection>(`/api/connections/${id}`, {
             method: 'PUT',
             body: JSON.stringify(data)
         })
     }
 
     async updateConnectionBulk(data: Connection[]) {
-        return this.fetch<Connection[]>('/connections/update/bulk', {
+        return this.fetch<Connection[]>('/api/connections/update/bulk', {
             method: 'PUT',
             body: JSON.stringify(data)
         })
@@ -199,9 +197,24 @@ export class ApiClient {
 
     // AppConfig API Methods - consist of key value pairs
     async setAppConfig(key: string, data: string) {
-        return this.fetch<{ key: string, value: string }>(`/config/${key}`, {
+        return this.fetch<{ key: string, value: string }>(`/api/config/${key}`, {
             method: 'PUT',
             body: JSON.stringify({ value: data })
+        })
+    }
+
+    // Interconnect API Methods
+    async createLink(data: LinkRequest) {
+        return this.fetch<LinkResponse>(`/interconnect/create_link`, {
+            method: 'POST',
+            body: JSON.stringify(data)
+        })
+    }
+
+    async clearLink(data: LinkRequest) {
+        return this.fetch<LinkResponse>(`/interconnect/clear_link`, {
+            method: 'POST',
+            body: JSON.stringify(data)
         })
     }
 }

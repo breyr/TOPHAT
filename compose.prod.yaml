@@ -35,6 +35,8 @@ services:
   interconnect-api:
     image: breyr/top-interconnectapi:latest
     container_name: interconnect-api
+    environment:
+      SECRET_KEY: your_secret
     ports:
       - "4000:4000"
     depends_on:

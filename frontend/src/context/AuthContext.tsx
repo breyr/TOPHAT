@@ -135,8 +135,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     // authenticate api client
     const authenticatedApiClient = useMemo(() => new ApiClient({
-        baseUrl: '/api',
-        getToken,
+        getToken
     }), [getToken]);
 
     return (
