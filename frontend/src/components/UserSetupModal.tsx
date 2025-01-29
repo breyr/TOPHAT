@@ -1,7 +1,6 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { Eye, EyeOff, User as USER } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
-import { useNavigate } from "react-router-dom";
 
 interface ModalProps {
   onSubmit: () => void;
@@ -9,7 +8,6 @@ interface ModalProps {
 
 const UserSetupModal: React.FC<ModalProps> = ({ onSubmit }) => {
   const { authenticatedApiClient, user, updateUser } = useAuth();
-  const navigateTo = useNavigate();
   const [showPassword, setShowPassword] = useState({ viewPassword: false, viewConfirmPassword: false });
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");

@@ -2,7 +2,6 @@ import { jwtDecode, JwtPayload } from 'jwt-decode';
 import { createContext, ReactNode, useCallback, useEffect, useMemo, useState } from 'react';
 import type { AccountStatus, AccountType, LoginResponsePayload, RegisterUserResponsePayload } from '../../../common/src/index';
 import { ApiClient } from "../lib/authenticatedApi.ts";
-import { User } from '../models/User.ts';
 
 export interface CustomJwtPayload extends JwtPayload {
     id: number;
