@@ -1,9 +1,9 @@
 import { Accordion, AccordionItem as Item } from "@szhsin/react-accordion";
 import { ChevronDown } from "lucide-react";
-import ExternalIcon from "../../svg/external.svg?react";
-import RouterIcon from "../../svg/router.svg?react";
-import ServerIcon from "../../svg/server.svg?react";
-import SwitchIcon from "../../svg/switch.svg?react";
+import ExternalIcon from "../../svg/external_gray.svg?react";
+import RouterIcon from "../../svg/router_gray.svg?react";
+import ServerIcon from "../../svg/server_gray.svg?react";
+import SwitchIcon from "../../svg/switch_gray.svg?react";
 
 interface AccordionItemProps {
     header: React.ReactNode;
@@ -24,7 +24,7 @@ const AccordionItem = ({ header, isFirst, isLast, children, ...rest }: Accordion
         className=""
         buttonProps={{
             className: ({ isEnter }) =>
-                `flex w-full p-4 text-left border-2 hover:bg-gray-100 ${isEnter ? "bg-gray-100" : ""} ${isFirst ? "rounded-t-lg border-t-2" : ""} ${isLast && !isEnter ? "rounded-b-lg border-t-0" : "rounded-b-none border-t-0"
+                `flex w-full p-4 text-left border-2 hover:bg-gray-100 ${isEnter ? "bg-gray-100" : ""} ${isFirst ? "border-t-2" : ""} ${isLast && !isEnter ? "border-t-0" : "rounded-b-none border-t-0"
                 }`
         }}
         contentProps={{
@@ -41,16 +41,16 @@ export default function DeviceAccordion() {
     return (
         <div className="flex-grow w-full">
             <Accordion transition transitionTimeout={200}>
-                <AccordionItem header={<div className="flex flex-row items-center gap-2"><RouterIcon className="mr-2" /> Routers</div>} isFirst>
+                <AccordionItem header={<div className="flex flex-row items-center gap-2"><RouterIcon className="mr-2 size-8" /> Routers</div>} isFirst>
                     <p>data</p>
                 </AccordionItem>
-                <AccordionItem header={<div className="flex flex-row items-center gap-2"><SwitchIcon className="mr-2" /> Switches</div>}>
+                <AccordionItem header={<div className="flex flex-row items-center gap-2"><SwitchIcon className="mr-2 size-8" /> Switches</div>}>
                     <p>data</p>
                 </AccordionItem>
-                <AccordionItem header={<div className="flex flex-row items-center gap-2"><ExternalIcon className="mr-2" /> External</div>}>
+                <AccordionItem header={<div className="flex flex-row items-center gap-2"><ExternalIcon className="mr-2 size-8" /> External</div>}>
                     <p>data</p>
                 </AccordionItem>
-                <AccordionItem header={<div className="flex flex-row items-center gap-2"><ServerIcon className="mr-2" /> Servers</div>} isLast>
+                <AccordionItem header={<div className="flex flex-row items-center gap-2"><ServerIcon className="mr-2 size-8" /> Servers</div>} isLast>
                     <p>data</p>
                 </AccordionItem>
             </Accordion>

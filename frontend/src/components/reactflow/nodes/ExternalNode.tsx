@@ -1,5 +1,5 @@
 import { Handle, Node, NodeProps, Position } from "@xyflow/react";
-import Icon from '../../svg/external.svg?react';
+import Icon from '../../svg/external_blue.svg?react';
 
 export type ExternalNode = Node<
     {

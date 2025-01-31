@@ -1,5 +1,5 @@
 import { Handle, Node, NodeProps, Position } from "@xyflow/react";
-import Icon from '../../svg/server.svg?react';
+import Icon from '../../svg/server_blue.svg?react';
 
 export type ServerNode = Node<
     {

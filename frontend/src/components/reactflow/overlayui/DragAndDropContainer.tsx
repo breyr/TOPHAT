@@ -1,8 +1,8 @@
 import React from "react";
-import ExternalIcon from "../../svg/external.svg?react";
-import RouterIcon from "../../svg/router.svg?react";
-import ServerIcon from "../../svg/server.svg?react";
-import SwitchIcon from "../../svg/switch.svg?react";
+import ExternalIcon from "../../svg/external_blue.svg?react";
+import RouterIcon from "../../svg/router_blue.svg?react";
+import ServerIcon from "../../svg/server_blue.svg?react";
+import SwitchIcon from "../../svg/switch_blue.svg?react";
 
 // types of nodes
 type NodeType = "Switch" | "Router" | "Server" | "External";

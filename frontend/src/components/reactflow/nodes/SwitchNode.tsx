@@ -1,5 +1,5 @@
 import { Handle, Node, NodeProps, Position } from "@xyflow/react";
-import Icon from '../../svg/switch.svg?react';
+import Icon from '../../svg/switch_blue.svg?react';
 
 export type SwitchNode = Node<
     {
