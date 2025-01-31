@@ -241,9 +241,9 @@ const TopologyCanvas = () => {
                 selectionMode={SelectionMode.Partial}
             >
                 <Background color="rgb(247, 247, 247)" />
-                <Controls position="bottom-right" />
+                <Controls position="bottom-left" />
                 {/* Node Picker */}
-                <Panel position="top-right">
+                <Panel position="top-right" className="p-0 m-0 relative">
                     <NodePicker />
                 </Panel>
             </ReactFlow>

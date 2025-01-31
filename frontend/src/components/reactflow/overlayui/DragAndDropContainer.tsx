@@ -29,7 +29,7 @@ const Draggable: React.FC<DraggableItem> = ({ nodeSvg, nodeType, deviceName }) =
 
     return (
         <div
-            className="w-24 h-24 rounded flex flex-col justify-center items-center p-2 cursor-pointer transition-transform transform hover:scale-105 hover:bg-blue-200 hover:shadow-lg"
+            className="w-24 h-24 rounded flex flex-col justify-center items-center p-2 hover:cursor-pointer transition-transform transform hover:scale-105 hover:bg-blue-200 hover:shadow-lg"
             onDragStart={(event) => onDragStart(event, nodeType, deviceName)}
             draggable
         >
@@ -48,7 +48,7 @@ export default function DragAndDropContainer() {
     ];
 
     return (
-        <div className="grid grid-cols-2 gap-4 overflow-y-auto rounded-md rounded-tl-none bg-white w-full py-5 px-5 shadow-2xl">
+        <div className="flex overflow-y-auto h-full">
             {draggableItems.map((item, index) => (
                 <Draggable
                     nodeSvg={item.nodeSvg}
