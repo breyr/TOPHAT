@@ -109,7 +109,7 @@ export class ApiClient {
     }
 
     async getTopology(id: number) {
-        return this.fetch<Topology>(`/topology/${id}`);
+        return this.fetch<Topology>(`/api/topology/${id}`);
     }
 
     async updateTopology(id: number, data: Partial<Topology>) {
