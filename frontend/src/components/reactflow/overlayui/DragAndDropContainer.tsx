@@ -6,7 +6,7 @@ interface DragAndDropContainerProps {
 
 export default function DragAndDropContainer({ devices }: DragAndDropContainerProps) {
     return (
-        <div className="flex overflow-y-auto h-full p-2">
+        <div className="flex flex-wrap overflow-y-auto min-h-32 py-6">
             {
                 devices.length > 0 ? (
                     devices.map((item, index) => (
@@ -18,7 +18,9 @@ export default function DragAndDropContainer({ devices }: DragAndDropContainerPr
                         />
                     ))
                 ) : (
-                    <p>No devices.</p>
+                    <div className="flex justify-center items-center w-full">
+                        <p className="italic text-gray-300">No devices.</p>
+                    </div>
                 )
             }
         </div>

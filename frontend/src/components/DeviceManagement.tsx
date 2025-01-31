@@ -67,7 +67,7 @@ export default function DeviceManagement() {
 
     return (
         <div className="flex-grow w-full">
-            <Accordion transition transitionTimeout={200}>
+            <Accordion allowMultiple transition transitionTimeout={200}>
                 <AccordionItem header={<div className="flex flex-row items-center gap-2"><Server className="mr-2" /> Interconnect Devices</div>} isFirst>
                     <InterconnectDevicesTable interconnectDevices={interconnectDevices} setInterconnectDevices={setInterconnectDevices} />
                 </AccordionItem>

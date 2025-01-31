@@ -14,12 +14,14 @@ const DraggableItem: React.FC<DraggableItemProps> = ({ nodeSvg, nodeType, device
 
     return (
         <div
-            className="size-20 flex flex-col justify-center items-center p-2 text-blue-500 font-bold cursor-pointer transition-transform transform hover:scale-105 hover:bg-blue-100"
+            className="w-24 h-24 flex flex-col justify-center items-center cursor-pointer transition-transform transform hover:scale-105"
             onDragStart={(event) => onDragStart(event, nodeType)}
             draggable
         >
-            {nodeSvg}
-            <p>{deviceData.name}</p>
+            <div className="w-12 h-12 mb-2">
+                {nodeSvg}
+            </div>
+            <p className="text-sm text-gray-700">{deviceData.name}</p>
         </div>
     );
 };
