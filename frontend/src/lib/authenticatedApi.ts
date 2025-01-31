@@ -86,7 +86,7 @@ export class ApiClient {
     }
 
     async updateUser(id: number, data: Partial<PartialAppUser>) {
-        return this.fetch<{ message: string, data?: number, success: boolean }>(`/auth/users/${id}`, {
+        return this.fetch<{ message: string, data?: number, success: boolean }>(`/api/auth/users/${id}`, {
             method: 'PUT',
             body: JSON.stringify(data)
         });
