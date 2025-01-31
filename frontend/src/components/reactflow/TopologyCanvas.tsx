@@ -1,7 +1,6 @@
 import type { Connection, Edge, EdgeChange, Node, NodeChange, ReactFlowInstance } from "@xyflow/react";
 import {
     Background,
-    BackgroundVariant,
     Controls,
     Panel,
     ReactFlow,
@@ -22,7 +21,10 @@ import type { ReactFlowState } from "../../../../common/src/index";
 import { useAuth } from "../../hooks/useAuth.ts";
 import { debounce } from "../../lib/helpers.ts";
 import { useTopologyStore } from "../../stores/topologystore";
-import TextUpdaterNode from "./nodes/TextUpdaterNode";
+import ExternalNode from "./nodes/ExternalNode.tsx";
+import RouterNode from "./nodes/RouterNode.tsx";
+import ServerNode from "./nodes/ServerNode.tsx";
+import SwitchNode from "./nodes/SwitchNode.tsx";
 import NodePicker from "./overlayui/NodePicker";
 
 const initialNodes = [] satisfies Node[];
@@ -170,7 +172,10 @@ const TopologyCanvas = () => {
     // need to be memoized
     const nodeTypes = useMemo(
         () => ({
-            textUpdater: TextUpdaterNode,
+            Switch: SwitchNode,
+            Router: RouterNode,
+            Server: ServerNode,
+            External: ExternalNode
         }),
         []
     );
@@ -187,11 +192,14 @@ const TopologyCanvas = () => {
     const onDrop = useCallback(
         (event: React.DragEvent<HTMLElement>) => {
             event.preventDefault();
-            const type = event.dataTransfer.getData("application/reactflow");
+            const dataString = event.dataTransfer.getData("application/reactflow");
             // check if the dropped element is valid
-            if (typeof type === "undefined" || !type) {
+            if (!dataString) {
                 return;
             }
+
+            // parse the data string to get the nodeType and deviceName
+            const { nodeType, deviceName } = JSON.parse(dataString);
 
             // create position to place the dropped node
             const position = screenToFlowPosition({
@@ -202,9 +210,9 @@ const TopologyCanvas = () => {
             // create the new node
             const newNode = {
                 id: getId(),
-                type,
+                type: nodeType,
                 position,
-                data: { label: `${type} node` },
+                data: { deviceName }, // accessible within props.data for custom nodes
             };
 
             setNodes((oldNodes) => oldNodes.concat(newNode));
@@ -232,7 +240,7 @@ const TopologyCanvas = () => {
                 panOnDrag={[1, 2]} // pan with mouse wheel click and right click
                 selectionMode={SelectionMode.Partial}
             >
-                <Background color="rgb(247, 247, 247)" variant={BackgroundVariant.Lines} />
+                <Background color="rgb(247, 247, 247)" />
                 <Controls position="bottom-right" />
                 {/* Node Picker */}
                 <Panel position="top-right">

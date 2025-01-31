@@ -1,50 +1,59 @@
 import React from "react";
+import ExternalIcon from "../../svg/external.svg?react";
+import RouterIcon from "../../svg/router.svg?react";
+import ServerIcon from "../../svg/server.svg?react";
+import SwitchIcon from "../../svg/switch.svg?react";
 
 // types of nodes
-type NodeType = "input" | "default" | "output" | "textUpdater";
+type NodeType = "Switch" | "Router" | "Server" | "External";
 
 // interface for props
 interface DraggableItem {
-    displayText: string;
+    nodeSvg: JSX.Element;
     nodeType: NodeType;
+    deviceName: string;
 }
 
 // draggable component
-const Draggable: React.FC<DraggableItem> = ({ displayText, nodeType }) => {
+const Draggable: React.FC<DraggableItem> = ({ nodeSvg, nodeType, deviceName }) => {
     const onDragStart = (
         event: React.DragEvent<HTMLDivElement>,
-        nodeType: NodeType
+        nodeType: NodeType,
+        deviceName: string
     ) => {
-        event.dataTransfer.setData("application/reactflow", nodeType);
+        // set node & device information to be used in TopologyCanvas to create the nodes
+        const data = JSON.stringify({ nodeType, deviceName });
+        event.dataTransfer.setData("application/reactflow", data);
         event.dataTransfer.effectAllowed = "move";
     };
 
     return (
         <div
-            className="border-2 border-blue-500 rounded-lg w-24 h-24 flex flex-col justify-center items-center p-2 text-blue-500 font-bold cursor-pointer transition-transform transform hover:scale-105 hover:bg-blue-100"
-            onDragStart={(event) => onDragStart(event, nodeType)}
+            className="w-24 h-24 rounded flex flex-col justify-center items-center p-2 cursor-pointer transition-transform transform hover:scale-105 hover:bg-blue-200 hover:shadow-lg"
+            onDragStart={(event) => onDragStart(event, nodeType, deviceName)}
             draggable
         >
-            <i className="bi bi-node-plus text-2xl mb-2"></i>
-            <p>{displayText}</p>
+            {nodeSvg}
+            <p>{deviceName}</p>
         </div>
     );
 };
 
 export default function DragAndDropContainer() {
     const draggableItems: DraggableItem[] = [
-        { displayText: "Input", nodeType: "input" },
-        { displayText: "Default", nodeType: "default" },
-        { displayText: "Output", nodeType: "output" },
-        { displayText: "Text Updater", nodeType: "textUpdater" }
+        { nodeSvg: <SwitchIcon />, nodeType: "Switch", deviceName: "Switch 1" },
+        { nodeSvg: <RouterIcon />, nodeType: "Router", deviceName: "Router 1" },
+        { nodeSvg: <ExternalIcon />, nodeType: "External", deviceName: "External 1" },
+        { nodeSvg: <ServerIcon />, nodeType: "Server", deviceName: "Server 1" },
     ];
 
     return (
         <div className="grid grid-cols-2 gap-4 overflow-y-auto rounded-md rounded-tl-none bg-white w-full py-5 px-5 shadow-2xl">
             {draggableItems.map((item, index) => (
                 <Draggable
-                    displayText={item.displayText}
+                    nodeSvg={item.nodeSvg}
                     nodeType={item.nodeType}
+                    deviceName={item.deviceName}
                     key={index}
                 />
             ))}
