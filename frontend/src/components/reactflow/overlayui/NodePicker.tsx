@@ -1,9 +1,26 @@
 import { CirclePlus } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useAuth } from "../../../hooks/useAuth";
+import { Device } from "../../../models/Device";
 import DeviceAccordion from "./DeviceAccordion";
 
 export default function NodePicker() {
+    const { authenticatedApiClient } = useAuth();
     const [showItems, setShowItems] = useState(false);
+    const [labDevices, setLabDevices] = useState<Device[]>([]);
+
+    useEffect(() => {
+        const fetchLabDevices = async () => {
+            try {
+                const res = await authenticatedApiClient.getDevicesByType('LAB');
+                setLabDevices(res.data || []);
+            } catch (error) {
+                console.error("Failed to fetch lab devices:", error);
+            }
+        };
+
+        fetchLabDevices();
+    }, [authenticatedApiClient]);
 
     return (
         <div className="fixed right-0 h-full flex flex-col justify-center">
@@ -18,7 +35,7 @@ export default function NodePicker() {
                 `}
             >
                 <div className="p-4 h-full">
-                    <DeviceAccordion />
+                    <DeviceAccordion labDevices={labDevices} />
                 </div>
             </div>
 

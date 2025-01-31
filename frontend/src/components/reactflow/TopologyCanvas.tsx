@@ -199,7 +199,7 @@ const TopologyCanvas = () => {
             }
 
             // parse the data string to get the nodeType and deviceName
-            const { nodeType, deviceName } = JSON.parse(dataString);
+            const { nodeType, deviceData } = JSON.parse(dataString);
 
             // create position to place the dropped node
             const position = screenToFlowPosition({
@@ -212,7 +212,7 @@ const TopologyCanvas = () => {
                 id: getId(),
                 type: nodeType,
                 position,
-                data: { deviceName }, // accessible within props.data for custom nodes
+                data: { deviceData }, // accessible within props.data for custom nodes
             };
 
             setNodes((oldNodes) => oldNodes.concat(newNode));

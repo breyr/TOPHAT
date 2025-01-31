@@ -1,9 +1,10 @@
 import { Handle, Node, NodeProps, Position } from "@xyflow/react";
+import { Device } from "../../../models/Device";
 import Icon from '../../svg/server_blue.svg?react';
 
 export type ServerNode = Node<
     {
-        deviceName?: number;
+        deviceData?: Device;
     },
     'server'
 >;
@@ -13,7 +14,7 @@ export default function ServerNode(props: NodeProps<ServerNode>) {
         <div className="flex flex-col justify-center items-center size-12">
             <Handle type="target" position={Position.Top} />
             <Icon />
-            <p style={{ fontSize: "0.5rem" }}>{props.data.deviceName}</p>
+            <p style={{ fontSize: "0.5rem" }}>{props.data.deviceData?.name}</p>
         </div>
     )
 }
