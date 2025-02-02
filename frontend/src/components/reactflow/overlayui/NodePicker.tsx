@@ -23,7 +23,7 @@ export default function NodePicker() {
     }, [authenticatedApiClient]);
 
     return (
-        <div className="fixed right-0 h-full flex flex-col justify-center">
+        <div className="fixed right-0 h-full flex flex-col justify-center bg-white">
             {/* Sliding Panel */}
             <div
                 className={`

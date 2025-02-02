@@ -1,6 +1,7 @@
 import type { Connection, Edge, EdgeChange, Node, NodeChange, ReactFlowInstance } from "@xyflow/react";
 import {
     Background,
+    BackgroundVariant,
     Controls,
     Panel,
     ReactFlow,
@@ -15,16 +16,18 @@ import {
 } from "@xyflow/react";
 import "@xyflow/react/dist/base.css"; // use to make custom node css
 import { toJpeg } from 'html-to-image';
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 import type { ReactFlowState } from "../../../../common/src/index";
 import { useAuth } from "../../hooks/useAuth.ts";
 import { debounce } from "../../lib/helpers.ts";
+import { Device } from "../../models/Device.ts";
 import { useTopologyStore } from "../../stores/topologystore";
 import ExternalNode from "./nodes/ExternalNode.tsx";
 import RouterNode from "./nodes/RouterNode.tsx";
 import ServerNode from "./nodes/ServerNode.tsx";
 import SwitchNode from "./nodes/SwitchNode.tsx";
+import ContextMenu, { ContextMenuProps } from "./overlayui/ContextMenu.tsx";
 import NodePicker from "./overlayui/NodePicker";
 
 const initialNodes = [] satisfies Node[];
@@ -45,6 +48,8 @@ const TopologyCanvas = () => {
     const [nodes, setNodes] = useState<Node[]>(initialNodes);
     const [edges, setEdges] = useState<Edge[]>(initialEdges);
     const [isChangesPending, setIsChangesPending] = useState(false);
+    const [menu, setMenu] = useState<Partial<ContextMenuProps> | null>(null);
+    const ref = useRef<HTMLDivElement>(null);
     const { setIsSaving, setLastUpdated } = useTopologyStore();
     const { token, authenticatedApiClient } = useAuth();
     const { id } = useParams();
@@ -66,6 +71,27 @@ const TopologyCanvas = () => {
             }
         })();
     }, [id, token, authenticatedApiClient]);
+
+    const onNodeContextMenu = useCallback(
+        (event, node: Node) => {
+            // Prevent native context menu from showing
+            event.preventDefault();
+
+            // Calculate position of the context menu. We want to make sure it
+            // doesn't get positioned off-screen.
+            if (!ref.current) return;
+            const pane = ref.current.getBoundingClientRect();
+            setMenu({
+                deviceData: node.data.deviceData as Device,
+                top: event.clientY < pane.height - 200 && event.clientY,
+                left: event.clientX < pane.width - 200 && event.clientX,
+                right: event.clientX >= pane.width - 200 ? pane.width - event.clientX : 0,
+                bottom: event.clientY >= pane.height - 200 ? pane.height - event.clientY : 0,
+            });
+        },
+        [setMenu],
+    );
+    const onPaneClick = useCallback(() => setMenu(null), [setMenu]);
 
     // logic to save a topology's react-flow state into the database
     const saveTopology = useCallback(async () => {
@@ -182,8 +208,6 @@ const TopologyCanvas = () => {
 
     // things to implement
     // https://reactflow.dev/examples/edges/floating-edges
-    // https://reactflow.dev/examples/interaction/context-menu
-    // https://reactflow.dev/examples/interaction/drag-and-drop
     const { screenToFlowPosition } = useReactFlow();
     const onDragOver = useCallback((event: React.DragEvent<HTMLElement>) => {
         event.preventDefault();
@@ -219,11 +243,11 @@ const TopologyCanvas = () => {
         },
         [screenToFlowPosition]
     );
-    // https://reactflow.dev/examples/misc/download-image
 
     return (
         <div className="h-full w-lvw">
             <ReactFlow
+                ref={ref}
                 proOptions={proOptions}
                 nodeTypes={nodeTypes}
                 nodes={nodes}
@@ -239,8 +263,11 @@ const TopologyCanvas = () => {
                 selectionOnDrag
                 panOnDrag={[1, 2]} // pan with mouse wheel click and right click
                 selectionMode={SelectionMode.Partial}
+                onPaneClick={onPaneClick}
+                onNodeContextMenu={onNodeContextMenu}
             >
-                <Background color="rgb(247, 247, 247)" />
+                <Background color="rgb(247, 247, 247)" variant={BackgroundVariant.Dots} size={3} />
+                {menu && <ContextMenu onClick={onPaneClick} {...menu} />}
                 <Controls position="bottom-left" />
                 {/* Node Picker */}
                 <Panel position="top-right" className="p-0 m-0 relative">
