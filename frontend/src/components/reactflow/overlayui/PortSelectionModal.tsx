@@ -1,3 +1,4 @@
+import { useReactFlow } from "@xyflow/react";
 import { Cable, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { generatePorts } from "../../../lib/helpers";
@@ -11,12 +12,19 @@ interface PortSelectionModalProps {
 }
 
 export default function PortSelectionModal({ deviceData, currentDevicePorts, labDevices, onClose }: PortSelectionModalProps) {
+    const { getNodes, setEdges } = useReactFlow();
     const [selectedFirstDevice, setSelectedFirstDevice] = useState<string>("");
     const [selectedFirstDevicePort, setSelectedFirstDevicePort] = useState<string>("");
     const [selectedSecondDevice, setSelectedSecondDevice] = useState<string>("");
     const [selectedSecondDevicePort, setSelectedSecondDevicePort] = useState<string>("");
     const [availablePorts, setAvailablePorts] = useState<string[]>([]);
     const [filteredLabDevices, setFilteredLabDevices] = useState<Device[]>([]);
+
+    useEffect(() => {
+        if (deviceData?.name) {
+            setSelectedFirstDevice(deviceData.name);
+        }
+    }, [deviceData]);
 
     useEffect(() => {
         if (selectedFirstDevice) {
@@ -47,6 +55,26 @@ export default function PortSelectionModal({ deviceData, currentDevicePorts, lab
     useEffect(() => {
         setFilteredLabDevices(labDevices.filter(device => device.name !== selectedFirstDevice && device.name !== selectedSecondDevice && device.name !== deviceData?.name));
     }, [selectedFirstDevice, selectedSecondDevice, labDevices, deviceData?.name]);
+
+    const createEdge = () => {
+        const nodes = getNodes();
+        const sourceNode = nodes.find(node => (node.data.deviceData as Device).name === selectedFirstDevice);
+        console.log(sourceNode);
+        const targetNode = nodes.find(node => (node.data.deviceData as Device).name === selectedSecondDevice);
+        console.log(targetNode);
+
+        if (sourceNode && targetNode) {
+            const newEdge = {
+                id: `edge-${sourceNode.id}-${targetNode.id}`,
+                source: sourceNode.id,
+                target: targetNode.id,
+                sourceHandle: "source",
+                targetHandle: "target",
+            };
+
+            setEdges((oldEdges) => oldEdges.concat(newEdge));
+        }
+    };
 
     return (
         <section className="bg-zinc-950 bg-opacity-50 w-full h-full fixed top-0 left-0 flex items-center justify-center z-50">
@@ -125,7 +153,11 @@ export default function PortSelectionModal({ deviceData, currentDevicePorts, lab
                 <div className="p-5 flex flex-row justify-end">
                     <button
                         className="r-btn primary flex flex-row items-center justify-center gap-1"
-                        disabled={!selectedFirstDevice || !selectedFirstDevicePort || !selectedSecondDevice || !selectedSecondDevicePort}
+                        disabled={!selectedFirstDevicePort || !selectedSecondDevice || !selectedSecondDevicePort}
+                        onClick={() => {
+                            createEdge();
+                            onClose();
+                        }}
                     >
                         <Cable /> Create
                     </button>

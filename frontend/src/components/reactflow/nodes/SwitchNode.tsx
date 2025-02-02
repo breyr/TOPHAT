@@ -14,7 +14,8 @@ export default function SwitchNode(props: NodeProps<SwitchNode>) {
 
     return (
         <div className={`flex flex-col justify-center items-center size-12 border rounded p-1 ${selected ? 'border-gray-300' : 'border-transparent'}`}>
-            <Handle type="target" position={Position.Top} className="bg-transparent" />
+            <Handle type="target" id="target" position={Position.Top} className="bg-transparent" />
+            <Handle type="source" id="source" position={Position.Top} className="bg-transparent" />
             <Icon />
             <p style={{ fontSize: "0.5rem" }}>{props.data.deviceData?.name}</p>
         </div>
