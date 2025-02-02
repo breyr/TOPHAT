@@ -79,14 +79,14 @@ export class ApiClient {
 
 
     async updatePassword(data: { userId: number | undefined, oldPassword?: string, newPassword: string }) {
-        return this.fetch<{ message: string, success: boolean }>('/auth/change-password', {
+        return this.fetch<{ message: string, success: boolean }>('/api/auth/change-password', {
             method: 'PUT',
             body: JSON.stringify(data)
         })
     }
 
     async updateUser(id: number, data: Partial<PartialAppUser>) {
-        return this.fetch<{ message: string, data?: number, success: boolean }>(`/auth/users/${id}`, {
+        return this.fetch<{ message: string, data?: number, success: boolean }>(`/api/auth/users/${id}`, {
             method: 'PUT',
             body: JSON.stringify(data)
         });
@@ -109,7 +109,7 @@ export class ApiClient {
     }
 
     async getTopology(id: number) {
-        return this.fetch<Topology>(`/topology/${id}`);
+        return this.fetch<Topology>(`/api/topology/${id}`);
     }
 
     async updateTopology(id: number, data: Partial<Topology>) {
