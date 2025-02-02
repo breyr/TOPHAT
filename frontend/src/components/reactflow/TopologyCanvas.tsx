@@ -23,6 +23,7 @@ import { useAuth } from "../../hooks/useAuth.ts";
 import { debounce } from "../../lib/helpers.ts";
 import { Device } from "../../models/Device.ts";
 import { useTopologyStore } from "../../stores/topologystore";
+import DeviceConnection from "./edges/DeviceConnection.tsx";
 import ExternalNode from "./nodes/ExternalNode.tsx";
 import RouterNode from "./nodes/RouterNode.tsx";
 import ServerNode from "./nodes/ServerNode.tsx";
@@ -42,6 +43,18 @@ const proOptions = { hideAttribution: true };
 // thumbnail settings
 const imageWidth = 250;
 const imageHeight = 250;
+
+// need to be memoized
+const nodeTypes = {
+    Switch: SwitchNode,
+    Router: RouterNode,
+    Server: ServerNode,
+    External: ExternalNode
+};
+
+const edgeTypes = {
+    Floating: DeviceConnection,
+};
 
 const TopologyCanvas = () => {
     const [rfInstance, setRfInstance] = useState<ReactFlowInstance | null>(null); // reference to react flow instance
@@ -195,19 +208,6 @@ const TopologyCanvas = () => {
         [setEdges, debouncedSaveTopology]
     );
 
-    // need to be memoized
-    const nodeTypes = useMemo(
-        () => ({
-            Switch: SwitchNode,
-            Router: RouterNode,
-            Server: ServerNode,
-            External: ExternalNode
-        }),
-        []
-    );
-
-    // things to implement
-    // https://reactflow.dev/examples/edges/floating-edges
     const { screenToFlowPosition } = useReactFlow();
     const onDragOver = useCallback((event: React.DragEvent<HTMLElement>) => {
         event.preventDefault();
@@ -249,6 +249,7 @@ const TopologyCanvas = () => {
             <ReactFlow
                 ref={ref}
                 proOptions={proOptions}
+                edgeTypes={edgeTypes}
                 nodeTypes={nodeTypes}
                 nodes={nodes}
                 onNodesChange={onNodesChange}

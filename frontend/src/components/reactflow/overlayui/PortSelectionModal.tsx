@@ -1,4 +1,4 @@
-import { useReactFlow } from "@xyflow/react";
+import { MarkerType, useReactFlow } from "@xyflow/react";
 import { Cable, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { generatePorts } from "../../../lib/helpers";
@@ -59,9 +59,7 @@ export default function PortSelectionModal({ deviceData, currentDevicePorts, lab
     const createEdge = () => {
         const nodes = getNodes();
         const sourceNode = nodes.find(node => (node.data.deviceData as Device).name === selectedFirstDevice);
-        console.log(sourceNode);
         const targetNode = nodes.find(node => (node.data.deviceData as Device).name === selectedSecondDevice);
-        console.log(targetNode);
 
         if (sourceNode && targetNode) {
             const newEdge = {
@@ -70,6 +68,17 @@ export default function PortSelectionModal({ deviceData, currentDevicePorts, lab
                 target: targetNode.id,
                 sourceHandle: "source",
                 targetHandle: "target",
+                type: "Floating",
+                data: {
+                    sourcePort: selectedFirstDevicePort,
+                    targetPort: selectedSecondDevicePort,
+                },
+                markerEnd: {
+                    type: MarkerType.ArrowClosed,
+                },
+                markerStart: {
+                    type: MarkerType.ArrowClosed,
+                }
             };
 
             setEdges((oldEdges) => oldEdges.concat(newEdge));

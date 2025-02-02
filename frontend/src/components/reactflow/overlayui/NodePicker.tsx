@@ -23,7 +23,7 @@ export default function NodePicker() {
     }, [authenticatedApiClient]);
 
     return (
-        <div className="fixed right-0 h-full flex flex-col justify-center bg-white">
+        <div className="fixed right-0 h-full flex flex-col justify-center">
             {/* Sliding Panel */}
             <div
                 className={`
@@ -32,6 +32,7 @@ export default function NodePicker() {
                 ${showItems ? 'translate-x-0' : 'translate-x-full'}
                 border-l-2
                 overflow-y-auto
+                bg-white
                 `}
             >
                 <div className="p-4 h-full">
