@@ -5,7 +5,8 @@ import { AuthenticatedRequest } from '../types/types';
 const router = express.Router();
 const userController = new UserController();
 
-router.put('/change-password', (req, res, next) => userController.changePassword(req, res, next))
+router.put('/change-password', (req, res, next) => userController.changePassword(req, res, next));
+router.post('/refresh-token', (req: AuthenticatedRequest, res, next) => userController.refreshToken(req, res, next));
 router.get('/users', (req: AuthenticatedRequest, res, next) => userController.getAllUsers(req, res, next));
 router.get('/users/email/:email', (req: AuthenticatedRequest, res, next) => userController.getUserByEmail(req, res, next));
 router.delete('/users/:id', (req: AuthenticatedRequest, res, next) => userController.deleteUser(req, res, next));
@@ -14,3 +15,4 @@ router.post('/register', (req, res, next) => userController.createUser(req, res,
 router.post('/login', (req, res, next) => userController.validateUser(req, res, next));
 
 export { router as userRouter };
+

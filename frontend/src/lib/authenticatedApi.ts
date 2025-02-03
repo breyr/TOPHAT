@@ -25,7 +25,13 @@ export class ApiClient {
         endpoint: string,
         options?: RequestInit
     ): Promise<ApiResponse<T>> {
-        const token = this.getToken();
+        let token = this.getToken();
+
+        // wait for the token to be available
+        while (!token) {
+            await new Promise(resolve => setTimeout(resolve, 100));
+            token = this.getToken();
+        }
 
         const headers = {
             'Content-Type': 'application/json',
