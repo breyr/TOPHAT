@@ -94,8 +94,9 @@ export interface CreateTopologyRequestPayload {
 //
 
 export interface CreateDeviceRequestPayload {
-    userId: number;
-    topologyId: number;
+    deviceNumber: 1 | 2;
+    userId: number | null;
+    topologyId: number | null;
     name: string;
     model: string;
     serialNumber: string;

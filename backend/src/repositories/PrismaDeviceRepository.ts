@@ -18,6 +18,7 @@ export class PrismaDeviceRepository implements IDeviceRepository {
         // }
 
         const deviceData: any = {
+            deviceNumber: requestData.deviceNumber || null,
             userId: requestData.userId || null,
             topologyId: requestData.topologyId || null,
             name: requestData.name,
