@@ -9,6 +9,12 @@ export class PrismaDeviceRepository implements IDeviceRepository {
         this.prisma = prismaClient;
     }
 
+    async findDeviceByNumber(deviceNumber: number) {
+        return this.prisma.device.findFirst({
+            where: { deviceNumber },
+        });
+    }
+
     async create(requestData: Device): Promise<Device> {
         // if (requestData.password) {
         //     requestData.password = await bcrypt.hash(requestData.password, 10);

@@ -42,6 +42,7 @@ export interface ITopologyService {
 }
 
 export interface IDeviceRepository {
+    findDeviceByNumber(deviceNumber: number): Promise<Device | null>;
     create(requestData: Device): Promise<Device>;
     delete(deviceId: number): Promise<Device | null>;
     update(deviceId: number, requestData: Partial<Device>): Promise<Device>;
@@ -52,6 +53,7 @@ export interface IDeviceRepository {
 }
 
 export interface IDeviceService {
+    findDeviceByNumber(deviceNumber: number): Promise<Device | null>;
     createDevice(requestData: Partial<Device>): Promise<Device>;
     createDevices(requestData: Partial<Device>[]): Promise<Device[]>;
     deleteDevice(deviceId: number): Promise<Device | null>;

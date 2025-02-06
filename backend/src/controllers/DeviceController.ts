@@ -9,6 +9,18 @@ export class DeviceController {
     async createDevice(req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> {
         try {
             const deviceData = { ...req.body } as Partial<Device>;
+
+            // this is only for interconnect devices as we only allow 2
+            if (deviceData.deviceNumber) {
+                const existingDevice = await this.deviceService.findDeviceByNumber(deviceData.deviceNumber);
+                if (existingDevice) {
+                    res.status(409).json({
+                        message: 'Device with this device number already exists',
+                    });
+                    return;
+                }
+            }
+
             const device = await this.deviceService.createDevice(deviceData);
             res.status(201).json({
                 message: 'Device created successfully',
