@@ -155,6 +155,8 @@ export interface LinkRequest {
     ip2: string
     port1: string
     port2: string
+    offsetPort1: number
+    offsetPort2: number
     username: string
     password: string
     secret: string

@@ -173,6 +173,10 @@ export class ApiClient {
         return this.fetch<Connection[]>('/api/connections/');
     }
 
+    async getConnectionsByDeviceName(deviceName: string) {
+        return this.fetch<Connection[]>(`/api/connections/labDeviceName/${deviceName}`);
+    }
+
     async createConnectionBulk(data: CreateConnectionRequestPayload[]) {
         return this.fetch<Connection[]>('/api/connections/create/bulk', {
             method: 'POST',

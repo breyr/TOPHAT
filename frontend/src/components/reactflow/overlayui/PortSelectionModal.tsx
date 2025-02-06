@@ -1,6 +1,8 @@
 import { MarkerType, useReactFlow } from "@xyflow/react";
+import { LinkRequest } from "common";
 import { Cable, X } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useAuth } from "../../../hooks/useAuth";
 import { generatePorts } from "../../../lib/helpers";
 import { Device } from "../../../models/Device";
 
@@ -12,6 +14,7 @@ interface PortSelectionModalProps {
 }
 
 export default function PortSelectionModal({ deviceData, currentDevicePorts, labDevices, onClose }: PortSelectionModalProps) {
+    const { authenticatedApiClient } = useAuth();
     const { getNodes, setEdges } = useReactFlow();
     const [selectedFirstDevice, setSelectedFirstDevice] = useState<string>("");
     const [selectedFirstDevicePort, setSelectedFirstDevicePort] = useState<string>("");
@@ -82,6 +85,80 @@ export default function PortSelectionModal({ deviceData, currentDevicePorts, lab
             };
 
             setEdges((oldEdges) => oldEdges.concat(newEdge));
+        }
+    };
+
+    const createLink = async () => {
+        try {
+            // fetch connections for the selected devices
+            const [firstDeviceConnections, secondDeviceConnections] = await Promise.all([
+                authenticatedApiClient.getConnectionsByDeviceName(selectedFirstDevice),
+                authenticatedApiClient.getConnectionsByDeviceName(selectedSecondDevice)
+            ]);
+
+            // get the correct connection info for each selected port
+            const firstConnectionInfo = firstDeviceConnections.data?.find(c => c.labDevicePort === selectedFirstDevicePort);
+            const secondConnectionInfo = secondDeviceConnections.data?.find(c => c.labDevicePort === selectedSecondDevicePort);
+
+            // ensure both connections are connected to the same interconnect
+            if (!firstConnectionInfo || !secondConnectionInfo || firstConnectionInfo.interconnectDeviceName !== secondConnectionInfo.interconnectDeviceName) {
+                console.error("Connections are not linked to the same interconnect device");
+                return;
+            }
+
+            // fetch interconnect information
+            const interconnectDevices = await authenticatedApiClient.getDevicesByType('INTERCONNECT');
+            const interconnectInfo = interconnectDevices.data?.find(d => d.name === firstConnectionInfo.interconnectDeviceName);
+
+            if (!interconnectInfo) {
+                console.error("Interconnect device information not found");
+                return;
+            }
+
+            // Ensure required interconnect info is not null or undefined
+            if (interconnectInfo.deviceNumber == null || interconnectInfo.username == null || interconnectInfo.password == null || interconnectInfo.secretPassword == null) {
+                console.error("Interconnect device number is missing");
+                return;
+            }
+
+            // fetch IP addresses for the selected devices
+            const ip1 = deviceData?.ipAddress ?? -1;
+            const labDevices = await authenticatedApiClient.getDevicesByType('LAB');
+            const selectedDevice = labDevices.data?.find(d => d.name === selectedSecondDevice);
+            const ip2 = selectedDevice?.ipAddress ?? -1;
+
+            if (ip1 === -1 || ip2 === -1) {
+                console.error("One or both IP addresses are missing");
+                return;
+            }
+
+            // calculate offset ports used in vland id creation
+            const offsetPort1 = Number(firstConnectionInfo.interconnectDevicePort.split('/').pop()) * interconnectInfo.deviceNumber;
+            const offsetPort2 = Number(secondConnectionInfo.interconnectDevicePort.split('/').pop()) * interconnectInfo.deviceNumber;
+
+            // Prepare payload for interconnect API
+            const createLinkPayload: LinkRequest = {
+                ip1,
+                ip2,
+                port1: selectedFirstDevicePort,
+                port2: selectedSecondDevicePort,
+                offsetPort1,
+                offsetPort2,
+                username: interconnectInfo.username,
+                password: interconnectInfo.password,
+                secret: interconnectInfo.secretPassword
+            };
+
+            // Send request to interconnect API
+            const res = await authenticatedApiClient.createLink(createLinkPayload);
+            if (res?.data) {
+                // Draw edge in react flow
+                createEdge();
+            } else {
+                console.error("Failed to create link");
+            }
+        } catch (error) {
+            console.error("Error creating link:", error);
         }
     };
 
@@ -164,7 +241,7 @@ export default function PortSelectionModal({ deviceData, currentDevicePorts, lab
                         className="r-btn primary flex flex-row items-center justify-center gap-1"
                         disabled={!selectedFirstDevicePort || !selectedSecondDevice || !selectedSecondDevicePort}
                         onClick={() => {
-                            createEdge();
+                            createLink();
                             onClose();
                         }}
                     >
