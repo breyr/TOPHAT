@@ -32,6 +32,7 @@ export default function LabDevicesTable({
             tempId,
             null,
             null,
+            null,
             '',
             '',
             '',
