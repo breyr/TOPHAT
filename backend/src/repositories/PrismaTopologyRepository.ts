@@ -36,6 +36,15 @@ export class PrismaTopologyRepository implements ITopologyRepository {
         });
     }
 
+    findAllUsersTopologies(): Promise<Topology[] | null> {
+        return this.prismaClient.topology.findMany({}).then((topologies) => {
+            return topologies.map((topology) => ({
+                ...topology,
+                reactFlowState: PrismaTopologyRepository.convertReactFlowState(topology.reactFlowState)
+            }));
+        });
+    }
+    
     findAll(userId: number): Promise<Topology[] | null> {
         return this.prismaClient.topology.findMany({
             where: { userId }

@@ -125,6 +125,10 @@ export class ApiClient {
         });
     }
 
+    async getAllUsersTopologies() {
+        return this.fetch<Topology[]>('/api/topology/all');
+    }
+
     // Device API Methods
     async createDevice(data: Partial<Device>) {
         return this.fetch<Device>('/api/devices/', {
