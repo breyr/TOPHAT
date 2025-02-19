@@ -1,6 +1,6 @@
 from enum import Enum
 import uvicorn
-from fastapi import Depends, FastAPI, HTTPException
+from fastapi import Depends, FastAPI, HTTPException, Header
 from pydantic import BaseModel
 from netmiko import ConnectHandler
 from dotenv import load_dotenv
@@ -11,16 +11,16 @@ from configGeneration import generate_clear_link_config, generate_create_link_co
 
 load_dotenv()
 SECRET_KEY = os.environ.get("SECRET_KEY")
-app = FastAPI()
+app = FastAPI(root_path="/interconnect")
 
 
 class LinkRequest(BaseModel):
-    interconnect_1_ip: str
-    interconnect_1_prefix: str
-    interconnect_2_ip: str
-    interconnect_2_prefix: str
-    interconnect_port_id_1: int
-    interconnect_port_id_2: int
+    interconnect1IP: str
+    interconnect1Prefix: str
+    interconnect2IP: str
+    interconnect2Prefix: str
+    interconnectPortID1: int
+    interconnectPortID2: int
     username: str
     password: str
     secret: str
@@ -38,7 +38,7 @@ class AccountStatus(str, Enum):
     ACCEPTED = "ACCEPTED"
 
 
-class JwtPayload:
+class JwtPayload(BaseModel):
     id: int
     username: str
     email: str
@@ -47,8 +47,9 @@ class JwtPayload:
 
 
 # helper function for decoding JWTs
-def decode_jwt(token: str) -> JwtPayload:
+def decode_jwt(authorization: str = Header(...)) -> JwtPayload:
     try:
+        token = authorization.split(" ")[1]
         payload = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
         return JwtPayload(**payload)
     except jwt.ExpiredSignatureError:
@@ -79,11 +80,11 @@ def _process_ports(port_id_1: str, port_id_2: str, req: LinkRequest):
 
         if port_number > 44:
             port_number -= 44
-            device_ips.append(req.interconnect_2_ip)
-            formatted_prefixes.append(req.interconnect_2_prefix)
+            device_ips.append(req.interconnect2IP)
+            formatted_prefixes.append(req.interconnect2Prefix)
         else:
-            device_ips.append(req.interconnect_1_ip)
-            formatted_prefixes.append(req.interconnect_1_prefix)
+            device_ips.append(req.interconnect1IP)
+            formatted_prefixes.append(req.interconnect1Prefix)
 
         formatted_ports.append(f"{formatted_prefixes[-1]}{port_number}")
 
@@ -125,17 +126,23 @@ def create_link(req: LinkRequest, payload: JwtPayload = Depends(decode_jwt)):
     """
     Create a new L2 Tunneling link between two ports on two separate devices.
     """
-    vlan_id = map_ipids_to_vlanid(req.interconnect_port_id_1, req.interconnect_port_id_2)
+    vlan_id = map_ipids_to_vlanid(req.interconnectPortID1, req.interconnectPortID2)
 
     # Use helper function to process ports
-    formatted_ports, device_ips = _process_ports(req.interconnect_port_id_1, req.interconnect_port_id_2, req)
+    formatted_ports, device_ips = _process_ports(
+        req.interconnectPortID1, req.interconnectPortID2, req
+    )
 
     config_device1 = generate_create_link_config(formatted_ports[0], vlan_id)
     config_device2 = generate_create_link_config(formatted_ports[1], vlan_id)
 
     try:
-        output1 = apply_config_to_device(device_ips[0], req.username, req.password, req.secret, config_device1)
-        output2 = apply_config_to_device(device_ips[1], req.username, req.password, req.secret, config_device2)
+        output1 = apply_config_to_device(
+            device_ips[0], req.username, req.password, req.secret, config_device1
+        )
+        output2 = apply_config_to_device(
+            device_ips[1], req.username, req.password, req.secret, config_device2
+        )
 
         return {
             "status": "success",
@@ -152,10 +159,10 @@ def clear_link(req: LinkRequest, payload: JwtPayload = Depends(decode_jwt)):
     """
     Remove the L2 Tunneling link configuration and shut down the ports.
     """
-    vlan_id = map_ipids_to_vlanid(req.interconnect_port_id_1, req.interconnect_port_id_2)
+    vlan_id = map_ipids_to_vlanid(req.interconnectPortID1, req.interconnectPortID2)
 
     # Process port IDs and assign the correct prefixes and device IPs
-    interconnect_port_ids = [req.interconnect_port_id_1, req.interconnect_port_id_2]
+    interconnect_port_ids = [req.interconnectPortID1, req.interconnectPortID2]
     formatted_ports = []
     formatted_prefixes = []
     device_ips = []
@@ -164,11 +171,11 @@ def clear_link(req: LinkRequest, payload: JwtPayload = Depends(decode_jwt)):
         port_number = int(port_id)
         if port_number > 44:
             port_number -= 44
-            device_ips.append(req.interconnect_2_ip)
-            formatted_prefixes.append(req.interconnect_2_prefix)
+            device_ips.append(req.interconnect2IP)
+            formatted_prefixes.append(req.interconnect2Prefix)
         else:
-            device_ips.append(req.interconnect_1_ip)
-            formatted_prefixes.append(req.interconnect_1_prefix)
+            device_ips.append(req.interconnect1IP)
+            formatted_prefixes.append(req.interconnect1Prefix)
         formatted_ports.append(f"{formatted_prefixes[-1]}{port_number}")
 
     # Generate clear configurations
@@ -191,6 +198,7 @@ def clear_link(req: LinkRequest, payload: JwtPayload = Depends(decode_jwt)):
         }
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
+
 
 if __name__ == "__main__":
     # Run with: uvicorn app:app --reload --host 0.0.0.0 --port 8000

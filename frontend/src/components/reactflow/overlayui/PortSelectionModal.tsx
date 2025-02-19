@@ -21,7 +21,7 @@ export default function PortSelectionModal({ deviceData, currentDevicePorts, lab
     const [selectedSecondDevice, setSelectedSecondDevice] = useState<string>("");
     const [selectedSecondDevicePort, setSelectedSecondDevicePort] = useState<string>("");
     const [availablePorts, setAvailablePorts] = useState<string[]>([]);
-    const [filteredLabDevices, setFilteredLabDevices] = useState<Device[]>([]);
+    const [filteredLabDevices] = useState<Device[]>(labDevices);
 
     useEffect(() => {
         if (deviceData?.name) {
@@ -54,10 +54,6 @@ export default function PortSelectionModal({ deviceData, currentDevicePorts, lab
             setAvailablePorts([]);
         }
     }, [selectedSecondDevice, labDevices]);
-
-    useEffect(() => {
-        setFilteredLabDevices(labDevices.filter(device => device.name !== selectedFirstDevice && device.name !== selectedSecondDevice && device.name !== deviceData?.name));
-    }, [selectedFirstDevice, selectedSecondDevice, labDevices, deviceData?.name]);
 
     const createEdge = () => {
         const nodes = getNodes();
@@ -100,59 +96,66 @@ export default function PortSelectionModal({ deviceData, currentDevicePorts, lab
             const firstConnectionInfo = firstDeviceConnections.data?.find(c => c.labDevicePort === selectedFirstDevicePort);
             const secondConnectionInfo = secondDeviceConnections.data?.find(c => c.labDevicePort === selectedSecondDevicePort);
 
-            // ensure both connections are connected to the same interconnect
-            if (!firstConnectionInfo || !secondConnectionInfo || firstConnectionInfo.interconnectDeviceName !== secondConnectionInfo.interconnectDeviceName) {
-                console.error("Connections are not linked to the same interconnect device");
+            if (!firstConnectionInfo || !secondConnectionInfo) {
+                console.error("Connection information not found for one or both devices");
                 return;
             }
 
-            // fetch interconnect information
+            // fetch interconnect information for both devices
             const interconnectDevices = await authenticatedApiClient.getDevicesByType('INTERCONNECT');
-            const interconnectInfo = interconnectDevices.data?.find(d => d.name === firstConnectionInfo.interconnectDeviceName);
+            const firstInterconnectInfo = interconnectDevices.data?.find(d => d.name === firstConnectionInfo.interconnectDeviceName);
+            const secondInterconnectInfo = interconnectDevices.data?.find(d => d.name === secondConnectionInfo.interconnectDeviceName);
 
-            if (!interconnectInfo) {
-                console.error("Interconnect device information not found");
+            if (!firstInterconnectInfo || !secondInterconnectInfo) {
+                console.error("Interconnect device information not found for one or both devices");
                 return;
             }
 
-            // Ensure required interconnect info is not null or undefined
-            if (interconnectInfo.deviceNumber == null || interconnectInfo.username == null || interconnectInfo.password == null || interconnectInfo.secretPassword == null) {
-                console.error("Interconnect device number is missing");
+            // ensure required interconnect info is not null or undefined
+            if (firstInterconnectInfo.deviceNumber == null || firstInterconnectInfo.username == null || firstInterconnectInfo.password == null || firstInterconnectInfo.secretPassword == null ||
+                secondInterconnectInfo.deviceNumber == null || secondInterconnectInfo.username == null || secondInterconnectInfo.password == null || secondInterconnectInfo.secretPassword == null) {
+                console.error("Interconnect device information is incomplete");
                 return;
             }
 
             // fetch IP addresses for the selected devices
-            const ip1 = deviceData?.ipAddress ?? -1;
-            const labDevices = await authenticatedApiClient.getDevicesByType('LAB');
-            const selectedDevice = labDevices.data?.find(d => d.name === selectedSecondDevice);
-            const ip2 = selectedDevice?.ipAddress ?? -1;
+            const ip1 = firstInterconnectInfo.ipAddress ?? 'none';
+            const ip2 = secondInterconnectInfo.ipAddress ?? 'none';
 
-            if (ip1 === -1 || ip2 === -1) {
+            if (ip1 === 'none' || ip2 === 'none') {
                 console.error("One or both IP addresses are missing");
                 return;
             }
 
-            // calculate offset ports used in vland id creation
-            const offsetPort1 = Number(firstConnectionInfo.interconnectDevicePort.split('/').pop()) * interconnectInfo.deviceNumber;
-            const offsetPort2 = Number(secondConnectionInfo.interconnectDevicePort.split('/').pop()) * interconnectInfo.deviceNumber;
+            // remove the port number from the string while ensuring that the `/` character is not cut off
+            const removePortNumber = (port: string) => port.replace(/\/\d+$/, '/');
 
-            // Prepare payload for interconnect API
+            const interconnect1Prefix = removePortNumber(firstConnectionInfo.interconnectDevicePort);
+            const interconnect2Prefix = removePortNumber(secondConnectionInfo.interconnectDevicePort);
+
+            // calculate offset ports used in VLAN ID creation
+            const offsetPort1 = Number(firstConnectionInfo.interconnectDevicePort.split('/').pop()) * firstInterconnectInfo.deviceNumber;
+            const offsetPort2 = Number(secondConnectionInfo.interconnectDevicePort.split('/').pop()) * secondInterconnectInfo.deviceNumber;
+
+            // prepare payload for interconnect API
             const createLinkPayload: LinkRequest = {
-                ip1,
-                ip2,
-                port1: selectedFirstDevicePort,
-                port2: selectedSecondDevicePort,
-                offsetPort1,
-                offsetPort2,
-                username: interconnectInfo.username,
-                password: interconnectInfo.password,
-                secret: interconnectInfo.secretPassword
+                interconnect1IP: ip1,
+                interconnect1Prefix,
+                interconnect2IP: ip2,
+                interconnect2Prefix,
+                interconnectPortID1: offsetPort1,
+                interconnectPortID2: offsetPort2,
+                username: firstInterconnectInfo.username,
+                password: firstInterconnectInfo.password,
+                secret: firstInterconnectInfo.secretPassword
             };
 
-            // Send request to interconnect API
+            console.log(createLinkPayload);
+
+            // send request to interconnect API
             const res = await authenticatedApiClient.createLink(createLinkPayload);
-            if (res?.data) {
-                // Draw edge in react flow
+            if ((res as any).status === 'success') {
+                // draw edge in react flow
                 createEdge();
             } else {
                 console.error("Failed to create link");
@@ -183,7 +186,7 @@ export default function PortSelectionModal({ deviceData, currentDevicePorts, lab
                             >
                                 <option value="">Select a Device</option>
                                 {labDevices.map((device) => (
-                                    <option key={device.id} value={device.name}>
+                                    <option key={device.id} value={device.name} disabled={device.name === selectedSecondDevice}>
                                         {device.name}
                                     </option>
                                 ))}
@@ -213,7 +216,7 @@ export default function PortSelectionModal({ deviceData, currentDevicePorts, lab
                             >
                                 <option value="">Select a Device</option>
                                 {filteredLabDevices.map((device) => (
-                                    <option key={device.id} value={device.name}>
+                                    <option key={device.id} value={device.name} disabled={device.name === selectedFirstDevice}>
                                         {device.name}
                                     </option>
                                 ))}

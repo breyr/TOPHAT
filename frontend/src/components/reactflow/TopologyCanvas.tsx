@@ -20,9 +20,9 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useParams } from "react-router-dom";
 import type { ReactFlowState } from "../../../../common/src/index";
 import { useAuth } from "../../hooks/useAuth.ts";
+import { useTopology } from "../../hooks/useTopology.ts";
 import { debounce } from "../../lib/helpers.ts";
 import { Device } from "../../models/Device.ts";
-import { useTopologyStore } from "../../stores/topologystore";
 import DeviceConnection from "./edges/DeviceConnection.tsx";
 import ExternalNode from "./nodes/ExternalNode.tsx";
 import RouterNode from "./nodes/RouterNode.tsx";
@@ -63,27 +63,16 @@ const TopologyCanvas = () => {
     const [isChangesPending, setIsChangesPending] = useState(false);
     const [menu, setMenu] = useState<Partial<ContextMenuProps> | null>(null);
     const ref = useRef<HTMLDivElement>(null);
-    const { setIsSaving, setLastUpdated } = useTopologyStore();
-    const { token, authenticatedApiClient } = useAuth();
+    const { setIsSaving, topologyData, setLastUpdated } = useTopology();
+    const { authenticatedApiClient } = useAuth();
     const { id } = useParams();
     const { getNodes } = useReactFlow();
 
     // load information from db on mount
     useEffect(() => {
-        (async () => {
-            try {
-                const topologyId = parseInt(id ?? "");
-                if (isNaN(topologyId)) {
-                    // TODO show error
-                }
-                const response = await authenticatedApiClient.getTopology(topologyId);
-                setNodes(response.data?.reactFlowState?.nodes ?? []);
-                setEdges(response.data?.reactFlowState?.edges ?? []);
-            } catch (error) {
-                console.error("Failed to fetch topology data:", error);
-            }
-        })();
-    }, [id, token, authenticatedApiClient]);
+        setNodes(topologyData?.reactFlowState?.nodes ?? []);
+        setEdges(topologyData?.reactFlowState?.edges ?? []);
+    }, [topologyData]);
 
     const onNodeContextMenu = useCallback(
         (event, node: Node) => {
@@ -110,7 +99,7 @@ const TopologyCanvas = () => {
     const saveTopology = useCallback(async () => {
         if (rfInstance) {
             // update saving state
-            setIsSaving(id!, true);
+            setIsSaving(true);
 
             // get react flow state object
             const flow = rfInstance.toObject();
@@ -145,19 +134,23 @@ const TopologyCanvas = () => {
 
                 // at this point id exists and is a number otherwise the topology wouldn't be loaded
                 // this does return the updated topology, but we don't need it
-                await authenticatedApiClient.updateTopology(parseInt(id!), {
+                const res = await authenticatedApiClient.updateTopology(parseInt(id!), {
                     reactFlowState: flow as ReactFlowState,
                     thumbnail: base64Thumbnail
                 });
 
-                setLastUpdated(id!, new Date());
+                // set last updated
+                if (res.data) {
+                    const updatedAt = new Date(res?.data?.updatedAt);
+                    setLastUpdated(updatedAt.toLocaleString());
+                }
             } catch (error) {
                 console.error("Failed to save topology state:", error);
             } finally {
-                setIsSaving(id!, false);
+                setIsSaving(false);
             }
         }
-    }, [id, rfInstance, getNodes, setIsSaving, setLastUpdated, authenticatedApiClient])
+    }, [id, rfInstance, getNodes, authenticatedApiClient, setIsSaving, setLastUpdated]);
 
     // useMemo is required here because on component re-renders, debounce will be recreated
     // this causes issues like saves being spammed
