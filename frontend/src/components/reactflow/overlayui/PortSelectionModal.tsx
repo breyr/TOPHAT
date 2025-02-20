@@ -167,7 +167,7 @@ export default function PortSelectionModal({ deviceData, currentDevicePorts, lab
 
     return (
         <section className="bg-zinc-950 bg-opacity-50 w-full h-full fixed top-0 left-0 flex items-center justify-center z-50">
-            <div className="bg-white w-2/5 p-6 rounded-lg shadow-lg">
+            <div className="bg-[#ffffff] w-2/5 p-6 rounded-lg shadow-lg">
                 <div className="flex flex-row justify-between items-center">
                     <h2 className="m-0">Creating Link for {deviceData?.name || "Lab Devices"}</h2>
                     <button onClick={onClose} className="r-btn text-red-500 hover:text-red-700">
@@ -181,7 +181,7 @@ export default function PortSelectionModal({ deviceData, currentDevicePorts, lab
                             <select
                                 value={deviceData?.name || selectedFirstDevice}
                                 onChange={(e) => setSelectedFirstDevice(e.target.value)}
-                                className="block w-full mt-1 rounded-md bg-white focus:outline-none"
+                                className="block w-full mt-1 rounded-md bg-[#ffffff] focus:outline-none"
                                 disabled={!!deviceData?.name}
                             >
                                 <option value="">Select a Device</option>
@@ -197,7 +197,7 @@ export default function PortSelectionModal({ deviceData, currentDevicePorts, lab
                             <select
                                 value={selectedFirstDevicePort}
                                 onChange={(e) => setSelectedFirstDevicePort(e.target.value)}
-                                className="block w-full mt-1 rounded-md bg-white focus:outline-none"
+                                className="block w-full mt-1 rounded-md bg-[#ffffff] focus:outline-none"
                             >
                                 <option value="">Select a Port</option>
                                 {(deviceData ? currentDevicePorts : filteredLabDevices.map(device => device.ports.split(',').flatMap(portDef => generatePorts(portDef)))).flat().map((port, index) => (
@@ -212,7 +212,7 @@ export default function PortSelectionModal({ deviceData, currentDevicePorts, lab
                             <select
                                 value={selectedSecondDevice}
                                 onChange={(e) => setSelectedSecondDevice(e.target.value)}
-                                className="block w-full mt-1 rounded-md bg-white focus:outline-none"
+                                className="block w-full mt-1 rounded-md bg-[#ffffff] focus:outline-none"
                             >
                                 <option value="">Select a Device</option>
                                 {filteredLabDevices.map((device) => (
@@ -227,7 +227,7 @@ export default function PortSelectionModal({ deviceData, currentDevicePorts, lab
                             <select
                                 value={selectedSecondDevicePort}
                                 onChange={(e) => setSelectedSecondDevicePort(e.target.value)}
-                                className="block w-full mt-1 rounded-md bg-white focus:outline-none"
+                                className="block w-full mt-1 rounded-md bg-[#ffffff] focus:outline-none"
                             >
                                 <option value="">Select Port</option>
                                 {availablePorts.map((port, idx) => (

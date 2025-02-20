@@ -192,7 +192,7 @@ export default function LabDevicesTable({
                 value={value || ""}
                 name="icon"
                 onChange={(e) => handleInputChange(row, "icon", e.target.value)}
-                className="w-full bg-white focus:outline-none"
+                className="w-full bg-[#ffffff] focus:outline-none"
             >
                 <option value="" disabled>Select</option>
                 <option value="ROUTER">Router</option>

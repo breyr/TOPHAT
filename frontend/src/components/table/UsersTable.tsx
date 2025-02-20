@@ -256,7 +256,7 @@ export default function UsersTable() {
                     value={row.accountType}
                     name="accountType"
                     onChange={(e) => handleTableInputChange(index, e)}
-                    className="w-full rounded bg-white"
+                    className="w-full rounded bg-[#ffffff]"
                 >
                     <option value="USER">User</option>
                     <option value="ADMIN">Admin</option>

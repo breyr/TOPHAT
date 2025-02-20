@@ -44,7 +44,7 @@ export default function UserCreatePage() {
                             // if there is a user signed in, show the next steps buttons
                             user ? (
                                 <section>
-                                    <div className="w-full max-w-xl p-10 bg-white shadow-lg rounded-lg text-center">
+                                    <div className="w-full max-w-xl p-10 bg-[#ffffff] shadow-lg rounded-lg text-center">
                                         <div className="flex flex-row items-center justify-center gap-2 mb-4">
                                             <User size={32} className="text-blue-500" />
                                             <span className="text-2xl font-semibold">Hello, {user.username}.</span>

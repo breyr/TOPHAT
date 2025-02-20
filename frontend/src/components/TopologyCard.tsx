@@ -77,7 +77,7 @@ const TopologyCard: React.FC<TopologyProps> = ({
     <div className="relative">
       <button
         onClick={handleDeleteClick}
-        className="absolute top-2 left-[-10px] m-1 p-0 bg-white rounded-full hover:bg-gray-200"
+        className="absolute top-2 left-[-10px] m-1 p-0 bg-[#ffffff] rounded-full hover:bg-gray-200"
         style={{ zIndex: 10 }}
       >
         <CircleX size={20} />
@@ -85,7 +85,7 @@ const TopologyCard: React.FC<TopologyProps> = ({
       <div
         key={id}
         onClick={handleClick}
-        className="my-5 rounded-lg size-56 border border-gray-200 bg-white shadow-sm hover:shadow-md transition-shadow duration-200 flex flex-col items-center text-gray-700 hover:cursor-pointer"
+        className="my-5 rounded-lg size-56 border border-gray-200 bg-[#ffffff] shadow-sm hover:shadow-md transition-shadow duration-200 flex flex-col items-center text-gray-700 hover:cursor-pointer"
       >
         <div className="w-full">
           <img

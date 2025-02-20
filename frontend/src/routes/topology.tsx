@@ -88,7 +88,6 @@ const TopologyPageContent: React.FC = () => {
                             <TopologyName />
                             <div className="flex flex-row items-center gap-2">
                                 <h4 onClick={() => navigateTo('/dashboard/')} className="hover:cursor-pointer hover:text-blue-400">Dashboard</h4>
-                                <h4 className="hover:cursor-pointer hover:text-blue-400">Settings</h4>
                             </div>
                         </nav>
                         <div className='flex-grow'>

@@ -32,7 +32,7 @@ export default function NodePicker() {
                 ${showItems ? 'translate-x-0' : 'translate-x-full'}
                 border-l-2
                 overflow-y-auto
-                bg-white
+                bg-[#ffffff]
                 `}
             >
                 <div className="p-4 h-full">
@@ -46,7 +46,7 @@ export default function NodePicker() {
                 fixed right-0
                 mt-20
                 transform -rotate-90 origin-top-left
-                bg-blue-500 text-white cursor-pointer 
+                bg-blue-500 text-[#ffffff] cursor-pointer 
                 px-4 py-2 rounded-t-md
                 flex items-center gap-1
                 transition-all duration-300

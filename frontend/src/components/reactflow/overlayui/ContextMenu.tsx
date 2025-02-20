@@ -49,7 +49,7 @@ export default function ContextMenu({
     return (
         <div
             style={{ top, left, right, bottom }}
-            className="absolute z-10 h-40 w-52 overflow-y-auto bg-white border border-gray-300 rounded shadow-lg p-4"
+            className="absolute z-10 h-40 w-52 overflow-y-auto bg-[#ffffff] border border-gray-300 rounded shadow-lg p-4"
             onClick={(event) => event.stopPropagation()}
         >
             <div className="mb-2">

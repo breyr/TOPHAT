@@ -47,13 +47,13 @@ export default function DeviceConnection({
             <BaseEdge path={edgePath} markerEnd={markerEnd} markerStart={markerStart} style={style} />
             <EdgeLabelRenderer>
                 <div
-                    className="absolute transform -translate-x-1/2 -translate-y-1/2 bg-white border rounded p-1"
+                    className="absolute transform -translate-x-1/2 -translate-y-1/2 bg-[#ffffff] border rounded p-1"
                     style={{ left: sourceLabelX, top: sourceLabelY }}
                 >
                     <p className="text-[0.3rem]">{data?.sourcePort}</p>
                 </div>
                 <div
-                    className="absolute transform -translate-x-1/2 -translate-y-1/2 bg-white border rounded p-1"
+                    className="absolute transform -translate-x-1/2 -translate-y-1/2 bg-[#ffffff] border rounded p-1"
                     style={{ left: targetLabelX, top: targetLabelY }}
                 >
                     <p className="text-[0.3rem]">{data?.targetPort}</p>

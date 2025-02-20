@@ -1,5 +1,5 @@
 import { CircleX, Eye, EyeOff } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useAuth } from "../hooks/useAuth";
 
 interface ModalProps {
@@ -19,10 +19,10 @@ const SettingsModal: React.FC<ModalProps> = ({ isOpen, onClose }) => {
   const handleVisibilityChange = (e: React.MouseEvent<HTMLButtonElement>) => {
     const { name } = e.currentTarget;
     setShowPassword(prevState => ({
-        ...prevState,
-        [name]: !showPassword[name]
+      ...prevState,
+      [name]: !showPassword[name]
     }))
-}
+  }
 
   //esc button functionality
   useEffect(() => {
@@ -53,13 +53,14 @@ const SettingsModal: React.FC<ModalProps> = ({ isOpen, onClose }) => {
     //should never be called
     if (newPassword !== confirmPassword) {
       setServerMessage("Passwords must match");
-    }     
+    }
 
     try {
       const response = await authenticatedApiClient.updatePassword({
-      userId: user?.id,
-      oldPassword,
-      newPassword});
+        userId: user?.id,
+        oldPassword,
+        newPassword
+      });
 
       if (response.data?.success) {
         setOldPassword("");
@@ -67,7 +68,7 @@ const SettingsModal: React.FC<ModalProps> = ({ isOpen, onClose }) => {
         setConfirmPassword("");
         setServerMessage(response.message);
       }
-      else{
+      else {
         setServerMessage("An error occurred");
       }
     } catch (error) {
@@ -83,7 +84,7 @@ const SettingsModal: React.FC<ModalProps> = ({ isOpen, onClose }) => {
       <div className="modal-content relative">
         <button
           onClick={handleClose}
-          className="absolute top-2 right-2 bg-white rounded-full hover:bg-gray-200"
+          className="absolute top-2 right-2 bg-[#ffffff] rounded-full hover:bg-gray-200"
           style={{ zIndex: 10 }}
         >
           <CircleX size={20} />
@@ -102,7 +103,7 @@ const SettingsModal: React.FC<ModalProps> = ({ isOpen, onClose }) => {
                 id="oldPassword"
                 type={showPassword.viewOldPassword ? 'text' : 'password'}
                 value={oldPassword}
-                onChange={(e) => setOldPassword(e.target.value)} 
+                onChange={(e) => setOldPassword(e.target.value)}
                 className="r-input large w-full"
               />
               <button
@@ -110,7 +111,7 @@ const SettingsModal: React.FC<ModalProps> = ({ isOpen, onClose }) => {
                 type="button"
                 className="absolute right-8 mt-8 pt-0.5 text-grey-500"
                 onClick={handleVisibilityChange}
-                tabIndex={-1} 
+                tabIndex={-1}
               >
                 {showPassword.viewOldPassword ? <EyeOff size={24} /> : <Eye size={24} />}
               </button>
@@ -129,7 +130,7 @@ const SettingsModal: React.FC<ModalProps> = ({ isOpen, onClose }) => {
                 type="button"
                 className="absolute right-8 mt-8 pt-0.5 text-grey-500"
                 onClick={handleVisibilityChange}
-                tabIndex={-1} 
+                tabIndex={-1}
               >
                 {showPassword.viewPassword ? <EyeOff size={24} /> : <Eye size={24} />}
               </button>
@@ -141,11 +142,10 @@ const SettingsModal: React.FC<ModalProps> = ({ isOpen, onClose }) => {
                 type={showPassword.viewConfirmPassword ? 'text' : 'password'}
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                className={`r-input large w-full ${
-                  newPassword !== confirmPassword && confirmPassword !== ""
+                className={`r-input large w-full ${newPassword !== confirmPassword && confirmPassword !== ""
                     ? "error"
                     : ""
-                }`}
+                  }`}
               />
               <button
                 name="viewConfirmPassword"

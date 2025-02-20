@@ -8,7 +8,6 @@ export default function UserArchivedTopologiesPage() {
     const { token, authenticatedApiClient } = useAuth();
     const [archivedTopologies, setArchivedTopologies] = useState([] as Topology[]);
     const [isLoading, setIsLoading] = useState(true);
-    const [_error, setError] = useState<string | null>(null);
 
     // get user's archived topologies on page load by making authenticated request
     useEffect(() => {
@@ -16,11 +15,9 @@ export default function UserArchivedTopologiesPage() {
             if (!token) return;
             try {
                 setIsLoading(true);
-                setError(null);
                 const response = await authenticatedApiClient.getAllTopologies();
                 setArchivedTopologies(response.data?.filter(topology => topology.archived) ?? []);
             } catch (e) {
-                setError(e instanceof Error ? e.message : 'An error occurred');
                 console.error(e);
             } finally {
                 setIsLoading(false);

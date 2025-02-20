@@ -120,7 +120,7 @@ function AddInterconnectModal({ deviceInformation, deviceNumber, onClose, onSave
 
     return (
         <section className="bg-zinc-950 bg-opacity-50 w-full h-full fixed top-0 left-0 flex items-center justify-center z-50">
-            <div className="bg-white w-1/3 p-6 rounded-lg shadow-lg">
+            <div className="bg-[#ffffff] w-1/3 p-6 rounded-lg shadow-lg">
                 <div className="flex flex-row justify-between items-center">
                     <h2 className="m-0">{deviceInformation ? `Edit Interconnect Device #${deviceNumber}` : `Add Interconnect Device #${deviceNumber}`}</h2>
                     <button onClick={onClose} className="r-btn text-red-500 hover:text-red-700">
