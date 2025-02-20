@@ -43,7 +43,7 @@ const DeviceModal: React.FC<DeviceModalProps> = ({
 
     return (
         <section className="bg-zinc-950 bg-opacity-50 w-full h-full fixed top-0 left-0 flex items-center justify-center z-50">
-            <div className="bg-white w-2/5 p-6 rounded-lg shadow-lg">
+            <div className="bg-[#ffffff] w-2/5 p-6 rounded-lg shadow-lg">
                 <div className="flex flex-row justify-between items-center">
                     <h2 className="m-0">{deviceData?.name}{deviceData?.name !== '' ? "'s" : ''} {renderTable === true ? 'Ports' : 'Description'}</h2>
                     <button onClick={() => setIsOpen(false)} className="r-btn text-red-500 hover:text-red-700">

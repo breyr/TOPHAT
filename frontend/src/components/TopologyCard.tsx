@@ -1,4 +1,4 @@
-import { CircleX } from "lucide-react";
+import { Image, Trash } from "lucide-react";
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from "react-router-dom";
 import { Topology } from '../../../common/src/index';
@@ -58,19 +58,21 @@ const TopologyCard: React.FC<TopologyProps> = ({
   useEffect(() => {
     if (!thumbnail) return;
     try {
-      // Convert the object to a Uint8Array
+      // convert the object to a Uint8Array
       const byteArray = new Uint8Array(Object.values(thumbnail));
 
-      // Convert Uint8Array to binary string
+      // convert Uint8Array to binary string
       const binaryString = Array.from(byteArray)
         .map(byte => String.fromCharCode(byte))
         .join('');
 
-      // Convert binary string to base64
+      // convert binary string to base64
       const base64String = btoa(binaryString);
-
-      const thumbnailSourceString = `data:image/jpg;base64,${base64String}`;
-      setThumbnailSrc(thumbnailSourceString);
+      // check if empty
+      if (base64String !== "AA==") {
+        const thumbnailSourceString = `data:image/jpg;base64,${base64String}`;
+        setThumbnailSrc(thumbnailSourceString);
+      }
     } catch (error) {
       console.error('Error converting to base64:', error);
     }
@@ -80,22 +82,27 @@ const TopologyCard: React.FC<TopologyProps> = ({
     <div className="relative">
       <button
         onClick={handleDeleteClick}
-        className="absolute top-2 left-[-10px] m-1 p-0 bg-white rounded-full hover:bg-gray-200"
-        style={{ zIndex: 10 }}
+        className="absolute top-0 right-[-20px] m-1 p-2 shadow-md bg-gray-100 rounded-full hover:bg-gray-200 z-10"
       >
-        <CircleX size={20} />
+        <Trash size={16} />
       </button>
       <div
         key={id}
         onClick={handleClick}
-        className={`my-5 rounded-lg size-56 border border-gray-200 bg-white shadow-sm hover:shadow-md transition-shadow duration-200 flex flex-col items-center text-gray-700 ${readOnly ? "hover:cursor-default" : "hover:cursor-pointer"}`}
+        className={`my-5 rounded-lg size-56 border border-gray-200 bg-[#ffffff] shadow-sm hover:shadow-md transition-shadow duration-200 flex flex-col items-center text-gray-700 ${readOnly ? "hover:cursor-default" : "hover:cursor-pointer"}`}
       >
         <div className="w-full">
-          <img
-            src={thumbnailSrc ?? ""}
-            alt="thumbnail"
-            className="w-full h-36 object-cover bg-gray-100 rounded-t-md"
-          />
+          {thumbnailSrc ? (
+            <img
+              src={thumbnailSrc}
+              alt="Topology Thumbnail"
+              className="w-full h-36 object-cover bg-gray-100 rounded-t-md"
+            />
+          ) : (
+            <div className="w-full h-36 flex items-center justify-center bg-gray-100 rounded-t-md">
+              <Image size={80} className="text-gray-400" />
+            </div>
+          )}
         </div>
         <div className="w-full flex-1 rounded-b-md p-3">
           <p className="text-sm font-medium text-gray-900 mb-1">{name}</p>
@@ -124,7 +131,7 @@ const TopologyCard: React.FC<TopologyProps> = ({
         onConfirm={handleConfirmDelete}
         name={name}
       />
-    </div>
+    </div >
   );
 }
 

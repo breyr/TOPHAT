@@ -83,7 +83,6 @@ export class ConnectionController {
     async updateConnectionBulk(req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> {
         try {
             const connectionData = req.body as Connection[];
-            console.log(connectionData);
             const connections = await this.connectionService.updateConnectionBulk(connectionData);
             res.status(200).json({
                 message: 'Connections updated successfully',

@@ -1,22 +1,26 @@
 from enum import Enum
 import uvicorn
-from fastapi import Depends, FastAPI, HTTPException
+from fastapi import Depends, FastAPI, HTTPException, Header
 from pydantic import BaseModel
 from netmiko import ConnectHandler
 from dotenv import load_dotenv
 import jwt
 import os
+from vlanGeneration import map_ipids_to_vlanid
+from configGeneration import generate_clear_link_config, generate_create_link_config
 
 load_dotenv()
 SECRET_KEY = os.environ.get("SECRET_KEY")
-app = FastAPI()
+app = FastAPI(root_path="/interconnect")
 
 
 class LinkRequest(BaseModel):
-    ip1: str
-    ip2: str
-    port1: str
-    port2: str
+    interconnect1IP: str
+    interconnect1Prefix: str
+    interconnect2IP: str
+    interconnect2Prefix: str
+    interconnectPortID1: int
+    interconnectPortID2: int
     username: str
     password: str
     secret: str
@@ -34,7 +38,7 @@ class AccountStatus(str, Enum):
     ACCEPTED = "ACCEPTED"
 
 
-class JwtPayload:
+class JwtPayload(BaseModel):
     id: int
     username: str
     email: str
@@ -43,8 +47,9 @@ class JwtPayload:
 
 
 # helper function for decoding JWTs
-def decode_jwt(token: str) -> JwtPayload:
+def decode_jwt(authorization: str = Header(...)) -> JwtPayload:
     try:
+        token = authorization.split(" ")[1]
         payload = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
         return JwtPayload(**payload)
     except jwt.ExpiredSignatureError:
@@ -53,54 +58,37 @@ def decode_jwt(token: str) -> JwtPayload:
         raise HTTPException(status_code=401, detail="Invalid token")
 
 
-def generate_vlan_id(port1: str, port2: str) -> int:
+def _process_ports(port_id_1: str, port_id_2: str, req: LinkRequest):
     """
-    Generate a unique vlan ID for the pair of ports.
-    This function extracts the integer from the last slash
-    in the port strings (e.g., Gig1/0/10 -> 10), ensuring
-    we can still apply the uniqueness formula (p1 - 1)*48 + p2.
+    Processes port IDs and assigns the correct prefixes and device IPs.
+
+    Args:
+        port_id_1 (str): First interconnect port ID.
+        port_id_2 (str): Second interconnect port ID.
+        req (LinkRequest): Request object containing device IPs and prefixes.
+
+    Returns:
+        tuple: (formatted_ports, device_ips)
     """
-    # Extract last numeric segment from each port
-    last_number1 = int(port1.split("/")[-1])
-    last_number2 = int(port2.split("/")[-1])
+    interconnect_ports = [port_id_1, port_id_2]
+    formatted_ports = []
+    formatted_prefixes = []
+    device_ips = []
 
-    # Sort them if order doesn't matter
-    p1, p2 = sorted([last_number1, last_number2])
+    for port_id in interconnect_ports:
+        port_number = int(port_id)
 
-    # Generate VLAN ID
-    vlan_id = (p1 - 1) * 48 + p2
-    return vlan_id
+        if port_number > 44:
+            port_number -= 44
+            device_ips.append(req.interconnect2IP)
+            formatted_prefixes.append(req.interconnect2Prefix)
+        else:
+            device_ips.append(req.interconnect1IP)
+            formatted_prefixes.append(req.interconnect1Prefix)
 
+        formatted_ports.append(f"{formatted_prefixes[-1]}{port_number}")
 
-def generate_create_link_config(port: str, vlan_id: int):
-    """
-    Generate the config to enable L2 protocol tunneling on a port,
-    add it to a VLAN named after plan_id, etc.
-    Adjust these lines to match your environment's needed commands.
-    """
-    return [
-        f"vlan {vlan_id}",
-        f" name LINK_{vlan_id}",
-        f"interface {port}",
-        " no shutdown",
-        f" description LINK_{vlan_id}",
-        " switchport mode access",
-        f" switchport access vlan {vlan_id}",
-        " l2protocol-tunnel",
-        " l2protocol-tunnel point-to-point",
-    ]
-
-
-def generate_clear_link_config(port: str):
-    """
-    Generate the config to remove L2 tunneling and shut down the port.
-    """
-    return [
-        f"interface {port}",
-        " shutdown",
-        " no description",
-        " no switchport access vlan",
-    ]
+    return formatted_ports, device_ips
 
 
 def apply_config_to_device(
@@ -138,23 +126,27 @@ def create_link(req: LinkRequest, payload: JwtPayload = Depends(decode_jwt)):
     """
     Create a new L2 Tunneling link between two ports on two separate devices.
     """
-    vlan_id = generate_vlan_id(req.port1, req.port2)
+    vlan_id = map_ipids_to_vlanid(req.interconnectPortID1, req.interconnectPortID2)
 
-    # Create config sets for each device
-    config_device1 = generate_create_link_config(req.port1, vlan_id)
-    config_device2 = generate_create_link_config(req.port2, vlan_id)
+    # Use helper function to process ports
+    formatted_ports, device_ips = _process_ports(
+        req.interconnectPortID1, req.interconnectPortID2, req
+    )
+
+    config_device1 = generate_create_link_config(formatted_ports[0], vlan_id)
+    config_device2 = generate_create_link_config(formatted_ports[1], vlan_id)
 
     try:
         output1 = apply_config_to_device(
-            req.ip1, req.username, req.password, req.secret, config_device1
+            device_ips[0], req.username, req.password, req.secret, config_device1
         )
         output2 = apply_config_to_device(
-            req.ip2, req.username, req.password, req.secret, config_device2
+            device_ips[1], req.username, req.password, req.secret, config_device2
         )
 
         return {
             "status": "success",
-            "message": f"Link created successfully with vlan ID {vlan_id}",
+            "message": f"Link created successfully with VLAN ID {vlan_id}",
             "device1_output": output1,
             "device2_output": output2,
         }
@@ -167,23 +159,40 @@ def clear_link(req: LinkRequest, payload: JwtPayload = Depends(decode_jwt)):
     """
     Remove the L2 Tunneling link configuration and shut down the ports.
     """
-    plan_id = generate_vlan_id(req.port1, req.port2)
+    vlan_id = map_ipids_to_vlanid(req.interconnectPortID1, req.interconnectPortID2)
 
-    # Clear config sets for each device
-    config_device1 = generate_clear_link_config(req.port1)
-    config_device2 = generate_clear_link_config(req.port2)
+    # Process port IDs and assign the correct prefixes and device IPs
+    interconnect_port_ids = [req.interconnectPortID1, req.interconnectPortID2]
+    formatted_ports = []
+    formatted_prefixes = []
+    device_ips = []
+
+    for port_id in interconnect_port_ids:
+        port_number = int(port_id)
+        if port_number > 44:
+            port_number -= 44
+            device_ips.append(req.interconnect2IP)
+            formatted_prefixes.append(req.interconnect2Prefix)
+        else:
+            device_ips.append(req.interconnect1IP)
+            formatted_prefixes.append(req.interconnect1Prefix)
+        formatted_ports.append(f"{formatted_prefixes[-1]}{port_number}")
+
+    # Generate clear configurations
+    config_device1 = generate_clear_link_config(formatted_ports[0])
+    config_device2 = generate_clear_link_config(formatted_ports[1])
 
     try:
         output1 = apply_config_to_device(
-            req.ip1, req.username, req.password, req.secret, config_device1
+            device_ips[0], req.username, req.password, req.secret, config_device1
         )
         output2 = apply_config_to_device(
-            req.ip2, req.username, req.password, req.secret, config_device2
+            device_ips[1], req.username, req.password, req.secret, config_device2
         )
 
         return {
             "status": "success",
-            "message": f"Link cleared successfully for vlan ID {plan_id}",
+            "message": f"Link cleared successfully for VLAN ID {vlan_id}",
             "device1_output": output1,
             "device2_output": output2,
         }

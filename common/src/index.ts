@@ -94,8 +94,9 @@ export interface CreateTopologyRequestPayload {
 //
 
 export interface CreateDeviceRequestPayload {
-    userId: number;
-    topologyId: number;
+    deviceNumber: 1 | 2;
+    userId: number | null;
+    topologyId: number | null;
     name: string;
     model: string;
     serialNumber: string;
@@ -150,13 +151,15 @@ export interface UpdateConnectionRequestPayload {
 
 // Interconnect DTOs
 export interface LinkRequest {
-    ip1: string
-    ip2: string
-    port1: string
-    port2: string
-    username: string
-    password: string
-    secret: string
+    interconnect1IP: string;
+    interconnect1Prefix: string;
+    interconnect2IP: string;
+    interconnect2Prefix: string;
+    interconnectPortID1: number;
+    interconnectPortID2: number;
+    username: string;
+    password: string;
+    secret: string;
 }
 
 export interface LinkResponse {

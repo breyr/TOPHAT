@@ -8,6 +8,10 @@ export class DeviceService implements IDeviceService {
         this.deviceRepository = deviceRepository;
     }
 
+    async findDeviceByNumber(deviceNumber: number) {
+        return this.deviceRepository.findDeviceByNumber(deviceNumber);
+    }
+
     async createDevices(requestData: Partial<Device>[]): Promise<Device[]> {
         if (!requestData || !Array.isArray(requestData)) {
             throw new Error("Invalid input data");

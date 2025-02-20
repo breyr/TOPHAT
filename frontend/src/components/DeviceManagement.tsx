@@ -2,10 +2,10 @@ import { Accordion, AccordionItem as Item } from "@szhsin/react-accordion";
 import { ChevronDown, EthernetPort, Server, SquareTerminal } from "lucide-react";
 import { useEffect, useState } from "react";
 import ConnectionsTable from "../components/table/ConnectionsTable";
-import InterconnectDevicesTable from "../components/table/InterconnectDevicesTable";
 import LabDevicesTable from "../components/table/LabDevicesTable";
 import { useAuth } from "../hooks/useAuth";
 import { Device } from "../models/Device";
+import InterconnectDeviceCard from "./InterconnectDeviceCard";
 
 interface AccordionItemProps {
     header: React.ReactNode;
@@ -40,14 +40,17 @@ const AccordionItem = ({ header, isFirst, isLast, children, ...rest }: Accordion
 
 export default function DeviceManagement() {
     const { authenticatedApiClient } = useAuth();
-    const [interconnectDevices, setInterconnectDevices] = useState<Device[]>([]);
+    const [firstInterconnectDevice, setFirstInterconnectDevice] = useState<Device | null>(null);
+    const [secondInterconnectDevice, setSecondInterconnectDevice] = useState<Device | null>(null);
+    const [mergedInterconnectDevices, setMergedInterconnectDevices] = useState<Device[]>([]);
     const [labDevices, setLabDevices] = useState<Device[]>([]);
 
     useEffect(() => {
         const fetchInterconnectDevices = async () => {
             try {
                 const res = await authenticatedApiClient.getDevicesByType('INTERCONNECT');
-                setInterconnectDevices(res.data || []);
+                setFirstInterconnectDevice(res.data?.filter(d => d.deviceNumber == 1)[0] ?? null);
+                setSecondInterconnectDevice(res.data?.filter(d => d.deviceNumber == 2)[0] ?? null);
             } catch (error) {
                 console.error("Failed to fetch interconnect devices:", error);
             }
@@ -65,17 +68,27 @@ export default function DeviceManagement() {
         fetchLabDevices();
     }, [authenticatedApiClient]);
 
+    useEffect(() => {
+        const devices: Device[] = [];
+        if (firstInterconnectDevice) devices.push(firstInterconnectDevice);
+        if (secondInterconnectDevice) devices.push(secondInterconnectDevice);
+        setMergedInterconnectDevices(devices);
+    }, [firstInterconnectDevice, secondInterconnectDevice]);
+
     return (
         <div className="flex-grow w-full">
-            <Accordion transition transitionTimeout={200}>
+            <Accordion allowMultiple transition transitionTimeout={200}>
                 <AccordionItem header={<div className="flex flex-row items-center gap-2"><Server className="mr-2" /> Interconnect Devices</div>} isFirst>
-                    <InterconnectDevicesTable interconnectDevices={interconnectDevices} setInterconnectDevices={setInterconnectDevices} />
+                    <div className="flex flex-row justify-center items-center gap-20">
+                        <InterconnectDeviceCard deviceNumber={1} deviceInformation={firstInterconnectDevice} setDeviceInformation={setFirstInterconnectDevice} />
+                        <InterconnectDeviceCard deviceNumber={2} deviceInformation={secondInterconnectDevice} setDeviceInformation={setSecondInterconnectDevice} />
+                    </div>
                 </AccordionItem>
                 <AccordionItem header={<div className="flex flex-row items-center gap-2"><SquareTerminal className="mr-2" /> Lab Devices</div>}>
                     <LabDevicesTable labDevices={labDevices} setLabDevices={setLabDevices} />
                 </AccordionItem>
                 <AccordionItem header={<div className="flex flex-row items-center gap-2"><EthernetPort className="mr-2" /> Connections</div>} isLast>
-                    <ConnectionsTable interconnectDevices={interconnectDevices} labDevices={labDevices} />
+                    <ConnectionsTable interconnectDevices={mergedInterconnectDevices} labDevices={labDevices} />
                 </AccordionItem>
             </Accordion>
         </div>

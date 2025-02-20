@@ -3,8 +3,8 @@ import bcrypt from 'bcryptjs';
 import { NextFunction, Request, Response } from "express";
 import type { LoginRequestPayload, LoginResponsePayload, RegisterUserRequestPayload } from '../../../common/src/index';
 import { DIContainer } from "../config/DIContainer";
-import { AuthenticatedRequest } from '../types/types';
-import { createJwtToken } from '../utils/jwt';
+import { AuthenticatedRequest, CustomJwtPayload } from '../types/types';
+import { createJwtToken, createRefreshToken } from '../utils/jwt';
 import { validateEmail, ValidationError } from "../utils/validation";
 
 export class UserController {
@@ -51,6 +51,20 @@ export class UserController {
         }
     }
 
+    async refreshToken(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+        try {
+            const { userId, username, email, accountType, accountStatus } = req.jwt_payload as CustomJwtPayload;
+            const token = createJwtToken(userId, username, email, accountType, accountStatus);
+
+            res.status(200).json({
+                message: 'Token refreshed successfully',
+                data: { token },
+            });
+        } catch (error) {
+            next(error);
+        }
+    }
+
     async changePassword(req: Request, res: Response, next: NextFunction) {
         try {
             const { userId, oldPassword, newPassword } = req.body;
@@ -60,9 +74,9 @@ export class UserController {
             if (!user) {
                 throw new ValidationError('User not found');
             }
-            if(oldPassword !== undefined){
+            if (oldPassword !== undefined) {
                 isValidPassword = await bcrypt.compare(oldPassword, user.password);
-            }else{
+            } else {
                 isValidPassword = true; //true since oldPassword is not required for first time setup, and would be the only time undefined
             }
             if (!isValidPassword) {
@@ -129,7 +143,7 @@ export class UserController {
             }
             res.status(200).json({
                 message: 'User updated successfully',
-                data: { id: user.id, success: true}
+                data: { id: user.id, success: true }
             });
         } catch (error) {
             next(error);
