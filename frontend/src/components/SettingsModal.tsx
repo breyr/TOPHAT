@@ -1,4 +1,4 @@
-import { CircleX, Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useAuth } from "../hooks/useAuth";
 
@@ -80,23 +80,20 @@ const SettingsModal: React.FC<ModalProps> = ({ isOpen, onClose }) => {
   if (!isOpen) return null;  // State storing
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-      <div className="modal-content relative">
-        <button
-          onClick={handleClose}
-          className="absolute top-2 right-2 bg-[#ffffff] rounded-full hover:bg-gray-200"
-          style={{ zIndex: 10 }}
-        >
-          <CircleX size={20} />
-        </button>
-        <h2 className="title-container">Settings</h2>
-
-        <div className="flex flex-col space-y-4">
+    <section className="bg-zinc-950 bg-opacity-50 w-full h-full fixed top-0 left-0 flex items-center justify-center z-50">
+      <div className="bg-[#ffffff] w-2/5 p-6 rounded-lg shadow-lg">
+        <div className="flex flex-row justify-between items-center">
+          <h2 className="m-0">Settings</h2>
+          <button onClick={handleClose} className="r-btn text-red-500 hover:text-red-700">
+            <X />
+          </button>
+        </div>
+        <div className="flex flex-col space-y-4 p-5">
+          <h3 className="text-xl font-bold text-blue-400">Change Password</h3>
           <form
             onSubmit={handleSubmitPassword}
             className="flex flex-col space-y-4"
           >
-            <h3 className="text-lg font-semibold">Change Password</h3>
             <div className="flex flex-col">
               <label className="font-bold mb-1 block">Old Password</label>
               <input
@@ -143,8 +140,8 @@ const SettingsModal: React.FC<ModalProps> = ({ isOpen, onClose }) => {
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 className={`r-input large w-full ${newPassword !== confirmPassword && confirmPassword !== ""
-                    ? "error"
-                    : ""
+                  ? "error"
+                  : ""
                   }`}
               />
               <button
@@ -168,7 +165,7 @@ const SettingsModal: React.FC<ModalProps> = ({ isOpen, onClose }) => {
           </form>
         </div>
       </div>
-    </div>
+    </section>
   );
 };
 export default SettingsModal;

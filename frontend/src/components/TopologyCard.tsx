@@ -1,4 +1,4 @@
-import { CircleX } from "lucide-react";
+import { Trash } from "lucide-react";
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from "react-router-dom";
 import { Topology } from '../../../common/src/index';
@@ -77,10 +77,9 @@ const TopologyCard: React.FC<TopologyProps> = ({
     <div className="relative">
       <button
         onClick={handleDeleteClick}
-        className="absolute top-2 left-[-10px] m-1 p-0 bg-[#ffffff] rounded-full hover:bg-gray-200"
-        style={{ zIndex: 10 }}
+        className="absolute top-0 right-[-20px] m-1 p-2 shadow-md bg-gray-100 rounded-full hover:bg-gray-200"
       >
-        <CircleX size={20} />
+        <Trash size={16} />
       </button>
       <div
         key={id}
@@ -121,7 +120,7 @@ const TopologyCard: React.FC<TopologyProps> = ({
         onConfirm={handleConfirmDelete}
         name={name}
       />
-    </div>
+    </div >
   );
 }
 
