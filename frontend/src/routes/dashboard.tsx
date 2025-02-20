@@ -45,6 +45,9 @@ export default function DashboardLayout() {
                             <Link to="/dashboard/users" className={getTabClass("/users")}>
                                 Users
                             </Link>
+                            <Link to="/dashboard/alltopologies" className={getTabClass("/alltopologies")}>
+                                All User's Topologies
+                            </Link>
                         </>
                     }
                 </div>

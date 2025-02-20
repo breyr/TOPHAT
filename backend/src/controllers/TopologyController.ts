@@ -65,4 +65,14 @@ export class TopologyController {
             next(error);
         }
     }
+
+    async getAllUsersTopologies(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+        try {
+          // Optionally, verify that the caller has admin privileges
+          const topologies = await this.topologyService.getAllUsersTopologies();
+          res.status(200).json({ data: topologies || [] });
+        } catch (error) {
+          next(error);
+        }
+    }
 }

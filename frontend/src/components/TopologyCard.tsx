@@ -8,6 +8,7 @@ import DeletionModal from "./DeletionModal.tsx";
 interface TopologyProps extends Topology {
   onDelete: (topologyId: number) => void;
   onArchive: (topologyId: number) => void;
+  readOnly?: boolean;
 }
 
 const TopologyCard: React.FC<TopologyProps> = ({
@@ -17,7 +18,8 @@ const TopologyCard: React.FC<TopologyProps> = ({
   archived: initialArchived,
   updatedAt,
   onDelete,
-  onArchive
+  onArchive,
+  readOnly
 }) => {
   const { menuOpen, hideMenu } = useContextMenu();
   const navigateTo = useNavigate();
@@ -26,6 +28,7 @@ const TopologyCard: React.FC<TopologyProps> = ({
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const handleClick = (event: React.MouseEvent) => {
+    if (readOnly) return;
     if (menuOpen) {
       event.stopPropagation();
       hideMenu();
@@ -85,7 +88,7 @@ const TopologyCard: React.FC<TopologyProps> = ({
       <div
         key={id}
         onClick={handleClick}
-        className="my-5 rounded-lg size-56 border border-gray-200 bg-white shadow-sm hover:shadow-md transition-shadow duration-200 flex flex-col items-center text-gray-700 hover:cursor-pointer"
+        className={`my-5 rounded-lg size-56 border border-gray-200 bg-white shadow-sm hover:shadow-md transition-shadow duration-200 flex flex-col items-center text-gray-700 ${readOnly ? "hover:cursor-default" : "hover:cursor-pointer"}`}
       >
         <div className="w-full">
           <img
@@ -104,10 +107,10 @@ const TopologyCard: React.FC<TopologyProps> = ({
               </p>
             </div>
             <span
-              onClick={toggleArchived}
+              onClick={readOnly ? undefined : toggleArchived}
               className={`inline-flex items-center px-2 py-0.5 text-xs font-medium rounded-full ${archived
-                ? "bg-red-100 text-red-700 hover:bg-red-300"
-                : "bg-green-100 text-green-700 hover:bg-green-300"
+                ? `bg-red-100 text-red-700 ${readOnly ? "cursor-default" : "hover:bg-red-300 cursor-pointer"}`
+                : `bg-green-100 text-green-700 ${readOnly ? "cursor-default" : "hover:bg-green-300 cursor-pointer"}`
                 }`}
             >
               {archived ? "Archived" : "Active"}

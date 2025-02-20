@@ -30,4 +30,8 @@ export class TopologyService implements ITopologyService {
         return this.topologyRepository.delete(topologyId);
     }
 
+    getAllUsersTopologies(): Promise<Topology[] | null> {
+        return this.topologyRepository.findAllUsersTopologies();
+    }
+
 }
