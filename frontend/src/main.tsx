@@ -10,6 +10,8 @@ import UserAdministrationPage from './pages/UserAdministration.tsx'
 import UserArchivedTopologiesPage from './pages/UserArchivedTopologies.tsx'
 import UserCreatePage from './pages/UserCreate.tsx'
 import UserTopologiesPage from './pages/UserTopologies.tsx'
+import UserArchivedTopologiesPage from './pages/UserArchivedTopologies.tsx'
+import AllUserTopologiesPage from './pages/AllUserTopologiesPage.tsx'
 import DashboardLayout from './routes/dashboard.tsx'
 import OnboardLayout from './routes/onboard.tsx'
 import TopologyPage from './routes/topology.tsx'
@@ -57,6 +59,10 @@ const router = createBrowserRouter([
       {
         path: "archived",
         element: <UserArchivedTopologiesPage />
+      },
+      {
+        path: "alltopologies",
+        element: <AllUserTopologiesPage />
       }
     ]
   },

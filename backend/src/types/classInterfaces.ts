@@ -31,6 +31,7 @@ export interface ITopologyRepository {
     findOne(userId: number, topologyId: number): Promise<Topology | null>;
     update(topologyId: number, topologyData: UpdateTopologyDTO): Promise<Topology>;
     delete(topologyId: number): Promise<Topology | null>;
+    findAllUsersTopologies(): Promise<Topology[] | null>;
 }
 
 export interface ITopologyService {
@@ -39,6 +40,7 @@ export interface ITopologyService {
     getTopologyById(userId: number, topologyId: number): Promise<Topology | null>;
     updateTopology(topologyId: number, topologyData: UpdateTopologyDTO): Promise<Topology>;
     deleteTopology(topologyId: number): Promise<Topology | null>;
+    getAllUsersTopologies(): Promise<Topology[] | null>;
 }
 
 export interface IDeviceRepository {
