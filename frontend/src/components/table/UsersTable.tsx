@@ -227,7 +227,17 @@ export default function UsersTable() {
         {
             name: 'Account Type',
             selector: row => row.accountType,
-            cell: (row, index) => (
+            cell: (row, index) => 
+                row.accountType === 'OWNER' ? (
+                    <select
+                        value={row.accountType}
+                        name="accountType"
+                        disabled
+                        className="w-full rounded bg-white"
+                    >
+                        <option value="OWNER">Owner</option>
+                    </select>
+                ) : (
                 <select
                     value={row.accountType}
                     name="accountType"
