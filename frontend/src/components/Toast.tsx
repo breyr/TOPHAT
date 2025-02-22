@@ -1,6 +1,6 @@
 import { Alert, Spinner, Typography } from "@material-tailwind/react";
 import { CircleCheck, CircleX } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 interface ToastProps {
     title: string;
@@ -11,10 +11,25 @@ interface ToastProps {
 
 export default function LinkToast({ title, body, status, onDismiss }: ToastProps) {
     const [isMinimized, setIsMinimized] = useState(false);
+    const [isVisible, setIsVisible] = useState(true);
+
+    useEffect(() => {
+        let timer;
+        if (status !== "pending") {
+            timer = setTimeout(() => {
+                setIsVisible(false);
+                setTimeout(() => {
+                    onDismiss();
+                }, 500); // Duration of the fade-out transition
+            }, 5000);
+        }
+
+        return () => clearTimeout(timer);
+    }, [onDismiss, status]);
 
     return (
         <div
-            className="fixed bottom-4 right-4 z-50 hover:cursor-pointer"
+            className={`fixed bottom-4 right-4 z-50 hover:cursor-pointer transition-opacity duration-500 ${isVisible ? 'opacity-100' : 'opacity-0'}`}
             onClick={() => setIsMinimized(!isMinimized)}
         >
             <Alert color={status === 'pending' ? 'warning' : status === 'success' ? 'success' : 'error'}>
