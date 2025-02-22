@@ -1,13 +1,22 @@
+import { Node, useNodes } from "@xyflow/react";
 import { CirclePlus } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useAuth } from "../../../hooks/useAuth";
 import { Device } from "../../../models/Device";
 import DeviceAccordion from "./DeviceAccordion";
 
+interface CustomNode extends Node {
+    data: {
+        deviceData?: Device;
+    }
+}
+
 export default function NodePicker() {
+    const nodes = useNodes<CustomNode>();
     const { authenticatedApiClient } = useAuth();
     const [showItems, setShowItems] = useState(false);
     const [labDevices, setLabDevices] = useState<Device[]>([]);
+    const [usedDevices, setUsedDevices] = useState<Set<string>>(new Set());
 
     useEffect(() => {
         const fetchLabDevices = async () => {
@@ -21,6 +30,13 @@ export default function NodePicker() {
 
         fetchLabDevices();
     }, [authenticatedApiClient]);
+
+    // get list of device names that are currently on the topology
+    useEffect(() => {
+        // filter out any null values and type assert
+        const deviceNames = nodes.map(n => n.data.deviceData?.name).filter(Boolean) as string[];
+        setUsedDevices(new Set(deviceNames));
+    }, [nodes]);
 
     return (
         <div className="fixed right-0 h-full flex flex-col justify-center">
@@ -36,7 +52,7 @@ export default function NodePicker() {
                 `}
             >
                 <div className="p-4 h-full">
-                    <DeviceAccordion labDevices={labDevices} />
+                    <DeviceAccordion labDevices={labDevices} usedDevices={usedDevices} />
                 </div>
             </div>
 

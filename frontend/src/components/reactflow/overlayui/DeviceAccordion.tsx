@@ -42,9 +42,10 @@ const AccordionItem = ({ header, children, ...rest }: AccordionItemProps) => (
 
 interface DeviceAccordionProps {
     labDevices: Device[];
+    usedDevices: Set<string>;
 }
 
-export default function DeviceAccordion({ labDevices }: DeviceAccordionProps) {
+export default function DeviceAccordion({ labDevices, usedDevices }: DeviceAccordionProps) {
     const [routers, setRouters] = useState<DraggableItemProps[]>([]);
     const [switches, setSwitches] = useState<DraggableItemProps[]>([]);
     const [servers, setServers] = useState<DraggableItemProps[]>([]);
@@ -54,24 +55,28 @@ export default function DeviceAccordion({ labDevices }: DeviceAccordionProps) {
         setRouters(labDevices.filter(d => d.icon === 'ROUTER').map(d => ({
             nodeSvg: <RouterSvg />, // Replace with your actual SVG component
             nodeType: 'Router',
-            deviceData: d
+            deviceData: d,
+            isUsed: usedDevices.has(d.name)
         })));
         setSwitches(labDevices.filter(d => d.icon === 'SWITCH').map(d => ({
             nodeSvg: <SwitchSvg />, // Replace with your actual SVG component
             nodeType: 'Switch',
-            deviceData: d
+            deviceData: d,
+            isUsed: usedDevices.has(d.name)
         })));
         setServers(labDevices.filter(d => d.icon === 'SERVER').map(d => ({
             nodeSvg: <ServerSvg />, // Replace with your actual SVG component
             nodeType: 'Server',
-            deviceData: d
+            deviceData: d,
+            isUsed: usedDevices.has(d.name)
         })));
         setExternalDevices(labDevices.filter(d => d.icon === 'EXTERNAL').map(d => ({
             nodeSvg: <ExternalSvg />, // Replace with your actual SVG component
             nodeType: 'External',
-            deviceData: d
+            deviceData: d,
+            isUsed: usedDevices.has(d.name)
         })));
-    }, [labDevices]);
+    }, [labDevices, usedDevices]);
 
     return (
         <div className="flex-grow w-full">
