@@ -1,5 +1,5 @@
 import { Node, useNodes } from "@xyflow/react";
-import { CirclePlus } from "lucide-react";
+import { CircleMinus, CirclePlus } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useAuth } from "../../../hooks/useAuth";
 import { Device } from "../../../models/Device";
@@ -70,7 +70,7 @@ export default function NodePicker() {
                 `}
                 onClick={() => setShowItems(!showItems)}
             >
-                <CirclePlus className="mr-2" /> Add Device
+                {!showItems ? <CirclePlus className="mr-2" /> : <CircleMinus className="mr-2" />} Add Device
             </div>
         </div>
     );
