@@ -82,7 +82,7 @@ const TopologyCard: React.FC<TopologyProps> = ({
     <div className="relative">
       <button
         onClick={handleDeleteClick}
-        className="absolute top-0 right-[-20px] m-1 p-2 shadow-md bg-gray-100 rounded-full hover:bg-gray-200 z-10"
+        className="absolute top-0 right-[-20px] m-1 p-2 shadow-md text-red-500 bg-gray-50 rounded-full hover:bg-gray-100 z-10"
       >
         <Trash size={16} />
       </button>
