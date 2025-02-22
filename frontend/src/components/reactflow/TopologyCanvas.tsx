@@ -34,9 +34,6 @@ import NodePicker from "./overlayui/NodePicker";
 const initialNodes = [] satisfies Node[];
 const initialEdges = [] satisfies Edge[];
 
-// required for drag and drop objects
-const getId = () => `dndnode_${Date.now()}_${Math.floor(Math.random() * 10000)}`;
-
 // options to remove branding
 const proOptions = { hideAttribution: true };
 
@@ -226,7 +223,7 @@ const TopologyCanvas = () => {
 
             // create the new node
             const newNode = {
-                id: getId(),
+                id: deviceData.name,
                 type: nodeType,
                 position,
                 data: { deviceData }, // accessible within props.data for custom nodes
