@@ -181,11 +181,11 @@ export default function PortSelectionModal({ deviceData, currentDevicePorts, lab
                 <div className="mb-4 p-4">
                     <div className="flex flex-col">
                         <div className="pb-2 border-b">
-                            <h4>{deviceData?.name || "First Device"}</h4>
+                            <h4>First Device</h4>
                             <select
                                 value={deviceData?.name || selectedFirstDevice}
                                 onChange={(e) => setSelectedFirstDevice(e.target.value)}
-                                className="block w-full mt-1 rounded-md bg-[#ffffff] focus:outline-none"
+                                className={`block w-full mt-1 rounded-md bg-[#ffffff] focus:outline-none ${deviceData?.name ? 'text-gray-300' : ''}`}
                                 disabled={!!deviceData?.name}
                             >
                                 <option value="">Select a Device</option>
@@ -212,7 +212,7 @@ export default function PortSelectionModal({ deviceData, currentDevicePorts, lab
                             </select>
                         </div>
                         <div className="pb-2 border-b">
-                            <h4>Other Device</h4>
+                            <h4>Second Device</h4>
                             <select
                                 value={selectedSecondDevice}
                                 onChange={(e) => setSelectedSecondDevice(e.target.value)}

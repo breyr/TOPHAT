@@ -19,11 +19,15 @@ const TopologyPageContent: React.FC = () => {
 
     const { id } = useParams();
     const navigateTo = useNavigate();
-    const { authenticatedApiClient } = useAuth();
+    const { user, authenticatedApiClient } = useAuth();
 
     // on mount get the topology data
     useEffect(() => {
         (async () => {
+            if (!user) {
+                navigateTo("/");
+            }
+
             // reset error
             setError({ type: null, message: '' });
             setLoading(true);
@@ -62,7 +66,7 @@ const TopologyPageContent: React.FC = () => {
             }
 
         })();
-    }, [authenticatedApiClient, id, setTopologyData, setLastUpdated]);
+    }, [user, authenticatedApiClient, id, setTopologyData, setLastUpdated]);
 
     return (
         <section className="flex flex-col h-screen">

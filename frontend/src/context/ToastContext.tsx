@@ -1,4 +1,4 @@
-import React, { createContext, useEffect, useState } from 'react';
+import React, { createContext, useState } from 'react';
 
 interface Toast {
     id: string;
@@ -18,10 +18,6 @@ export const ToastContext = createContext<ToastContextProps | undefined>(undefin
 
 export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [toasts, setToasts] = useState<Toast[]>([]);
-
-    useEffect(() => {
-        console.log('Toasts state updated:', toasts);
-    }, [toasts]);
 
     const addToast = (toast: Toast) => {
         setToasts(prevToasts => {
