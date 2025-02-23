@@ -3,18 +3,20 @@ import { LinkRequest } from "common";
 import { Cable, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useAuth } from "../../../hooks/useAuth";
+import { useToast } from "../../../hooks/useToast";
 import { generatePorts } from "../../../lib/helpers";
 import { Device } from "../../../models/Device";
 
-interface PortSelectionModalProps {
+interface CreateLinkModalProps {
     deviceData?: Device;
     currentDevicePorts: string[];
     labDevices: Device[];
     onClose: () => void;
 }
 
-export default function PortSelectionModal({ deviceData, currentDevicePorts, labDevices, onClose }: PortSelectionModalProps) {
+export default function CreateLinkModal({ deviceData, currentDevicePorts, labDevices, onClose }: CreateLinkModalProps) {
     const { authenticatedApiClient } = useAuth();
+    const { addToast, updateToast } = useToast();
     const { getNodes, setEdges } = useReactFlow();
     const [selectedFirstDevice, setSelectedFirstDevice] = useState<string>("");
     const [selectedFirstDevicePort, setSelectedFirstDevicePort] = useState<string>("");
@@ -62,12 +64,12 @@ export default function PortSelectionModal({ deviceData, currentDevicePorts, lab
 
         if (sourceNode && targetNode) {
             const newEdge = {
-                id: `edge-${sourceNode.id}-${targetNode.id}`,
+                id: `edge-${selectedFirstDevicePort}-${selectedSecondDevicePort}`,
                 source: sourceNode.id,
                 target: targetNode.id,
-                sourceHandle: "source",
-                targetHandle: "target",
-                type: "Floating",
+                sourceHandle: `source-${selectedFirstDevicePort}`,
+                targetHandle: `target-${selectedSecondDevicePort}`,
+                type: "deviceConnection",
                 data: {
                     sourcePort: selectedFirstDevicePort,
                     targetPort: selectedSecondDevicePort,
@@ -97,7 +99,7 @@ export default function PortSelectionModal({ deviceData, currentDevicePorts, lab
             const secondConnectionInfo = secondDeviceConnections.data?.find(c => c.labDevicePort === selectedSecondDevicePort);
 
             if (!firstConnectionInfo || !secondConnectionInfo) {
-                console.error("Connection information not found for one or both devices");
+                addToast({ id: Date.now().toString(), title: 'Creating Link', body: `Connection information not found.`, status: 'error' });
                 return;
             }
 
@@ -107,14 +109,14 @@ export default function PortSelectionModal({ deviceData, currentDevicePorts, lab
             const secondInterconnectInfo = interconnectDevices.data?.find(d => d.name === secondConnectionInfo.interconnectDeviceName);
 
             if (!firstInterconnectInfo || !secondInterconnectInfo) {
-                console.error("Interconnect device information not found for one or both devices");
+                addToast({ id: Date.now().toString(), title: 'Creating Link', body: `Interconnect information not found. Please message an Administrator.`, status: 'error' });
                 return;
             }
 
             // ensure required interconnect info is not null or undefined
             if (firstInterconnectInfo.deviceNumber == null || firstInterconnectInfo.username == null || firstInterconnectInfo.password == null || firstInterconnectInfo.secretPassword == null ||
                 secondInterconnectInfo.deviceNumber == null || secondInterconnectInfo.username == null || secondInterconnectInfo.password == null || secondInterconnectInfo.secretPassword == null) {
-                console.error("Interconnect device information is incomplete");
+                addToast({ id: Date.now().toString(), title: 'Creating Link', body: `Interconnect is not configured properly. Please message an Administrator.`, status: 'error' });
                 return;
             }
 
@@ -123,7 +125,7 @@ export default function PortSelectionModal({ deviceData, currentDevicePorts, lab
             const ip2 = secondInterconnectInfo.ipAddress ?? 'none';
 
             if (ip1 === 'none' || ip2 === 'none') {
-                console.error("One or both IP addresses are missing");
+                addToast({ id: Date.now().toString(), title: 'Creating Link', body: `Interconnect is not configured properly. Please message an Administrator.`, status: 'error' });
                 return;
             }
 
@@ -150,18 +152,21 @@ export default function PortSelectionModal({ deviceData, currentDevicePorts, lab
                 secret: firstInterconnectInfo.secretPassword
             };
 
-            console.log(createLinkPayload);
-
             // send request to interconnect API
+            const toastId = Date.now().toString();
+            addToast({ id: toastId, title: 'Creating Link', body: `Connecting ${selectedFirstDevice} on port ${selectedFirstDevicePort} to ${selectedSecondDevice} on port ${selectedSecondDevicePort}`, status: 'pending' });
             const res = await authenticatedApiClient.createLink(createLinkPayload);
             if ((res as any).status === 'success') {
                 // draw edge in react flow
                 createEdge();
+                updateToast(toastId, 'success', 'Successfully Created Link');
             } else {
+                updateToast(toastId, 'error', 'Failed to Create Link');
                 console.error("Failed to create link");
             }
         } catch (error) {
             console.error("Error creating link:", error);
+            addToast({ id: Date.now().toString(), title: 'Creating Link', body: `Error creating link. Please contact an Administrator.`, status: 'error' });
         }
     };
 
@@ -177,11 +182,11 @@ export default function PortSelectionModal({ deviceData, currentDevicePorts, lab
                 <div className="mb-4 p-4">
                     <div className="flex flex-col">
                         <div className="pb-2 border-b">
-                            <h4>{deviceData?.name || "First Device"}</h4>
+                            <h4>First Device</h4>
                             <select
                                 value={deviceData?.name || selectedFirstDevice}
                                 onChange={(e) => setSelectedFirstDevice(e.target.value)}
-                                className="block w-full mt-1 rounded-md bg-[#ffffff] focus:outline-none"
+                                className={`block w-full mt-1 rounded-md bg-[#ffffff] focus:outline-none ${deviceData?.name ? 'text-gray-300' : ''}`}
                                 disabled={!!deviceData?.name}
                             >
                                 <option value="">Select a Device</option>
@@ -208,7 +213,7 @@ export default function PortSelectionModal({ deviceData, currentDevicePorts, lab
                             </select>
                         </div>
                         <div className="pb-2 border-b">
-                            <h4>Other Device</h4>
+                            <h4>Second Device</h4>
                             <select
                                 value={selectedSecondDevice}
                                 onChange={(e) => setSelectedSecondDevice(e.target.value)}

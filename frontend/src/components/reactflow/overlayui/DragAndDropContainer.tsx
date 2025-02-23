@@ -14,6 +14,7 @@ export default function DragAndDropContainer({ devices }: DragAndDropContainerPr
                             nodeSvg={item.nodeSvg}
                             nodeType={item.nodeType}
                             deviceData={item.deviceData}
+                            isUsed={item.isUsed}
                             key={index}
                         />
                     ))
