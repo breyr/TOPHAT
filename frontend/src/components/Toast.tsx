@@ -29,7 +29,7 @@ export default function LinkToast({ title, body, status, onDismiss }: ToastProps
 
     return (
         <div
-            className={`fixed bottom-4 right-4 z-50 hover:cursor-pointer transition-opacity duration-500 ${isVisible ? 'opacity-100' : 'opacity-0'}`}
+            className={`w-full hover:cursor-pointer transition-opacity duration-500 ${isVisible ? 'opacity-100' : 'opacity-0'}`}
             onClick={() => setIsMinimized(!isMinimized)}
         >
             <Alert color={status === 'pending' ? 'warning' : status === 'success' ? 'success' : 'error'}>

@@ -7,14 +7,14 @@ import { useToast } from "../../../hooks/useToast";
 import { generatePorts } from "../../../lib/helpers";
 import { Device } from "../../../models/Device";
 
-interface PortSelectionModalProps {
+interface CreateLinkModalProps {
     deviceData?: Device;
     currentDevicePorts: string[];
     labDevices: Device[];
     onClose: () => void;
 }
 
-export default function PortSelectionModal({ deviceData, currentDevicePorts, labDevices, onClose }: PortSelectionModalProps) {
+export default function CreateLinkModal({ deviceData, currentDevicePorts, labDevices, onClose }: CreateLinkModalProps) {
     const { authenticatedApiClient } = useAuth();
     const { addToast, updateToast } = useToast();
     const { getNodes, setEdges } = useReactFlow();
@@ -166,6 +166,7 @@ export default function PortSelectionModal({ deviceData, currentDevicePorts, lab
             }
         } catch (error) {
             console.error("Error creating link:", error);
+            addToast({ id: Date.now().toString(), title: 'Creating Link', body: `Error creating link. Please contact an Administrator.`, status: 'error' });
         }
     };
 

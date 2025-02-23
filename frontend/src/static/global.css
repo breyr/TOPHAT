@@ -624,3 +624,10 @@ footer {
         transform: scale(1);
     }
 }
+
+/* ==== REACT FLOW STYLES ==== */
+
+/* disables edges to be clicked on by users */
+.react-flow__edge {
+    pointer-events: none;
+}

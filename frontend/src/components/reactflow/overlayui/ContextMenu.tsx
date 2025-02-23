@@ -2,7 +2,8 @@ import { useEffect, useState } from "react";
 import { useAuth } from "../../../hooks/useAuth";
 import { generatePorts } from "../../../lib/helpers";
 import { Device } from "../../../models/Device";
-import PortSelectionModal from "./PortSelectionModal";
+import CreateLinkModal from "./CreateLinkModal";
+import DeleteLinkModal from "./DeleteLinkModal";
 
 export interface ContextMenuProps {
     deviceData?: Device | undefined;
@@ -23,7 +24,8 @@ export default function ContextMenu({
     const { authenticatedApiClient } = useAuth();
     const [labDevices, setLabDevices] = useState<Device[]>([]);
     const [currentDevicePorts, setCurrentDevicePorts] = useState<string[]>([]);
-    const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+    const [isCreateLinkModalOpen, setIsCreateLinkModalOpen] = useState<boolean>(false);
+    const [isDeleteLinkModalOpen, setIsDeleteLinkModalOpen] = useState<boolean>(false);
 
     useEffect(() => {
         const fetchLabDevices = async () => {
@@ -57,17 +59,24 @@ export default function ContextMenu({
                     {deviceData?.name}
                 </h3>
             </div>
-            <div className="flex flex-col flex-wrap text-sm mb-2">
+            {/* <div className="flex flex-col flex-wrap text-sm mb-2">
                 <span><strong>Model:</strong> {deviceData?.model}</span>
                 <span><strong>SN:</strong> {deviceData?.serialNumber}</span>
-            </div>
-            <button className="r-btn primary w-full" onClick={() => setIsModalOpen(true)}>Create Link</button>
-            {isModalOpen && deviceData && (
-                <PortSelectionModal
+            </div> */}
+            <button className="r-btn primary w-full mb-3" onClick={() => setIsCreateLinkModalOpen(true)}>Create Link</button>
+            <button className="r-btn primary danger w-full" onClick={() => setIsDeleteLinkModalOpen(true)}>Delete Link</button>
+            {isCreateLinkModalOpen && deviceData && (
+                <CreateLinkModal
                     deviceData={deviceData}
                     currentDevicePorts={currentDevicePorts}
                     labDevices={labDevices}
-                    onClose={() => setIsModalOpen(false)}
+                    onClose={() => setIsCreateLinkModalOpen(false)}
+                />
+            )}
+            {isDeleteLinkModalOpen && deviceData && (
+                <DeleteLinkModal
+                    deviceData={deviceData}
+                    onClose={() => setIsDeleteLinkModalOpen(false)}
                 />
             )}
         </div>
