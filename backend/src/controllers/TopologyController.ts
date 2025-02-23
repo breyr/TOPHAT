@@ -2,7 +2,7 @@ import { NextFunction, Response } from "express";
 import type { CreateTopologyRequestPayload } from "../../../common/src/index";
 import { DIContainer } from "../config/DIContainer";
 import { AuthenticatedRequest, UpdateTopologyDTO } from "../types/types";
-import { checkForTopologyId, checkForUserId } from "../utils/validation";
+import { checkForTopologyId, checkForUserId, checkForAccountType } from "../utils/validation";
 
 export class TopologyController {
     private topologyService = DIContainer.getTopologyService();
@@ -34,8 +34,15 @@ export class TopologyController {
     async getTopologyById(req: AuthenticatedRequest, res: Response, next: NextFunction) {
         try {
             const userId = checkForUserId(req);
+            const accountType = checkForAccountType(req);
             const topologyId = checkForTopologyId(req);
-            const topology = await this.topologyService.getTopologyById(userId, topologyId);
+            let topology;
+            if (accountType !== "USER") {
+                // For admins/owners, ignore user filtering.
+                topology = await this.topologyService.getTopologyByIdAdmin(topologyId);
+              } else {
+                topology = await this.topologyService.getTopologyById(userId, topologyId);
+              }            
             if (!topology) {
                 res.status(404).json({ message: 'Topology not found' })
             }
