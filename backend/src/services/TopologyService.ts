@@ -22,6 +22,10 @@ export class TopologyService implements ITopologyService {
         return this.topologyRepository.findOne(userId, topologyId);
     }
 
+    getTopologyByIdAdmin(topologyId: number): Promise<Topology | null> {
+        return this.topologyRepository.findUnique(topologyId);
+    }
+
     updateTopology(topologyId: number, topologyData: UpdateTopologyDTO): Promise<Topology> {
         return this.topologyRepository.update(topologyId, topologyData);
     }

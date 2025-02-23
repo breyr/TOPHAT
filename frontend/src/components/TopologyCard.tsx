@@ -32,7 +32,9 @@ const TopologyCard: React.FC<TopologyProps> = ({
   const ownsTopology = user?.id === userId;
 
   const handleClick = (event: React.MouseEvent) => {
-    if (readOnly) return;
+    if (archived) return;
+
+    if (readOnly && !(user?.accountType === "ADMIN" || user?.accountType === "OWNER")) return;
     if (menuOpen) {
       event.stopPropagation();
       hideMenu();
@@ -93,7 +95,7 @@ const TopologyCard: React.FC<TopologyProps> = ({
       <div
         key={id}
         onClick={handleClick}
-        className={`my-5 rounded-lg size-56 border border-gray-200 bg-[#ffffff] shadow-sm hover:shadow-md transition-shadow duration-200 flex flex-col items-center text-gray-700 ${readOnly ? "hover:cursor-default" : "hover:cursor-pointer"}`}
+        className={`my-5 rounded-lg size-56 border border-gray-200 bg-[#ffffff] shadow-sm transition-shadow duration-200 flex flex-col items-center text-gray-700 ${readOnly || archived? "hover:cursor-default" : "hover:cursor-pointer hover:shadow-md"}`}
       >
         <div className="w-full">
           {thumbnailSrc ? (
@@ -118,7 +120,7 @@ const TopologyCard: React.FC<TopologyProps> = ({
               </p>
             </div>
             <span
-              onClick={ownsTopology ? toggleArchived: undefined}
+              onClick={!ownsTopology ? undefined: toggleArchived}
               className={`inline-flex items-center px-2 py-0.5 text-xs font-medium rounded-full ${archived
                 ? `bg-red-100 text-red-700 ${!ownsTopology ? "cursor-default" : "hover:bg-red-300 cursor-pointer"}`
                 : `bg-green-100 text-green-700 ${!ownsTopology ? "cursor-default" : "hover:bg-green-300 cursor-pointer"}`

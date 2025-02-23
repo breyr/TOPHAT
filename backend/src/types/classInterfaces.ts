@@ -29,6 +29,7 @@ export interface ITopologyRepository {
     create(userId: number, requestData: CreateTopologyRequestPayload): Promise<Topology>;
     findAll(userId: number): Promise<Topology[] | null>;
     findOne(userId: number, topologyId: number): Promise<Topology | null>;
+    findUnique(topologyId: number): Promise<Topology | null>;
     update(topologyId: number, topologyData: UpdateTopologyDTO): Promise<Topology>;
     delete(topologyId: number): Promise<Topology | null>;
     findAllUsersTopologies(): Promise<Topology[] | null>;
@@ -38,6 +39,7 @@ export interface ITopologyService {
     createTopology(userId: number, requestData: CreateTopologyRequestPayload): Promise<Topology>;
     getAllTopologies(userId: number): Promise<Topology[] | null>;
     getTopologyById(userId: number, topologyId: number): Promise<Topology | null>;
+    getTopologyByIdAdmin(topologyId: number): Promise<Topology | null>;
     updateTopology(topologyId: number, topologyData: UpdateTopologyDTO): Promise<Topology>;
     deleteTopology(topologyId: number): Promise<Topology | null>;
     getAllUsersTopologies(): Promise<Topology[] | null>;

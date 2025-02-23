@@ -70,7 +70,7 @@ export default function AllUserTopologiesPage() {
                       {...topology}
                       onDelete={() => handleDelete(topology.id)}
                       onArchive={() => console.log("Archive", topology.id)}
-                      readOnly={true}
+                      readOnly={false}
                     />
                   ))
                 ) : (
