@@ -53,7 +53,7 @@ const UserSetupModal: React.FC<ModalProps> = ({ onSubmit }) => {
   }
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+    <div className="bg-zinc-950 bg-opacity-50 w-full h-full fixed top-0 left-0 flex items-center justify-center z-50">
       <div className="modal-content relative">
           <h2 className="title-container">Setup Account</h2>
           <div className="flex flex-col space-y-4">

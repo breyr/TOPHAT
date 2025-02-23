@@ -62,7 +62,7 @@ export default function UserArchivedTopologiesPage() {
             ) : (
                 archivedTopologies.length !== 0 ? (
                     archivedTopologies.map((topology) => (
-                        <TopologyCard key={topology.id} {...topology} onDelete={() => handleDelete(topology.id)} onArchive={() => handleArchive(topology.id)} />
+                        <TopologyCard key={topology.id} {...topology} onDelete={() => handleDelete(topology.id)} onArchive={() => handleArchive(topology.id)} readOnly={true} />
                     ))
                 ) : (
                     <p>No archived topologies found.</p>
