@@ -64,12 +64,12 @@ export default function CreateLinkModal({ deviceData, currentDevicePorts, labDev
 
         if (sourceNode && targetNode) {
             const newEdge = {
-                id: `edge-${sourceNode.id}-${targetNode.id}`,
+                id: `edge-${selectedFirstDevicePort}-${selectedSecondDevicePort}`,
                 source: sourceNode.id,
                 target: targetNode.id,
-                sourceHandle: "source",
-                targetHandle: "target",
-                type: "Floating",
+                sourceHandle: `source-${selectedFirstDevicePort}`,
+                targetHandle: `target-${selectedSecondDevicePort}`,
+                type: "deviceConnection",
                 data: {
                     sourcePort: selectedFirstDevicePort,
                     targetPort: selectedSecondDevicePort,
