@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { Topology } from '../../../common/src/index';
 import useContextMenu from "../hooks/useContextMenu.ts";
 import DeletionModal from "./DeletionModal.tsx";
+import { useAuth } from "../hooks/useAuth.ts";
 
 interface TopologyProps extends Topology {
   onDelete: (topologyId: number) => void;
@@ -19,13 +20,16 @@ const TopologyCard: React.FC<TopologyProps> = ({
   updatedAt,
   onDelete,
   onArchive,
-  readOnly
+  readOnly,
+  userId
 }) => {
   const { menuOpen, hideMenu } = useContextMenu();
+  const { user } = useAuth();
   const navigateTo = useNavigate();
   const [thumbnailSrc, setThumbnailSrc] = useState<string | null>(null);
   const [archived, setArchived] = useState(initialArchived);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const ownsTopology = user?.id === userId;
 
   const handleClick = (event: React.MouseEvent) => {
     if (readOnly) return;
@@ -114,10 +118,10 @@ const TopologyCard: React.FC<TopologyProps> = ({
               </p>
             </div>
             <span
-              onClick={readOnly ? undefined : toggleArchived}
+              onClick={ownsTopology ? toggleArchived: undefined}
               className={`inline-flex items-center px-2 py-0.5 text-xs font-medium rounded-full ${archived
-                ? `bg-red-100 text-red-700 ${readOnly ? "cursor-default" : "hover:bg-red-300 cursor-pointer"}`
-                : `bg-green-100 text-green-700 ${readOnly ? "cursor-default" : "hover:bg-green-300 cursor-pointer"}`
+                ? `bg-red-100 text-red-700 ${!ownsTopology ? "cursor-default" : "hover:bg-red-300 cursor-pointer"}`
+                : `bg-green-100 text-green-700 ${!ownsTopology ? "cursor-default" : "hover:bg-green-300 cursor-pointer"}`
                 }`}
             >
               {archived ? "Archived" : "Active"}
