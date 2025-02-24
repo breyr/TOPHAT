@@ -23,7 +23,7 @@ import { useAuth } from "../../hooks/useAuth.ts";
 import { useTopology } from "../../hooks/useTopology.ts";
 import { debounce } from "../../lib/helpers.ts";
 import { Device } from "../../models/Device.ts";
-import DeviceConnection from "./edges/DeviceConnection.tsx";
+import CustomEdge from "./edges/CustomEdge.tsx";
 import ExternalNode from "./nodes/ExternalNode.tsx";
 import RouterNode from "./nodes/RouterNode.tsx";
 import ServerNode from "./nodes/ServerNode.tsx";
@@ -50,7 +50,7 @@ const nodeTypes = {
 };
 
 const edgeTypes = {
-    Floating: DeviceConnection,
+    Custom: CustomEdge,
 };
 
 const TopologyCanvas = () => {

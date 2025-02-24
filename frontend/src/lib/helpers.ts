@@ -1,4 +1,4 @@
-import { Position } from "@xyflow/react";
+import { GetSpecialPathParams } from "../components/reactflow/edges/CustomEdge";
 
 // generating temporary passwords for user creation
 export function generateTempPassword(length: number = 12): string {
@@ -39,74 +39,30 @@ export const generatePorts = (portDefinition: string): string[] => {
     return Array.from({ length: end - start + 1 }, (_, i) => `${prefix}${start + i}`);
 };
 
-// this helper function returns the intersection point
-// of the line between the center of the intersectionNode and the target node
-function getNodeIntersection(intersectionNode, targetNode) {
-    // https://math.stackexchange.com/questions/1724792/an-algorithm-for-finding-the-intersection-point-between-a-center-of-vision-and-a
-    const { width: intersectionNodeWidth, height: intersectionNodeHeight } =
-        intersectionNode.measured;
-    const intersectionNodePosition = intersectionNode.internals.positionAbsolute;
-    const targetPosition = targetNode.internals.positionAbsolute;
+// function to create a special curved path
+export const getCurvedPath = (
+    { sourceX, sourceY, targetX, targetY }: GetSpecialPathParams,
+    offset: number
+) => {
+    // Calculate midpoint between source and target
+    const midX = (sourceX + targetX) / 2;
+    const midY = (sourceY + targetY) / 2;
 
-    const w = intersectionNodeWidth / 2;
-    const h = intersectionNodeHeight / 2;
+    // Calculate the direction vector perpendicular to the line
+    const dx = targetX - sourceX;
+    const dy = targetY - sourceY;
+    const length = Math.sqrt(dx * dx + dy * dy);
 
-    const x2 = intersectionNodePosition.x + w;
-    const y2 = intersectionNodePosition.y + h;
-    const x1 = targetPosition.x + targetNode.measured.width / 2;
-    const y1 = targetPosition.y + targetNode.measured.height / 2;
+    // Normalize and create perpendicular vector
+    const normX = dx / length;
+    const normY = dy / length;
+    const perpX = -normY;
+    const perpY = normX;
 
-    const xx1 = (x1 - x2) / (2 * w) - (y1 - y2) / (2 * h);
-    const yy1 = (x1 - x2) / (2 * w) + (y1 - y2) / (2 * h);
-    const a = 1 / (Math.abs(xx1) + Math.abs(yy1));
-    const xx3 = a * xx1;
-    const yy3 = a * yy1;
-    const x = w * (xx3 + yy3) + x2;
-    const y = h * (-xx3 + yy3) + y2;
+    // Single control point offset from the midpoint in the perpendicular direction
+    const cpX = midX + perpX * offset;
+    const cpY = midY + perpY * offset;
 
-    return { x, y };
-}
-
-// https://reactflow.dev/examples/edges/floating-edges
-// returns the position (top,right,bottom or right) passed node compared to the intersection point
-function getEdgePosition(node, intersectionPoint) {
-    const n = { ...node.internals.positionAbsolute, ...node };
-    const nx = Math.round(n.x);
-    const ny = Math.round(n.y);
-    const px = Math.round(intersectionPoint.x);
-    const py = Math.round(intersectionPoint.y);
-
-    if (px <= nx + 1) {
-        return Position.Left;
-    }
-    if (px >= nx + n.measured.width - 1) {
-        return Position.Right;
-    }
-    if (py <= ny + 1) {
-        return Position.Top;
-    }
-    if (py >= n.y + n.measured.height - 1) {
-        return Position.Bottom;
-    }
-
-    return Position.Top;
-}
-
-// https://reactflow.dev/examples/edges/floating-edges
-// returns the parameters (sx, sy, tx, ty, sourcePos, targetPos) you need to create an edge
-export function getEdgeParams(source, target) {
-    const sourceIntersectionPoint = getNodeIntersection(source, target);
-    const targetIntersectionPoint = getNodeIntersection(target, source);
-
-    const sourcePos = getEdgePosition(source, sourceIntersectionPoint);
-    const targetPos = getEdgePosition(target, targetIntersectionPoint);
-
-    return {
-        sx: sourceIntersectionPoint.x,
-        sy: sourceIntersectionPoint.y,
-        tx: targetIntersectionPoint.x,
-        ty: targetIntersectionPoint.y,
-        sourcePos,
-        targetPos,
-    };
-}
+    // Create a quadratic Bezier curve with one control point for a simple, smooth arc
+    return `M ${sourceX} ${sourceY} Q ${cpX} ${cpY}, ${targetX} ${targetY}`;
+};

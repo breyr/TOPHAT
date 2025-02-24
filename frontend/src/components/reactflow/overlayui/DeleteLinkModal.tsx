@@ -159,7 +159,7 @@ export default function DeleteLinkModal({ deviceData, onClose }: DeleteLinkModal
                     </button>
                 </div>
                 <div className="mb-4 p-4">
-                    <div className="flex flex-col">
+                    <div className="flex flex-col gap-2">
                         {
                             availableConnections.length > 0 ? (
                                 <MultiSelect
