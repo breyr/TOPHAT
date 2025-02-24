@@ -147,7 +147,7 @@ function ConnectionsTable({ interconnectDevices, labDevices }: ConnectionsTableP
                 storeNewConnections(newConnections);
             }
         }
-    }, [labDevices, labDevicesLoaded, seenLabDevices, connections]);
+    }, [labDevices, labDevicesLoaded, seenLabDevices]);
 
     // handle deletion of connections when a lab device is deleted or ports are removed from a lab device
     useEffect(() => {
