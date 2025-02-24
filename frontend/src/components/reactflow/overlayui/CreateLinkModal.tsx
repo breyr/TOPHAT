@@ -87,7 +87,11 @@ export default function CreateLinkModal({ deviceData, currentDevicePorts, labDev
     };
 
     const createLink = async () => {
+        // send request to interconnect API
+        const toastId = Date.now().toString();
         try {
+            addToast({ id: toastId, title: 'Creating Link', body: `Connecting ${selectedFirstDevice} on port ${selectedFirstDevicePort} to ${selectedSecondDevice} on port ${selectedSecondDevicePort}`, status: 'pending' });
+
             // fetch connections for the selected devices
             const [firstDeviceConnections, secondDeviceConnections] = await Promise.all([
                 authenticatedApiClient.getConnectionsByDeviceName(selectedFirstDevice),
@@ -99,7 +103,7 @@ export default function CreateLinkModal({ deviceData, currentDevicePorts, labDev
             const secondConnectionInfo = secondDeviceConnections.data?.find(c => c.labDevicePort === selectedSecondDevicePort);
 
             if (!firstConnectionInfo || !secondConnectionInfo) {
-                addToast({ id: Date.now().toString(), title: 'Creating Link', body: `Connection information not found.`, status: 'error' });
+                updateToast(toastId, 'error', 'Creating Link', 'Connection information not found.');
                 return;
             }
 
@@ -109,14 +113,14 @@ export default function CreateLinkModal({ deviceData, currentDevicePorts, labDev
             const secondInterconnectInfo = interconnectDevices.data?.find(d => d.name === secondConnectionInfo.interconnectDeviceName);
 
             if (!firstInterconnectInfo || !secondInterconnectInfo) {
-                addToast({ id: Date.now().toString(), title: 'Creating Link', body: `Interconnect information not found. Please message an Administrator.`, status: 'error' });
+                updateToast(toastId, 'error', 'Creating Link', 'Interconnect information not found. Please message an Administrator.');
                 return;
             }
 
             // ensure required interconnect info is not null or undefined
             if (firstInterconnectInfo.deviceNumber == null || firstInterconnectInfo.username == null || firstInterconnectInfo.password == null || firstInterconnectInfo.secretPassword == null ||
                 secondInterconnectInfo.deviceNumber == null || secondInterconnectInfo.username == null || secondInterconnectInfo.password == null || secondInterconnectInfo.secretPassword == null) {
-                addToast({ id: Date.now().toString(), title: 'Creating Link', body: `Interconnect is not configured properly. Please message an Administrator.`, status: 'error' });
+                updateToast(toastId, 'error', 'Creating Link', 'Interconnect is not configured properly. Please message an Administrator.');
                 return;
             }
 
@@ -125,7 +129,7 @@ export default function CreateLinkModal({ deviceData, currentDevicePorts, labDev
             const ip2 = secondInterconnectInfo.ipAddress ?? 'none';
 
             if (ip1 === 'none' || ip2 === 'none') {
-                addToast({ id: Date.now().toString(), title: 'Creating Link', body: `Interconnect is not configured properly. Please message an Administrator.`, status: 'error' });
+                updateToast(toastId, 'error', 'Creating Link', 'Interconnect is not configured properly. Please message an Administrator.');
                 return;
             }
 
@@ -152,9 +156,6 @@ export default function CreateLinkModal({ deviceData, currentDevicePorts, labDev
                 secret: firstInterconnectInfo.secretPassword
             };
 
-            // send request to interconnect API
-            const toastId = Date.now().toString();
-            addToast({ id: toastId, title: 'Creating Link', body: `Connecting ${selectedFirstDevice} on port ${selectedFirstDevicePort} to ${selectedSecondDevice} on port ${selectedSecondDevicePort}`, status: 'pending' });
             const res = await authenticatedApiClient.createLink(createLinkPayload);
             if ((res as any).status === 'success') {
                 // draw edge in react flow
@@ -166,7 +167,7 @@ export default function CreateLinkModal({ deviceData, currentDevicePorts, labDev
             }
         } catch (error) {
             console.error("Error creating link:", error);
-            addToast({ id: Date.now().toString(), title: 'Creating Link', body: `Error creating link. Please contact an Administrator.`, status: 'error' });
+            updateToast(toastId, 'error', 'Creating Link', 'Could not establish connection to devices.');
         }
     };
 

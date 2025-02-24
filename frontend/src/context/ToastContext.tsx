@@ -10,7 +10,7 @@ interface Toast {
 interface ToastContextProps {
     toasts: Toast[];
     addToast: (toast: Toast) => void;
-    updateToast: (id: string, status: 'success' | 'error', title: string) => void;
+    updateToast: (id: string, status: 'success' | 'error', title: string, body?: string) => void;
     removeToast: (id: string) => void;
 }
 
@@ -26,9 +26,18 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         });
     };
 
-    const updateToast = (id: string, status: 'success' | 'error', title: string) => {
+    const updateToast = (id: string, status: 'success' | 'error', title: string, body?: string) => {
         setToasts(prevToasts => {
-            const updatedToasts = prevToasts.map(toast => toast.id === id ? { ...toast, status, title } : toast);
+            const updatedToasts = prevToasts.map(toast =>
+                toast.id === id
+                    ? {
+                        ...toast,
+                        status,
+                        title,
+                        ...(body !== undefined && { body })
+                    }
+                    : toast
+            );
             return updatedToasts;
         });
     };
