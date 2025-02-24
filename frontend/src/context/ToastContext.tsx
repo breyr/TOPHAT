@@ -1,4 +1,5 @@
-import React, { createContext, useState } from 'react';
+import React, { createContext, useEffect, useState } from 'react';
+import { useAuth } from '../hooks/useAuth';
 
 interface Toast {
     id: string;
@@ -18,6 +19,14 @@ export const ToastContext = createContext<ToastContextProps | undefined>(undefin
 
 export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [toasts, setToasts] = useState<Toast[]>([]);
+    const { token } = useAuth();
+
+    // clear toasts on logout
+    useEffect(() => {
+        if (!token) {
+            setToasts([]);
+        }
+    }, [token]);
 
     const addToast = (toast: Toast) => {
         setToasts(prevToasts => {
