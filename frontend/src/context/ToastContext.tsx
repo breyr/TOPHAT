@@ -1,4 +1,5 @@
-import React, { createContext, useState } from 'react';
+import React, { createContext, useEffect, useState } from 'react';
+import { useAuth } from '../hooks/useAuth';
 
 interface Toast {
     id: string;
@@ -10,7 +11,7 @@ interface Toast {
 interface ToastContextProps {
     toasts: Toast[];
     addToast: (toast: Toast) => void;
-    updateToast: (id: string, status: 'success' | 'error', title: string) => void;
+    updateToast: (id: string, status: 'success' | 'error', title: string, body?: string) => void;
     removeToast: (id: string) => void;
 }
 
@@ -18,6 +19,14 @@ export const ToastContext = createContext<ToastContextProps | undefined>(undefin
 
 export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [toasts, setToasts] = useState<Toast[]>([]);
+    const { token } = useAuth();
+
+    // clear toasts on logout
+    useEffect(() => {
+        if (!token) {
+            setToasts([]);
+        }
+    }, [token]);
 
     const addToast = (toast: Toast) => {
         setToasts(prevToasts => {
@@ -26,9 +35,18 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         });
     };
 
-    const updateToast = (id: string, status: 'success' | 'error', title: string) => {
+    const updateToast = (id: string, status: 'success' | 'error', title: string, body?: string) => {
         setToasts(prevToasts => {
-            const updatedToasts = prevToasts.map(toast => toast.id === id ? { ...toast, status, title } : toast);
+            const updatedToasts = prevToasts.map(toast =>
+                toast.id === id
+                    ? {
+                        ...toast,
+                        status,
+                        title,
+                        ...(body !== undefined && { body })
+                    }
+                    : toast
+            );
             return updatedToasts;
         });
     };
