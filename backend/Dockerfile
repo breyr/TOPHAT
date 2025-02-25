@@ -5,8 +5,10 @@ COPY common/package*.json common/
 COPY backend/package*.json backend/
 COPY backend/prisma ./backend/prisma
 
-WORKDIR /app/backend
+# install dependencies for all workspaces
 RUN npm ci
+
+WORKDIR /app/backend
 RUN npx prisma generate
 
 WORKDIR /app
@@ -16,8 +18,11 @@ RUN npm run build:backend
 
 FROM node:22.9-alpine AS runtime
 WORKDIR /app
-COPY --from=builder /app/backend/dist ./dist
+# copy all node_modules from builder stage
+COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/backend/node_modules ./node_modules
+COPY --from=builder /app/backend/dist ./dist
 COPY --from=builder /app/backend/prisma ./prisma
+
 EXPOSE 3000
 CMD ["node", "dist/server.js"]
