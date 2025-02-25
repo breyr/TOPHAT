@@ -37,7 +37,7 @@ export class PrismaUserRepository implements IUserRepository {
                 password: hashedPassword,
                 tempPassword: formData.accountType !== 'OWNER' ? formData.password : '', // set tempPassword to be the users generated password or nothing if the user is an owner bc the owner account sets their own password at account creation
                 accountType: formData.accountType,
-                accountStatus: AccountStatus.PENDING,
+                accountStatus: formData.accountType !== 'OWNER' ? AccountStatus.PENDING : AccountStatus.ACCEPTED,
                 createdAt: new Date(),
                 updatedAt: new Date(),
             },

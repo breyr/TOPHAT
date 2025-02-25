@@ -10,7 +10,7 @@ function OnboardingPage() {
 
     return (
         <section className="flex flex-col  w-full items-center justify-center">
-            <div className="w-full max-w-xl p-10 bg-white shadow-lg rounded-lg text-center">
+            <div className="w-full max-w-xl p-10 bg-[#ffffff] shadow-lg rounded-lg text-center">
                 <div className="flex justify-center mb-6">
                     <PartyPopper className="text-blue-500 w-12 h-12" />
                 </div>

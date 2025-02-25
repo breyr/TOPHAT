@@ -9,7 +9,7 @@ import { useOnboardingStore } from "../stores/onboarding";
 export default function UserCreatePage() {
     const navigateTo = useNavigate();
     const { user, logout } = useAuth();
-    const { model, step, setStep } = useOnboardingStore(
+    const { step, setStep } = useOnboardingStore(
         (state) => state, // select the entire state object for this store, can specify by using dot notation
     );
     const [showUsersTable, setShowUsersTables] = useState(false);
@@ -44,7 +44,7 @@ export default function UserCreatePage() {
                             // if there is a user signed in, show the next steps buttons
                             user ? (
                                 <section>
-                                    <div className="w-full max-w-xl p-10 bg-white shadow-lg rounded-lg text-center">
+                                    <div className="w-full max-w-xl p-10 bg-[#ffffff] shadow-lg rounded-lg text-center">
                                         <div className="flex flex-row items-center justify-center gap-2 mb-4">
                                             <User size={32} className="text-blue-500" />
                                             <span className="text-2xl font-semibold">Hello, {user.username}.</span>
@@ -53,17 +53,9 @@ export default function UserCreatePage() {
 
                                         <div className="flex flex-col items-center mt-8 w-full">
                                             <div className="w-full">
-                                                {
-                                                    model == 'multi-tenant' && !showUsersTable ? (
-                                                        <button className="r-btn primary w-full flex flex-row items-center justify-center gap-1" onClick={() => setShowUsersTables(true)}>
-                                                            Create more users <ArrowRight size={22} />
-                                                        </button>
-                                                    ) : (
-                                                        <button className="r-btn primary w-full flex flex-row items-center justify-center gap-1" onClick={() => navigateToNextStep()}>
-                                                            Continue to Inventory <ArrowRight size={22} />
-                                                        </button>
-                                                    )
-                                                }
+                                                <button className="r-btn primary w-full flex flex-row items-center justify-center gap-1" onClick={() => setShowUsersTables(true)}>
+                                                    Create more users <ArrowRight size={22} />
+                                                </button>
                                             </div>
 
                                             <div className="flex flex-row w-full items-center my-4">

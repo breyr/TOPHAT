@@ -7,10 +7,9 @@ export default function OnboardBottomNav() {
 
     // handling steps from context
     // have to use or statements otherwise each circle is filled for only its own page
-    const isStep1 = step == 1 || step == 2 || step == 3 || step == 4
-    const isStep2 = step == 2 || step == 3 || step == 4
-    const isStep3 = step == 3 || step == 4
-    const isStep4 = step == 4
+    const isStep1 = step == 1 || step == 2 || step == 3
+    const isStep2 = step == 2 || step == 3 
+    const isStep3 = step == 3
 
     return (
         <nav className="w-5/12 mx-auto py-8">
@@ -28,11 +27,6 @@ export default function OnboardBottomNav() {
                 <span
                     className={`font-bold rounded-full size-10 border-2 border-[#1d69cc] flex justify-center items-center ${isStep3 ? 'bg-[#1d69cc] text-gray-200' : 'text-[#1d69cc]'}`}>
                     3
-                </span>
-                <div className={`flex-grow border-t-4 ${isStep4 ? 'border-[#1d69cc]' : ''}`}></div>
-                <span
-                    className={`font-bold rounded-full size-10 border-2 border-[#1d69cc] flex justify-center items-center ${isStep4 ? 'bg-[#1d69cc] text-gray-200' : 'text-[#1d69cc]'}`}>
-                    4
                 </span>
             </div>
         </nav>

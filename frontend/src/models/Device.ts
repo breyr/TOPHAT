@@ -2,6 +2,7 @@ import { DeviceType, IconType } from "../../../common/src/index";
 
 export class Device {
     id: number;
+    deviceNumber: number | null;
     userId: number | null;
     topologyId: number | null;
     name: string;
@@ -18,6 +19,7 @@ export class Device {
 
     constructor(
         id: number,
+        deviceNumber: number | null,
         userId: number | null,
         topologyId: number | null,
         name: string,
@@ -33,6 +35,7 @@ export class Device {
         icon: IconType | null
     ) {
         this.id = id;
+        this.deviceNumber = deviceNumber;
         this.userId = userId;
         this.topologyId = topologyId;
         this.name = name;

@@ -22,12 +22,20 @@ export class TopologyService implements ITopologyService {
         return this.topologyRepository.findOne(userId, topologyId);
     }
 
+    getTopologyByIdAdmin(topologyId: number): Promise<Topology | null> {
+        return this.topologyRepository.findUnique(topologyId);
+    }
+
     updateTopology(topologyId: number, topologyData: UpdateTopologyDTO): Promise<Topology> {
         return this.topologyRepository.update(topologyId, topologyData);
     }
 
     deleteTopology(topologyId: number): Promise<Topology | null> {
         return this.topologyRepository.delete(topologyId);
+    }
+
+    getAllUsersTopologies(): Promise<Topology[] | null> {
+        return this.topologyRepository.findAllUsersTopologies();
     }
 
 }

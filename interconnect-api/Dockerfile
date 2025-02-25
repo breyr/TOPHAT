@@ -11,7 +11,7 @@ COPY /interconnect-api/requirements.txt /app/
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy the rest of the application code
-COPY ./interconnect-api /app
+COPY ./interconnect-api .
 
 # Expose the FastAPI port
 EXPOSE 4000

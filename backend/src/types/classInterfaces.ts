@@ -1,6 +1,6 @@
 // holds interfaces similar to C#
 import { AppConfig, AppUser, Connection, Device, DeviceType, IconType, Topology } from "@prisma/client";
-import type { CreateTopologyRequestPayload, RegisterUserRequestPayload } from "../../../common/src/index";
+import type { CreateConnectionRequestPayload, CreateTopologyRequestPayload, RegisterUserRequestPayload } from "../../../common/src/index";
 import { UpdateTopologyDTO } from "./types";
 
 export interface IUserRepository {
@@ -29,19 +29,24 @@ export interface ITopologyRepository {
     create(userId: number, requestData: CreateTopologyRequestPayload): Promise<Topology>;
     findAll(userId: number): Promise<Topology[] | null>;
     findOne(userId: number, topologyId: number): Promise<Topology | null>;
+    findUnique(topologyId: number): Promise<Topology | null>;
     update(topologyId: number, topologyData: UpdateTopologyDTO): Promise<Topology>;
     delete(topologyId: number): Promise<Topology | null>;
+    findAllUsersTopologies(): Promise<Topology[] | null>;
 }
 
 export interface ITopologyService {
     createTopology(userId: number, requestData: CreateTopologyRequestPayload): Promise<Topology>;
     getAllTopologies(userId: number): Promise<Topology[] | null>;
     getTopologyById(userId: number, topologyId: number): Promise<Topology | null>;
+    getTopologyByIdAdmin(topologyId: number): Promise<Topology | null>;
     updateTopology(topologyId: number, topologyData: UpdateTopologyDTO): Promise<Topology>;
     deleteTopology(topologyId: number): Promise<Topology | null>;
+    getAllUsersTopologies(): Promise<Topology[] | null>;
 }
 
 export interface IDeviceRepository {
+    findDeviceByNumber(deviceNumber: number): Promise<Device | null>;
     create(requestData: Device): Promise<Device>;
     delete(deviceId: number): Promise<Device | null>;
     update(deviceId: number, requestData: Partial<Device>): Promise<Device>;
@@ -52,6 +57,7 @@ export interface IDeviceRepository {
 }
 
 export interface IDeviceService {
+    findDeviceByNumber(deviceNumber: number): Promise<Device | null>;
     createDevice(requestData: Partial<Device>): Promise<Device>;
     createDevices(requestData: Partial<Device>[]): Promise<Device[]>;
     deleteDevice(deviceId: number): Promise<Device | null>;
@@ -64,8 +70,11 @@ export interface IDeviceService {
 
 export interface IConnectionRepository {
     create(requestData: Connection): Promise<Connection>;
+    createBulk(requestData: Partial<Connection>[]): Promise<Connection[]>;
     delete(connectionId: number): Promise<Connection | null>;
+    deleteBulk(requestData: Connection[]): Promise<{ count: number }>;
     update(connectionId: number, requestData: Partial<Connection>): Promise<Connection>;
+    updateBulk(requestData: Connection[]): Promise<Connection[]>;
     findAll(): Promise<Connection[]>;
     findById(connectionId: number): Promise<Connection | null>;
     findByLabDeviceName(labDeviceName: string): Promise<Connection[]>;
@@ -74,8 +83,11 @@ export interface IConnectionRepository {
 
 export interface IConnectionService {
     createConnection(requestData: Connection): Promise<Connection>;
+    createConnectionBulk(requestData: Partial<Connection>[]): Promise<Connection[]>;
     deleteConnection(connectionId: number): Promise<Connection | null>;
+    deleteConnectionBulk(requestData: Connection[]): Promise<{ count: number }>;
     updateConnection(connectionId: number, requestData: Partial<Connection>): Promise<Connection>;
+    updateConnectionBulk(requestData: Connection[]): Promise<Connection[]>;
     getAllConnections(): Promise<Connection[]>;
     getConnectionById(connectionId: number): Promise<Connection | null>;
     getConnectionsByLabDeviceName(labDeviceName: string): Promise<Connection[]>;

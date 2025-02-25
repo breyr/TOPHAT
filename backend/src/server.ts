@@ -2,10 +2,10 @@ import { PrismaClient } from "@prisma/client";
 import { execSync } from "child_process";
 import app from './app';
 
-const prisma = new PrismaClient();
 const PORT = process.env.PORT || 3000;
 
 async function ensureRecordExists() {
+    const prisma = new PrismaClient();
     const key = 'OnboardComplete';
     const value = 'false';
 
@@ -21,6 +21,9 @@ async function ensureRecordExists() {
     } else {
         console.log(`Record with key ${key} already exists in AppConfig table.`);
     }
+
+    // close this connection because we only want one connection open and that is in DIContainer
+    prisma.$disconnect();
 }
 
 async function start() {

@@ -64,6 +64,7 @@ model Topology {
 
 model Device {
   id             Int        @id @default(autoincrement())
+  deviceNumber   Int?
   userId         Int? // "FK" to user, just used for tracking purposes 
   topologyId     Int? // "FK" to topology, just used for tracking purposes
   name           String     @db.Text

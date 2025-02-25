@@ -36,6 +36,15 @@ export class PrismaTopologyRepository implements ITopologyRepository {
         });
     }
 
+    findAllUsersTopologies(): Promise<Topology[] | null> {
+        return this.prismaClient.topology.findMany({}).then((topologies) => {
+            return topologies.map((topology) => ({
+                ...topology,
+                reactFlowState: PrismaTopologyRepository.convertReactFlowState(topology.reactFlowState)
+            }));
+        });
+    }
+    
     findAll(userId: number): Promise<Topology[] | null> {
         return this.prismaClient.topology.findMany({
             where: { userId }
@@ -65,6 +74,18 @@ export class PrismaTopologyRepository implements ITopologyRepository {
             };
         });
     }
+
+    findUnique(topologyId: number): Promise<Topology | null> {
+        return this.prismaClient.topology.findUnique({
+          where: { id: topologyId }
+        }).then((topology) => {
+          if (!topology) return null;
+          return {
+            ...topology,
+            reactFlowState: PrismaTopologyRepository.convertReactFlowState(topology.reactFlowState)
+          };
+        });
+      }
 
     update(topologyId: number, topologyData: UpdateTopologyDTO): Promise<Topology> {
         return this.prismaClient.topology.update({

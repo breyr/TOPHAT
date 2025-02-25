@@ -4,7 +4,6 @@ export type AccountType = 'USER' | 'ADMIN' | 'OWNER' // owner should only be use
 export type AccountStatus = 'NOTCREATED' | 'PENDING' | 'ACCEPTED'
 export type DeviceType = 'LAB' | 'INTERCONNECT'
 export type IconType = 'ROUTER' | 'SWITCH' | 'EXTERNAL' | 'SERVER'
-export type Model = 'multi-tenant' | 'single-user' | null
 type Node = {
     id: string;
     type: string;
@@ -95,8 +94,9 @@ export interface CreateTopologyRequestPayload {
 //
 
 export interface CreateDeviceRequestPayload {
-    userId: number;
-    topologyId: number;
+    deviceNumber: 1 | 2;
+    userId: number | null;
+    topologyId: number | null;
     name: string;
     model: string;
     serialNumber: string;
@@ -147,4 +147,24 @@ export interface UpdateConnectionRequestPayload {
     labDevicePort?: string;
     interconnectDeviceName?: string;
     interconnectDevicePort?: string;
+}
+
+// Interconnect DTOs
+export interface LinkRequest {
+    interconnect1IP: string;
+    interconnect1Prefix: string;
+    interconnect2IP: string;
+    interconnect2Prefix: string;
+    interconnectPortID1: number;
+    interconnectPortID2: number;
+    username: string;
+    password: string;
+    secret: string;
+}
+
+export interface LinkResponse {
+    status: string;
+    message: string;
+    device1_output: string;
+    device2_output: string;
 }

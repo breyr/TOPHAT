@@ -1,6 +1,8 @@
+import { GetSpecialPathParams } from "../components/reactflow/edges/CustomEdge";
+
 // generating temporary passwords for user creation
 export function generateTempPassword(length: number = 12): string {
-    const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+~`|}{[]:;?><,./-=";
+    const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
     let password = "";
     for (let i = 0; i < length; i++) {
         const randomIndex = Math.floor(Math.random() * charset.length);
@@ -28,3 +30,39 @@ export function toTitleCase(str) {
         text => text.charAt(0).toUpperCase() + text.substring(1).toLowerCase()
     );
 }
+
+export const generatePorts = (portDefinition: string): string[] => {
+    const [prefix, range] = portDefinition.split('|');
+    if (!range) return [];
+    const [start, end] = range.split('-').map(Number);
+    if (isNaN(start) || isNaN(end)) return [];
+    return Array.from({ length: end - start + 1 }, (_, i) => `${prefix}${start + i}`);
+};
+
+// function to create a special curved path
+export const getCurvedPath = (
+    { sourceX, sourceY, targetX, targetY }: GetSpecialPathParams,
+    offset: number
+) => {
+    // Calculate midpoint between source and target
+    const midX = (sourceX + targetX) / 2;
+    const midY = (sourceY + targetY) / 2;
+
+    // Calculate the direction vector perpendicular to the line
+    const dx = targetX - sourceX;
+    const dy = targetY - sourceY;
+    const length = Math.sqrt(dx * dx + dy * dy);
+
+    // Normalize and create perpendicular vector
+    const normX = dx / length;
+    const normY = dy / length;
+    const perpX = -normY;
+    const perpY = normX;
+
+    // Single control point offset from the midpoint in the perpendicular direction
+    const cpX = midX + perpX * offset;
+    const cpY = midY + perpY * offset;
+
+    // Create a quadratic Bezier curve with one control point for a simple, smooth arc
+    return `M ${sourceX} ${sourceY} Q ${cpX} ${cpY}, ${targetX} ${targetY}`;
+};

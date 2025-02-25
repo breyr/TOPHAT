@@ -45,7 +45,7 @@ export default function IndexPage() {
                         <h1 className="text-[2rem] mb-2">Capstone Testbed</h1>
                         {!onboardComplete && <div className="flex flex-row items-center">
                             <p>First time setup?</p>
-                            <p className="r-btn tertiary flex items-center hover:cursor-pointer" onClick={() => navigate("/onboard/")}>
+                            <p className="r-btn tertiary flex items-center hover:cursor-pointer" onClick={() => navigate("/onboard/users")}>
                                 Complete onboarding <ArrowRight size={18} />
                             </p>
                         </div>}

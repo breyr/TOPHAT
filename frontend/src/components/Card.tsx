@@ -11,7 +11,7 @@ interface CardProps {
 
 const Card: React.FC<CardProps> = ({ title, description, benefits, icon, isSelected, onSelect }) => {
     return (
-        <div className={`bg-white shadow-md rounded-lg overflow-hidden w-1/4 border-2 ${isSelected ? "border-blue-500" : ""}`}>
+        <div className={`bg-[#ffffff] shadow-md rounded-lg overflow-hidden w-1/4 border-2 ${isSelected ? "border-blue-500" : ""}`}>
             <div className="flex flex-col justify-center items-center py-6">
                 {icon}
                 <h2 className="text-2xl font-bold mt-4">{title}</h2>

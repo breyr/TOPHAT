@@ -22,6 +22,9 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
     "noImplicitAny": false,
+    "types": [
+      "vite-plugin-svgr/client"
+    ]
   },
   "references": [
     {

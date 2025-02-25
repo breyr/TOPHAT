@@ -8,6 +8,18 @@ export class ConnectionService implements IConnectionService {
         this.connectionRepository = connectionRepository;
     }
 
+    async createConnectionBulk(requestData: Partial<Connection>[]): Promise<Connection[]> {
+        return this.connectionRepository.createBulk(requestData);
+    }
+
+    async deleteConnectionBulk(requestData: Connection[]): Promise<{ count: number }> {
+        return this.connectionRepository.deleteBulk(requestData);
+    }
+
+    async updateConnectionBulk(requestData: Connection[]): Promise<Connection[]> {
+        return this.connectionRepository.updateBulk(requestData);
+    }
+
     async createConnection(requestData: Connection): Promise<Connection> {
         return this.connectionRepository.create(requestData);
     }

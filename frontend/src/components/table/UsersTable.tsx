@@ -54,20 +54,44 @@ export default function UsersTable() {
                 setErrors(prev => ({ ...prev, [index]: 'Failed to check email uniqueness' }));
                 return;
             }
-        }
 
-        setErrors(prev => {
-            const newErrors = { ...prev };
-            delete newErrors[index];
-            return newErrors;
-        });
 
-        if (userToUpdate.accountStatus !== 'NOTCREATED') {
-            await authenticatedApiClient.updateUser(userToUpdate.id, {
-                [name]: value,
+            setErrors(prev => {
+                const newErrors = { ...prev };
+                delete newErrors[index];
+                return newErrors;
             });
+
+            if (userToUpdate.accountStatus !== 'NOTCREATED') {
+                await authenticatedApiClient.updateUser(userToUpdate.id, {
+                    email: value,
+                });
+            }
+
+            // Update local state
+            setUsers(prevUsers => {
+                const updatedUsers = [...prevUsers];
+                const user = updatedUsers[index];
+                if (user) {
+                    user.email = value;
+                }
+                return updatedUsers;
+            });
+        } else {
+            setErrors(prev => {
+                const newErrors = { ...prev };
+                delete newErrors[index];
+                return newErrors;
+            });
+
+            if (userToUpdate.accountStatus !== 'NOTCREATED') {
+                await authenticatedApiClient.updateUser(userToUpdate.id, {
+                    [name]: value,
+                });
+            }
         }
     }, [users, authenticatedApiClient]);
+
 
     const handleTableInputChange = useCallback((index: number, e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
@@ -227,12 +251,22 @@ export default function UsersTable() {
         {
             name: 'Account Type',
             selector: row => row.accountType,
-            cell: (row, index) => (
+            cell: (row, index) => 
+                row.accountType === 'OWNER' ? (
+                    <select
+                        value={row.accountType}
+                        name="accountType"
+                        disabled
+                        className="w-full rounded bg-white"
+                    >
+                        <option value="OWNER">Owner</option>
+                    </select>
+                ) : (
                 <select
                     value={row.accountType}
                     name="accountType"
                     onChange={(e) => handleTableInputChange(index, e)}
-                    className="w-full rounded bg-white"
+                    className="w-full rounded bg-[#ffffff]"
                 >
                     <option value="USER">User</option>
                     <option value="ADMIN">Admin</option>
@@ -273,17 +307,21 @@ export default function UsersTable() {
                 >
                     <UserRoundPlus /> Add User
                 </button>
-                <button
-                    className="r-btn tertiary flex flex-row items-center gap-2"
-                    title="Click to download a CSV file of PENDING user information."
-                    onClick={handleDownloadUserInfo}
-                >
-                    {isDownloading ?
-                        <Loader2 className="h-8 w-8 animate-spin text-gray-500" /> :
-                        <Download />
-                    }
-                    Download
-                </button>
+                {
+                    // only show the download button if we have user data
+                    users.length > 0 &&
+                    <button
+                        className="r-btn tertiary flex flex-row items-center gap-2"
+                        title="Click to download a CSV file of PENDING user information."
+                        onClick={handleDownloadUserInfo}
+                    >
+                        {isDownloading ?
+                            <Loader2 className="h-8 w-8 animate-spin text-gray-500" /> :
+                            <Download />
+                        }
+                        Download
+                    </button>
+                }
             </div>
             <DataTable
                 columns={columns}
