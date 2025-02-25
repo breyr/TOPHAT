@@ -1,4 +1,4 @@
-import { MarkerType, useReactFlow } from "@xyflow/react";
+import { MarkerType, useReactFlow, useEdges, Edge } from "@xyflow/react";
 import { LinkRequest } from "common";
 import { Cable, X } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -17,13 +17,20 @@ interface CreateLinkModalProps {
 export default function CreateLinkModal({ deviceData, currentDevicePorts, labDevices, onClose }: CreateLinkModalProps) {
     const { authenticatedApiClient } = useAuth();
     const { addToast, updateToast } = useToast();
-    const { getNodes, setEdges } = useReactFlow();
+    const { getNodes, setEdges, getEdges } = useReactFlow();
     const [selectedFirstDevice, setSelectedFirstDevice] = useState<string>("");
     const [selectedFirstDevicePort, setSelectedFirstDevicePort] = useState<string>("");
     const [selectedSecondDevice, setSelectedSecondDevice] = useState<string>("");
     const [selectedSecondDevicePort, setSelectedSecondDevicePort] = useState<string>("");
     const [availablePorts, setAvailablePorts] = useState<string[]>([]);
     const [filteredLabDevices] = useState<Device[]>(labDevices);
+    const [occupiedPorts, setOccupiedPorts] = useState<string[]>([]);
+
+    useEffect(() => {
+        const edges = getEdges();
+        const ports = edges.map((edge: Edge) => edge.id.split('-').filter((port: string) => port !== 'edge'));
+        setOccupiedPorts(ports.flat());
+    }, [getEdges]);
 
     useEffect(() => {
         if (deviceData?.name) {
@@ -207,8 +214,8 @@ export default function CreateLinkModal({ deviceData, currentDevicePorts, labDev
                             >
                                 <option value="">Select a Port</option>
                                 {(deviceData ? currentDevicePorts : filteredLabDevices.map(device => device.ports.split(',').flatMap(portDef => generatePorts(portDef)))).flat().map((port, index) => (
-                                    <option key={index} value={port}>
-                                        {port}
+                                    <option key={index} value={port} disabled={occupiedPorts.includes(port)}>
+                                        {port}  {occupiedPorts.includes(port) ? '(in use)' : ''}
                                     </option>
                                 ))}
                             </select>
@@ -237,8 +244,8 @@ export default function CreateLinkModal({ deviceData, currentDevicePorts, labDev
                             >
                                 <option value="">Select Port</option>
                                 {availablePorts.map((port, idx) => (
-                                    <option key={idx} value={port}>
-                                        {port}
+                                    <option key={idx} value={port} disabled={occupiedPorts.includes(port)}>
+                                        {port} {occupiedPorts.includes(port) ? '(in use)' : ''}
                                     </option>
                                 ))}
                             </select>
