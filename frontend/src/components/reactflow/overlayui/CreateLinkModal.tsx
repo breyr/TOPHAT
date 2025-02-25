@@ -1,4 +1,4 @@
-import { MarkerType, useReactFlow, useEdges, Edge } from "@xyflow/react";
+import { Edge, MarkerType, useReactFlow } from "@xyflow/react";
 import { LinkRequest } from "common";
 import { Cable, X } from "lucide-react";
 import { useEffect, useState } from "react";
