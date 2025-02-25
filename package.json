@@ -11,5 +11,8 @@
         "build:common": "npm run build --workspace common",
         "build:backend": "npm run build:common && npm run build --workspace backend",
         "build:frontend": "npm run build:common && npm run build --workspace frontend"
+    },
+    "dependencies": {
+        "express": "^4.21.2"
     }
 }
