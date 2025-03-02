@@ -33,6 +33,18 @@ export default function CreateLinkModal({ deviceData, currentDevicePorts, labDev
     }, [getEdges]);
 
     useEffect(() => {
+        const handleEsc = (event: KeyboardEvent) => {
+          if (event.key === "Escape") {
+            onClose();
+          }
+        };
+        document.addEventListener("keydown", handleEsc);
+        return () => {
+          document.removeEventListener("keydown", handleEsc);
+        };
+      }, []);
+
+    useEffect(() => {
         if (deviceData?.name) {
             setSelectedFirstDevice(deviceData.name);
         }

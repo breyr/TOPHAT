@@ -42,6 +42,18 @@ export default function DeleteLinkModal({ deviceData, onClose }: DeleteLinkModal
         setAvailableConnections(edgesForDevice);
     }, [edges, deviceData]);
 
+    useEffect(() => {
+        const handleEsc = (event: KeyboardEvent) => {
+          if (event.key === "Escape") {
+            onClose();
+          }
+        };
+        document.addEventListener("keydown", handleEsc);
+        return () => {
+          document.removeEventListener("keydown", handleEsc);
+        };
+      }, []);
+
     const handleSelectChange = (selectedOption: Option) => {
         const selectedEdges = new Set(selectedConnections);
         if (selectedEdges.has(selectedOption)) {
