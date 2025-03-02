@@ -16,9 +16,9 @@ export default function AllUserTopologiesPage() {
       return;
     }
     try {
-      const response = await authenticatedApiClient.deleteTopology(topologyId);
+      await authenticatedApiClient.deleteTopology(topologyId);
       // update topologies list on success
-      setTopologies((prevTopologies) => prevTopologies.filter(topology => topology.id !== response.data?.topologyId));
+      setTopologies((prevTopologies) => prevTopologies.filter(topology => topology.id !== topologyId));
     } catch (error) {
       console.error('Error deleting topology:', error);
     }

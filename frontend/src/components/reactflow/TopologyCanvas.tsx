@@ -196,27 +196,6 @@ const TopologyCanvas = () => {
         }
     }, [isChangesPending, saveTopology]);
 
-    const onNodeContextMenu = useCallback(
-        (event, node: Node) => {
-            // Prevent native context menu from showing
-            event.preventDefault();
-
-            // Calculate position of the context menu. We want to make sure it
-            // doesn't get positioned off-screen.
-            if (!ref.current) return;
-            const pane = ref.current.getBoundingClientRect();
-            setMenu({
-                deviceData: node.data.deviceData as Device,
-                top: event.clientY < pane.height - 200 && event.clientY,
-                left: event.clientX < pane.width - 200 && event.clientX,
-                right: event.clientX >= pane.width - 200 ? pane.width - event.clientX : 0,
-                bottom: event.clientY >= pane.height - 200 ? pane.height - event.clientY : 0,
-            });
-        },
-        [setMenu],
-    );
-    const onPaneClick = useCallback(() => setMenu(null), [setMenu]);
-
     const onNodesChange = useCallback(
         async (changes: NodeChange[]) => {
             const nodesToRemove = changes.filter(change => change.type === 'remove');
