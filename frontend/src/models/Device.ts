@@ -1,4 +1,4 @@
-import { DeviceType, IconType } from "../../../common/src/index";
+import { DeviceType, IconType } from "common";
 
 export class Device {
     id: number;

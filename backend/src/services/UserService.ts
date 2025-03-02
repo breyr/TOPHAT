@@ -1,5 +1,5 @@
 import type { AppUser } from "@prisma/client";
-import type { RegisterUserRequestPayload } from "../../../common/src/index";
+import type { RegisterUserRequestPayload } from "common";
 import { IUserRepository, IUserService } from "../types/classInterfaces";
 import { validateEmail, ValidationError } from "../utils/validation";
 

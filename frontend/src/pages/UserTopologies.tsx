@@ -1,7 +1,7 @@
 import { Node } from "@xyflow/react";
+import type { Topology } from "common";
 import { Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
-import type { Topology } from "../../../common/src/index";
 import CreateTopology from "../components/CreateTopology";
 import TopologyCard from "../components/TopologyCard";
 import { useAuth } from "../hooks/useAuth";

@@ -1,10 +1,10 @@
+import { Topology } from 'common';
 import { Image, Trash } from "lucide-react";
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from "react-router-dom";
-import { Topology } from '../../../common/src/index';
+import { useAuth } from "../hooks/useAuth.ts";
 import useContextMenu from "../hooks/useContextMenu.ts";
 import DeletionModal from "./DeletionModal.tsx";
-import { useAuth } from "../hooks/useAuth.ts";
 
 interface TopologyProps extends Topology {
   onDelete: (topologyId: number) => void;
@@ -95,7 +95,7 @@ const TopologyCard: React.FC<TopologyProps> = ({
       <div
         key={id}
         onClick={handleClick}
-        className={`my-5 rounded-lg size-56 border border-gray-200 bg-[#ffffff] shadow-sm transition-shadow duration-200 flex flex-col items-center text-gray-700 ${readOnly || archived? "hover:cursor-default" : "hover:cursor-pointer hover:shadow-md"}`}
+        className={`my-5 rounded-lg size-56 border border-gray-200 bg-[#ffffff] shadow-sm transition-shadow duration-200 flex flex-col items-center text-gray-700 ${readOnly || archived ? "hover:cursor-default" : "hover:cursor-pointer hover:shadow-md"}`}
       >
         <div className="w-full">
           {thumbnailSrc ? (
@@ -120,7 +120,7 @@ const TopologyCard: React.FC<TopologyProps> = ({
               </p>
             </div>
             <span
-              onClick={!ownsTopology ? undefined: toggleArchived}
+              onClick={!ownsTopology ? undefined : toggleArchived}
               className={`inline-flex items-center px-2 py-0.5 text-xs font-medium rounded-full ${archived
                 ? `bg-red-100 text-red-700 ${!ownsTopology ? "cursor-default" : "hover:bg-red-300 cursor-pointer"}`
                 : `bg-green-100 text-green-700 ${!ownsTopology ? "cursor-default" : "hover:bg-green-300 cursor-pointer"}`

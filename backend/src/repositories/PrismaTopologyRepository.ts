@@ -1,5 +1,5 @@
 import { Prisma, PrismaClient, type Topology } from "@prisma/client";
-import type { CreateTopologyRequestPayload, ReactFlowState } from "../../../common/src/index";
+import type { CreateTopologyRequestPayload, ReactFlowState } from "common";
 import { ITopologyRepository } from "../types/classInterfaces";
 import { UpdateTopologyDTO } from "../types/types";
 
@@ -44,7 +44,7 @@ export class PrismaTopologyRepository implements ITopologyRepository {
             }));
         });
     }
-    
+
     findAll(userId: number): Promise<Topology[] | null> {
         return this.prismaClient.topology.findMany({
             where: { userId }
@@ -77,15 +77,15 @@ export class PrismaTopologyRepository implements ITopologyRepository {
 
     findUnique(topologyId: number): Promise<Topology | null> {
         return this.prismaClient.topology.findUnique({
-          where: { id: topologyId }
+            where: { id: topologyId }
         }).then((topology) => {
-          if (!topology) return null;
-          return {
-            ...topology,
-            reactFlowState: PrismaTopologyRepository.convertReactFlowState(topology.reactFlowState)
-          };
+            if (!topology) return null;
+            return {
+                ...topology,
+                reactFlowState: PrismaTopologyRepository.convertReactFlowState(topology.reactFlowState)
+            };
         });
-      }
+    }
 
     update(topologyId: number, topologyData: UpdateTopologyDTO): Promise<Topology> {
         return this.prismaClient.topology.update({

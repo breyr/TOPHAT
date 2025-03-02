@@ -1,7 +1,7 @@
 import { Node, useNodes } from "@xyflow/react";
+import { EmitTypes } from "common";
 import { CircleMinus, CirclePlus } from "lucide-react";
 import { useEffect, useState } from "react";
-import { EmitTypes } from "../../../../../common/src/index";
 import { useAuth } from "../../../hooks/useAuth";
 import { useSocket } from "../../../hooks/useSocket";
 import { Device } from "../../../models/Device";

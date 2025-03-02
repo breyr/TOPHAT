@@ -15,10 +15,10 @@ import {
     useReactFlow
 } from "@xyflow/react";
 import "@xyflow/react/dist/base.css"; // use to make custom node css
+import { type ReactFlowState } from "common";
 import { toJpeg } from 'html-to-image';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
-import { type ReactFlowState } from "../../../../common/src/index";
 import { useAuth } from "../../hooks/useAuth.ts";
 import { useToast } from "../../hooks/useToast.ts";
 import { useTopology } from "../../hooks/useTopology.ts";

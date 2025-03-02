@@ -1,6 +1,5 @@
 import { DeviceType, IconType, PrismaClient, type Device } from "@prisma/client";
 import bcrypt from 'bcryptjs';
-import { EmitTypes } from "../../../common/src/index";
 import { IDeviceRepository } from "../types/classInterfaces";
 
 export class PrismaDeviceRepository implements IDeviceRepository {
