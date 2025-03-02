@@ -3,6 +3,7 @@ import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import DashboardNav from "../components/DashboardNav";
 import UserSetupModal from "../components/UserSetupModal";
 import { useAuth } from "../hooks/useAuth";
+import UserSetupModal from "../components/UserSetupModal";
 
 export default function DashboardLayout() {
     const location = useLocation();
