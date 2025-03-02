@@ -92,18 +92,20 @@ export class PrismaDeviceRepository implements IDeviceRepository {
             // check if device is already booked
             const current = await tx.device.findUnique({
                 where: { id: deviceId },
-                select: { userId: true }
             });
 
-            if (current?.userId) {
+            if (current?.userId && current.userId !== userId) {
                 throw new Error("ALREADY_BOOKED");
+            } else if (current?.userId === userId) {
+                // device is already booked by the same user, return current device
+                return current;
+            } else {
+                // otherwise update the device
+                return tx.device.update({
+                    where: { id: deviceId },
+                    data: { userId }
+                });
             }
-
-            // otherwise update the device
-            return tx.device.update({
-                where: { id: deviceId },
-                data: { userId }
-            });
         });
     }
 

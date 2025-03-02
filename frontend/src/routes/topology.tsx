@@ -1,6 +1,6 @@
 import { Node } from '@xyflow/react';
 import { ArrowLeft } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import NotFound from '../components/reactflow/overlayui/NotFound';
 import TopologyName from '../components/reactflow/overlayui/TopologyName';
@@ -21,6 +21,7 @@ const TopologyPageContent: React.FC = () => {
     const [loading, setLoading] = useState<boolean>(true);
     const [isBookingDevices, setIsBookingDevices] = useState<boolean>(false);
     const [bookingErrors, setBookingErrors] = useState<string[]>([]);
+    const hasFetchedData = useRef(false);
 
     const { id } = useParams();
     const navigateTo = useNavigate();
@@ -28,6 +29,7 @@ const TopologyPageContent: React.FC = () => {
 
     // on mount get the topology data
     useEffect(() => {
+        if (hasFetchedData.current) return; // prevent running effect twice
         (async () => {
             if (!user) {
                 navigateTo("/");
@@ -68,16 +70,12 @@ const TopologyPageContent: React.FC = () => {
                         const nodes = res.data.reactFlowState?.nodes as Node<{ deviceData?: Device }>[] | undefined;
                         const errors: string[] = [];
 
-                        console.log(nodes);
-
                         if (nodes) {
                             for (const node of nodes) {
                                 if (node.data?.deviceData?.id) {
                                     try {
                                         // only try to book if it's not already booked by this user
-                                        if (!node.data.deviceData.userId || node.data.deviceData.userId !== user?.id) {
-                                            await authenticatedApiClient.bookDevice(node.data.deviceData.id);
-                                        }
+                                        await authenticatedApiClient.bookDevice(node.data.deviceData.id);
                                     } catch (error: any) {
                                         // capture booking errors but continue with other devices
                                         const deviceName = node.data.deviceData.name || 'Unknown device';
@@ -91,10 +89,9 @@ const TopologyPageContent: React.FC = () => {
                             }
                         }
 
-                        // Update state with any errors
+                        // update state with any errors
                         if (errors.length > 0) {
                             setBookingErrors(errors);
-                            console.warn("Some devices could not be booked:", errors);
                         }
                     }
                 }
@@ -105,13 +102,13 @@ const TopologyPageContent: React.FC = () => {
                 });
                 console.error("Failed to fetch topology data:", error);
             } finally {
-                // Add a delay before setting loading to false
                 setTimeout(() => {
                     setLoading(false);
                     setIsBookingDevices(false);
-                }, 2000); // 2-second delay
+                }, 2000); // 1-second delay after successful booking of all devices
             }
 
+            hasFetchedData.current = true;
         })();
     }, [user, authenticatedApiClient, id, setTopologyData, setLastUpdated, navigateTo]);
 
