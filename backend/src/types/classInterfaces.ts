@@ -1,6 +1,6 @@
 // holds interfaces similar to C#
 import { AppConfig, AppUser, Connection, Device, DeviceType, IconType, Topology } from "@prisma/client";
-import type { CreateConnectionRequestPayload, CreateTopologyRequestPayload, RegisterUserRequestPayload } from "../../../common/src/index";
+import type { CreateConnectionRequestPayload, CreateTopologyRequestPayload, RegisterUserRequestPayload } from "common";
 import { UpdateTopologyDTO } from "./types";
 
 export interface IUserRepository {

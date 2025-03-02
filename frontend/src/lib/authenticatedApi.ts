@@ -1,4 +1,4 @@
-import type { CreateConnectionRequestPayload, DeviceType, IconType, LinkRequest, LinkResponse, PartialAppUser, Topology } from "../../../common/src/index";
+import type { CreateConnectionRequestPayload, DeviceType, IconType, LinkRequest, LinkResponse, PartialAppUser, Topology } from "common";
 import { Connection } from "../models/Connection";
 import { Device } from "../models/Device";
 

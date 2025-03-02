@@ -1,7 +1,7 @@
 import type { AppUser } from '@prisma/client';
 import bcrypt from 'bcryptjs';
+import type { LoginRequestPayload, LoginResponsePayload, RegisterUserRequestPayload } from 'common';
 import { NextFunction, Request, Response } from "express";
-import type { LoginRequestPayload, LoginResponsePayload, RegisterUserRequestPayload } from '../../../common/src/index';
 import { DIContainer } from "../config/DIContainer";
 import { AuthenticatedRequest, CustomJwtPayload } from '../types/types';
 import { createJwtToken, createRefreshToken } from '../utils/jwt';

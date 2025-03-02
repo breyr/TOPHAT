@@ -1,6 +1,6 @@
 import type { Device, DeviceType, IconType } from "@prisma/client";
+import { EmitTypes } from "common";
 import type { NextFunction, Response } from "express";
-import { EmitTypes } from "../../../common/src/index";
 import { DIContainer } from "../config/DIContainer";
 import { io } from "../server";
 import type { AuthenticatedRequest } from '../types/types';

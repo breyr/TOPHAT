@@ -1,5 +1,5 @@
+import type { PartialAppUser, Topology } from 'common';
 import { useEffect, useState } from 'react';
-import type { PartialAppUser, Topology } from '../../../common/src/index';
 import TopologyCard from '../components/TopologyCard';
 import { useAuth } from '../hooks/useAuth';
 import { User } from '../models/User';

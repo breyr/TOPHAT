@@ -1,4 +1,4 @@
-import { AccountStatus, AccountType, PartialAppUser } from "../../../common/src/index";
+import { AccountStatus, AccountType, PartialAppUser } from "common";
 
 export class User {
     id: number;

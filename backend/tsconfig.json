@@ -1,20 +1,27 @@
 {
     "compilerOptions": {
-        "target": "ES6",
-        "module": "commonjs",
+        "baseUrl": ".",
+        "paths": {
+            "common/*": [
+                "../common/src/*"
+            ]
+        },
         "outDir": "./dist",
-        "rootDir": "./src",
+        "module": "commonjs",
+        "target": "es6",
+        "lib": [
+            "es6"
+        ],
         "strict": true,
         "esModuleInterop": true,
         "skipLibCheck": true,
         "forceConsistentCasingInFileNames": true
     },
-    "references": [
-        {
-            "path": "../common"
-        }
-    ],
     "include": [
         "src/**/*"
+    ],
+    "exclude": [
+        "node_modules",
+        "dist"
     ]
 }

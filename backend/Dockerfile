@@ -23,6 +23,7 @@ COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/backend/node_modules ./node_modules
 COPY --from=builder /app/backend/dist ./dist
 COPY --from=builder /app/backend/prisma ./prisma
+COPY --from=builder /app/common ./common
 
 EXPOSE 3000
 CMD ["node", "dist/server.js"]

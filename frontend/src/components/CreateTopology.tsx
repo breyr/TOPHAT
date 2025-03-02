@@ -1,6 +1,6 @@
+import type { CreateTopologyRequestPayload } from 'common';
 import { PlusCircle } from 'lucide-react';
 import { useNavigate } from "react-router-dom";
-import type { CreateTopologyRequestPayload } from '../../../common/src/index';
 import { useAuth } from '../hooks/useAuth';
 
 const CreateTopology = () => {

@@ -10,7 +10,10 @@
         "build": "npm run build --workspaces",
         "build:common": "npm run build --workspace common",
         "build:backend": "npm run build:common && npm run build --workspace backend",
-        "build:frontend": "npm run build:common && npm run build --workspace frontend"
+        "build:frontend": "npm run build:common && npm run build --workspace frontend",
+        "dev:common": "npm run watch --workspace common",
+        "dev:backend": "npm run dev:common & npm run dev --workspace backend",
+        "dev:frontend": "npm run dev:common & npm run dev --workspace frontend"
     },
     "dependencies": {
         "express": "^4.21.2"

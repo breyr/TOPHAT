@@ -1,4 +1,5 @@
 import react from '@vitejs/plugin-react';
+import path from 'path';
 import { defineConfig } from 'vite';
 import svgr from 'vite-plugin-svgr';
 
@@ -8,6 +9,11 @@ export default defineConfig(({ command }) => {
   if (command === 'build') {
     return {
       plugins,
+      resolve: {
+        alias: {
+          'common': path.resolve(__dirname, '../common/src')
+        }
+      }
     }
   } else {
     return {
@@ -76,7 +82,12 @@ export default defineConfig(({ command }) => {
           }
         }
       },
-      plugins
+      plugins,
+      resolve: {
+        alias: {
+          'common': path.resolve(__dirname, '../common/src')
+        }
+      }
     }
   }
 })

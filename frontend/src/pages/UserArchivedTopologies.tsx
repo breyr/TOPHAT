@@ -1,6 +1,6 @@
+import { Topology } from "common";
 import { Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
-import { Topology } from "../../../common/src/index";
 import TopologyCard from "../components/TopologyCard";
 import { useAuth } from "../hooks/useAuth";
 

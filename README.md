@@ -23,7 +23,7 @@ Use JIRA to create a new branch from `dev`
 
    This runs the postgres db and interconnect api container.
    
-2. Run `npm run dev` within `/backend` first and then `/frontend`, order matters.
+2. Run `npm run dev:backend` and `npm run dev:frontend` within the project root.
 
 ### Pull Requests
 

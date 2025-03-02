@@ -1,5 +1,5 @@
+import { EmitTypes } from 'common';
 import { useCallback, useEffect, useState } from "react";
-import { EmitTypes } from '../../../common/src/index';
 import SocketService from "../services/SocketService";
 
 export const useSocket = () => {

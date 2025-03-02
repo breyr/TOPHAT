@@ -1,12 +1,22 @@
 # build stage
 FROM node:22.9 AS build
 WORKDIR /app
+
+# copy root package.json and lock file
 COPY package*.json ./
+
+# copy workspace package.json files
 COPY common/package*.json common/
 COPY frontend/package*.json frontend/
-RUN rm -rf node_modules package-lock.json && npm install
+
+# install dependencies for all workspaces
+RUN npm install
+
+# copy the rest of the files
 COPY common ./common
 COPY frontend ./frontend
+
+# build the frontend
 RUN npm run build:frontend
 
 # production stage

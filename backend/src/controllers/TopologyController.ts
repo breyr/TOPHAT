@@ -1,5 +1,5 @@
+import type { CreateTopologyRequestPayload } from "common";
 import { NextFunction, Response } from "express";
-import type { CreateTopologyRequestPayload } from "../../../common/src/index";
 import { DIContainer } from "../config/DIContainer";
 import { AuthenticatedRequest, UpdateTopologyDTO } from "../types/types";
 import { checkForAccountType, checkForTopologyId, checkForUserId } from "../utils/validation";

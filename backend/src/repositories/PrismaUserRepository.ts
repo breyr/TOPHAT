@@ -1,6 +1,6 @@
 import { AccountStatus, PrismaClient, type AppUser } from "@prisma/client";
 import bcrypt from 'bcryptjs';
-import type { RegisterUserRequestPayload } from "../../../common/src/index";
+import type { RegisterUserRequestPayload } from "common";
 import { IUserRepository } from "../types/classInterfaces";
 
 export class PrismaUserRepository implements IUserRepository {
