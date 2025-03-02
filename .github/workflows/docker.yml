@@ -12,7 +12,6 @@ on:
 
 jobs:
     publish_image:
-        if: github.event.pull_request.merged == true
         runs-on: ubuntu-latest
         steps:
           - name: checkout
@@ -20,7 +19,7 @@ jobs:
 
           - name: Extract pull request ID
             id: extract_pr_id
-            run: echo "PR_ID=$(echo ${GITHUB_EVENT_PULL_REQUEST_NUMBER})" >> $GITHUB_ENV
+            run: echo "PR_ID=${{ github.event.pull_request.number }}" >> $GITHUB_ENV
 
           - name: Determine image tag
             id: determine_tag
