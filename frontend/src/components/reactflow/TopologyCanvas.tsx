@@ -67,33 +67,6 @@ const TopologyCanvas = () => {
     const { getNodes } = useReactFlow();
     const { addToast } = useToast();
 
-    // load information from db on mount
-    useEffect(() => {
-        setNodes(topologyData?.reactFlowState?.nodes ?? []);
-        setEdges(topologyData?.reactFlowState?.edges ?? []);
-    }, [topologyData]);
-
-    const onNodeContextMenu = useCallback(
-        (event, node: Node) => {
-            // Prevent native context menu from showing
-            event.preventDefault();
-
-            // Calculate position of the context menu. We want to make sure it
-            // doesn't get positioned off-screen.
-            if (!ref.current) return;
-            const pane = ref.current.getBoundingClientRect();
-            setMenu({
-                deviceData: node.data.deviceData as Device,
-                top: event.clientY < pane.height - 200 && event.clientY,
-                left: event.clientX < pane.width - 200 && event.clientX,
-                right: event.clientX >= pane.width - 200 ? pane.width - event.clientX : 0,
-                bottom: event.clientY >= pane.height - 200 ? pane.height - event.clientY : 0,
-            });
-        },
-        [setMenu],
-    );
-    const onPaneClick = useCallback(() => setMenu(null), [setMenu]);
-
     // logic to save a topology's react-flow state into the database
     const saveTopology = useCallback(async () => {
         if (rfInstance) {
@@ -163,6 +136,59 @@ const TopologyCanvas = () => {
             }, 1000),
         [isChangesPending, saveTopology]
     );
+
+    // load information from db on mount
+    useEffect(() => {
+        const updateNodesWithDeviceData = (nodes: Node[]) => {
+            return nodes.map(node => {
+                if (node.data?.deviceData) {
+                    return {
+                        ...node,
+                        data: {
+                            ...node.data,
+                            deviceData: {
+                                ...node.data.deviceData,
+                                userId: topologyData?.userId
+                            }
+                        }
+                    };
+                }
+                return node;
+            });
+        };
+
+        const updatedNodes = updateNodesWithDeviceData(topologyData?.reactFlowState?.nodes ?? []);
+        setNodes(updatedNodes);
+        setEdges(topologyData?.reactFlowState?.edges ?? []);
+        setIsChangesPending(true); // Mark changes as pending to trigger save
+    }, [topologyData]);
+
+    useEffect(() => {
+        if (isChangesPending) {
+            saveTopology();
+        }
+    }, [isChangesPending, saveTopology]);
+
+    const onNodeContextMenu = useCallback(
+        (event, node: Node) => {
+            // Prevent native context menu from showing
+            event.preventDefault();
+
+            // Calculate position of the context menu. We want to make sure it
+            // doesn't get positioned off-screen.
+            if (!ref.current) return;
+            const pane = ref.current.getBoundingClientRect();
+            setMenu({
+                deviceData: node.data.deviceData as Device,
+                top: event.clientY < pane.height - 200 && event.clientY,
+                left: event.clientX < pane.width - 200 && event.clientX,
+                right: event.clientX >= pane.width - 200 ? pane.width - event.clientX : 0,
+                bottom: event.clientY >= pane.height - 200 ? pane.height - event.clientY : 0,
+            });
+        },
+        [setMenu],
+    );
+    const onPaneClick = useCallback(() => setMenu(null), [setMenu]);
 
     const onNodesChange = useCallback(
         async (changes: NodeChange[]) => {
@@ -254,7 +280,12 @@ const TopologyCanvas = () => {
                     id: deviceData.name,
                     type: nodeType,
                     position,
-                    data: { deviceData }, // accessible within props.data for custom nodes
+                    data: {
+                        deviceData: {
+                            ...deviceData,
+                            userId: topologyData?.userId
+                        }
+                    }, // accessible within props.data for custom nodes
                 };
 
                 setNodes((oldNodes) => oldNodes.concat(newNode));

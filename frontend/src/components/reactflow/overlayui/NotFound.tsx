@@ -1,4 +1,5 @@
 import { Alert } from "@material-tailwind/react";
+import { ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 type ErrorState = {
@@ -24,12 +25,7 @@ const NotFound: React.FC<ErrorDisplayProps> = ({ errorData }) => {
                     </div>
                     <div className="mb-4">
                         {(errorData.type === 'ID_MISSING' || errorData.type === 'NOT_FOUND' || errorData.type === 'FETCH_ERROR') && (
-                            <button
-                                onClick={() => navigateTo('/dashboard/')}
-                                className="r-btn primary"
-                            >
-                                Take me Back
-                            </button>
+                            <h4 onClick={() => navigateTo('/dashboard/')} className="hover:cursor-pointer hover:text-blue-400 border-b-2 border-spacing-2 flex flex-row items-center gap-2"> <ArrowLeft /> Go back to Dashboard</h4>
                         )}
                     </div>
                 </section>
