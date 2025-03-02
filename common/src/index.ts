@@ -168,3 +168,8 @@ export interface LinkResponse {
     device1_output: string;
     device2_output: string;
 }
+
+// Socket.IO Enums
+export enum EmitTypes {
+    BookDevice = "BookDevice"
+}

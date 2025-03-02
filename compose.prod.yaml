@@ -14,7 +14,7 @@ services:
       - postgres_data:/var/lib/postgresql/data
 
   backend:
-    image: breyr/top-backend:latest
+    image: breyr/top-backend:r-devtest-0224
     container_name: backend
     environment:
       DATABASE_URL: postgres://demo:demo@postgres:5432/demo
@@ -25,7 +25,7 @@ services:
       - postgres
 
   frontend:
-    image: breyr/top-frontend:latest
+    image: breyr/top-frontend:r-devtest-0224
     container_name: frontend
     ports:
       - "80:80"
@@ -33,7 +33,7 @@ services:
       - backend
 
   interconnect-api:
-    image: breyr/top-interconnectapi:latest
+    image: breyr/top-interconnectapi:r-devtest-0224
     container_name: interconnect-api
     environment:
       SECRET_KEY: your_secret

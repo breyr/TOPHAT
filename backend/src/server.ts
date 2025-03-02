@@ -1,8 +1,15 @@
 import { PrismaClient } from "@prisma/client";
 import { execSync } from "child_process";
+import { createServer } from "http";
+import { Server, Socket } from "socket.io";
+import { EmitTypes } from '../../common/src/index';
 import app from './app';
 
 const PORT = process.env.PORT || 3000;
+const server = createServer(app);
+const io = new Server(server, {
+    path: '/hub',
+});
 
 async function ensureRecordExists() {
     const prisma = new PrismaClient();
@@ -34,7 +41,18 @@ async function start() {
 
         await ensureRecordExists();
 
-        app.listen(PORT, () => {
+        // start websocket server
+        io.on('connection', (socket: Socket) => {
+            console.log('Client connected');
+
+            socket.on(EmitTypes.BookDevice, (data) => {
+                // send data to all currently connected clients
+                io.emit(EmitTypes.BookDevice, data);
+            });
+        });
+
+        // start server with socket.io attached
+        server.listen(PORT, () => {
             console.log(`Server is running on port ${PORT}`);
         });
     } catch (error) {
