@@ -126,7 +126,7 @@ export class ApiClient {
     }
 
     async deleteTopology(id: number) {
-        return this.fetch<{ topologyId: number }>(`/api/topology/${id}`, {
+        return this.fetch<Topology>(`/api/topology/${id}`, {
             method: 'DELETE'
         });
     }

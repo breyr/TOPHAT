@@ -32,7 +32,7 @@ export default function UserArchivedTopologiesPage() {
         try {
             const response = await authenticatedApiClient.deleteTopology(topologyId);
             // update topologies list on success
-            setArchivedTopologies((prevTopologies) => prevTopologies.filter(topology => topology.id !== response.data?.topologyId));
+            setArchivedTopologies((prevTopologies) => prevTopologies.filter(topology => topology.id !== response.data?.id));
         } catch (error) {
             console.error('Error deleting topology:', error);
         }
