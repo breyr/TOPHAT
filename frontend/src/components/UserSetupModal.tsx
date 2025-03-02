@@ -55,11 +55,11 @@ const UserSetupModal: React.FC<ModalProps> = ({ onSubmit }) => {
   return (
     <div className="bg-zinc-950 bg-opacity-50 w-full h-full fixed top-0 left-0 flex items-center justify-center z-50">
       <div className="modal-content relative">
-          <h2 className="title-container">Setup Account</h2>
+        <div className="flex justify-center">
+            <USER className="text-blue-500 w-24 h-24 mt-5" />
+          </div>
+          <h2 className="title-container mt-0">Setup Account</h2>
           <div className="flex flex-col space-y-4">
-            <div className="flex justify-center mb-6">
-              <USER className="text-blue-500 w-24 h-24" />
-            </div>
             <form onSubmit={handleSubmit} className="flex flex-col">
               <div className="flex flex-col">
               <label className="font-bold block" htmlFor="username">Set Username</label>
@@ -115,7 +115,7 @@ const UserSetupModal: React.FC<ModalProps> = ({ onSubmit }) => {
                   <p className="text-red-400 italic">Passwords must match</p>
                 )}
               </div>
-              <button disabled={!validPassword} type="submit" className="r-btn primary mb-3">
+              <button disabled={!validPassword} type="submit" className="r-btn primary mb-2 mt-5">
                 Submit
               </button>
               <span>{serverMessage}</span>
