@@ -178,6 +178,12 @@ export class ApiClient {
         });
     }
 
+    async unbookDevice(deviceId: number) {
+        return this.fetch<Device>(`/api/devices/${deviceId}/unbook`, {
+            method: 'PUT'
+        });
+    }
+
     // Connection API Methods
     async getAllConnections() {
         return this.fetch<Connection[]>('/api/connections/');

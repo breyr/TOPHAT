@@ -165,7 +165,29 @@ const TopologyCanvas = () => {
     );
 
     const onNodesChange = useCallback(
-        (changes: NodeChange[]) => {
+        async (changes: NodeChange[]) => {
+            const nodesToRemove = changes.filter(change => change.type === 'remove');
+
+            // if there are nodes being removed, unbook them first
+            if (nodesToRemove.length > 0) {
+                nodesToRemove.forEach(async (change) => {
+                    const nodeToRemove = nodes.find(node => node.id === change.id) as Node<{ deviceData?: Device; }>;
+
+                    if (nodeToRemove && nodeToRemove.data?.deviceData) {
+                        try {
+                            await authenticatedApiClient.unbookDevice(nodeToRemove.data.deviceData.id);
+                        } catch {
+                            addToast({
+                                id: Date.now().toString(),
+                                title: 'Unbooking Device',
+                                body: `Failed to unbook device ${nodeToRemove.data.deviceData.name}`,
+                                status: 'error'
+                            });
+                        }
+                    }
+                });
+            }
+
             setNodes((oldNodes) => {
                 const updatedNodes = applyNodeChanges(changes, oldNodes);
                 setIsChangesPending(true); // set the flag to true that changes are pending

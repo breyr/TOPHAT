@@ -166,7 +166,7 @@ export class DeviceController {
 
             // we successfully unbooked the device
             if (device) {
-                io.emit(EmitTypes.BookDevice, {
+                io.emit(EmitTypes.UnbookDevice, {
                     unbookedDevice: device
                 });
             }

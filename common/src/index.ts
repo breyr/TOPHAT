@@ -171,5 +171,6 @@ export interface LinkResponse {
 
 // Socket.IO Enums
 export enum EmitTypes {
-    BookDevice = "BookDevice"
+    BookDevice = "BookDevice",
+    UnbookDevice = "UnbookDevice"
 }

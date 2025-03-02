@@ -56,6 +56,21 @@ export default function NodePicker() {
         return unsubscribe;
     }, [on]);
 
+    // socket listener for when devices get unbooked
+    useEffect(() => {
+        const unsubscribe = on(EmitTypes.UnbookDevice, (data) => {
+            const unbookedDevice = data.unbookedDevice;
+
+            if (unbookedDevice) {
+                // update device with new data
+                setLabDevices((prev) => {
+                    return prev.map(device => device.id === unbookedDevice.id ? unbookedDevice : device);
+                })
+            }
+        });
+        return unsubscribe;
+    }, [on]);
+
     return (
         <div className="fixed right-0 h-full flex flex-col justify-center">
             {/* Sliding Panel */}
