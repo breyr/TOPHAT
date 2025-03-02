@@ -6,7 +6,7 @@ interface DragAndDropContainerProps {
 
 export default function DragAndDropContainer({ devices }: DragAndDropContainerProps) {
     return (
-        <div className="flex flex-wrap overflow-y-auto min-h-32 py-6">
+        <div className="flex flex-wrap overflow-y-auto min-h-28 py-0">
             {
                 devices.length > 0 ? (
                     devices.map((item, index) => (

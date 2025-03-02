@@ -51,11 +51,11 @@ export default function ContextMenu({
     return (
         <div
             style={{ top, left, right, bottom }}
-            className="absolute z-10 h-40 w-52 overflow-y-auto bg-[#ffffff] border border-gray-300 rounded shadow-lg p-4"
+            className="absolute z-10 h-40 w-52 overflow-y-auto bg-[#ffffff] border border-gray-300 rounded-md shadow-lg p-5 pt-4"
             onClick={(event) => event.stopPropagation()}
         >
             <div className="mb-2">
-                <h3 className="text-blue-500 text-lg font-bold">
+                <h3 className="text-lg font-bold">
                     {deviceData?.name}
                 </h3>
             </div>
@@ -63,8 +63,8 @@ export default function ContextMenu({
                 <span><strong>Model:</strong> {deviceData?.model}</span>
                 <span><strong>SN:</strong> {deviceData?.serialNumber}</span>
             </div> */}
-            <button className="r-btn primary w-full mb-3" onClick={() => setIsCreateLinkModalOpen(true)}>Create Link</button>
-            <button className="r-btn primary danger w-full" onClick={() => setIsDeleteLinkModalOpen(true)}>Delete Link</button>
+            <button className="r-btn secondary w-full mb-3" onClick={() => setIsCreateLinkModalOpen(true)}>Create Link</button>
+            <button className="r-btn secondary danger w-full" onClick={() => setIsDeleteLinkModalOpen(true)}>Delete Link</button>
             {isCreateLinkModalOpen && deviceData && (
                 <CreateLinkModal
                     deviceData={deviceData}
