@@ -15,7 +15,7 @@ const DraggableItem: React.FC<DraggableItemProps> = ({ nodeSvg, nodeType, device
         event.dataTransfer.effectAllowed = "move";
     };
 
-    const isAvailableToUser = !isUsed || (deviceData.userId === user?.id);
+    const isAvailableToUser = !isUsed && (deviceData.userId === user?.id || deviceData.userId === null);
 
     return (
         <div
@@ -26,7 +26,7 @@ const DraggableItem: React.FC<DraggableItemProps> = ({ nodeSvg, nodeType, device
             <div className="w-12 h-12 mb-2">
                 {nodeSvg}
             </div>
-            <p className={`text-sm text-gray-700 ${isAvailableToUser ? 'line-through' : ''}`}>
+            <p className={`text-sm text-gray-700 ${!isAvailableToUser ? 'line-through' : ''}`}>
                 {deviceData.name}
             </p>
             {deviceData.userId && deviceData.userId !== user?.id &&

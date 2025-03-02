@@ -1,7 +1,9 @@
 import { Node, useNodes } from "@xyflow/react";
 import { CircleMinus, CirclePlus } from "lucide-react";
 import { useEffect, useState } from "react";
+import { EmitTypes } from "../../../../../common/src/index";
 import { useAuth } from "../../../hooks/useAuth";
+import { useSocket } from "../../../hooks/useSocket";
 import { Device } from "../../../models/Device";
 import DeviceAccordion from "./DeviceAccordion";
 
@@ -13,6 +15,7 @@ interface CustomNode extends Node {
 
 export default function NodePicker() {
     const nodes = useNodes<CustomNode>();
+    const { on } = useSocket();
     const { authenticatedApiClient } = useAuth();
     const [showItems, setShowItems] = useState(false);
     const [labDevices, setLabDevices] = useState<Device[]>([]);
@@ -37,6 +40,21 @@ export default function NodePicker() {
         const deviceNames = nodes.map(n => n.data.deviceData?.name).filter(Boolean) as string[];
         setUsedDevices(new Set(deviceNames));
     }, [nodes]);
+
+    // socket listener for when devices get booked
+    useEffect(() => {
+        const unsubscribe = on(EmitTypes.BookDevice, (data) => {
+            const bookedDevice = data.bookedDevice;
+
+            if (bookedDevice) {
+                // update device with new data
+                setLabDevices((prev) => {
+                    return prev.map(device => device.id === bookedDevice.id ? bookedDevice : device);
+                })
+            }
+        });
+        return unsubscribe;
+    }, [on]);
 
     return (
         <div className="fixed right-0 h-full flex flex-col justify-center">

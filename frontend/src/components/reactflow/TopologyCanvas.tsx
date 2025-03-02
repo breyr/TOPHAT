@@ -18,9 +18,8 @@ import "@xyflow/react/dist/base.css"; // use to make custom node css
 import { toJpeg } from 'html-to-image';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
-import { EmitTypes, type ReactFlowState } from "../../../../common/src/index";
+import { type ReactFlowState } from "../../../../common/src/index";
 import { useAuth } from "../../hooks/useAuth.ts";
-import { useSocket } from "../../hooks/useSocket.ts";
 import { useToast } from "../../hooks/useToast.ts";
 import { useTopology } from "../../hooks/useTopology.ts";
 import { debounce } from "../../lib/helpers.ts";
@@ -67,16 +66,6 @@ const TopologyCanvas = () => {
     const { id } = useParams();
     const { getNodes } = useReactFlow();
     const { addToast } = useToast();
-
-    // connect to socket.io hub
-    const { on } = useSocket();
-
-    useEffect(() => {
-        const unsubscribe = on(EmitTypes.BookDevice, (data) => {
-            console.log(data);
-        })
-        return unsubscribe;
-    }, [on]);
 
     // load information from db on mount
     useEffect(() => {
