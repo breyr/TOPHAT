@@ -172,6 +172,12 @@ export class ApiClient {
         return this.fetch<Device[]>(`/api/devices/icon/${deviceIcon}`);
     }
 
+    async bookDevice(deviceId: number) {
+        return this.fetch<Device>(`/api/devices/${deviceId}/book`, {
+            method: 'PUT'
+        });
+    }
+
     // Connection API Methods
     async getAllConnections() {
         return this.fetch<Connection[]>('/api/connections/');

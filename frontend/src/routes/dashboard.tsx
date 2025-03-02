@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import DashboardNav from "../components/DashboardNav";
-import { useAuth } from "../hooks/useAuth";
 import UserSetupModal from "../components/UserSetupModal";
+import { useAuth } from "../hooks/useAuth";
 
 export default function DashboardLayout() {
     const location = useLocation();
@@ -55,7 +55,7 @@ export default function DashboardLayout() {
                     <Outlet />
                 </div>
             </section>
-            {showUserSetup && <UserSetupModal onSubmit={() => setShowUserSetup(false)} />} 
+            {showUserSetup && <UserSetupModal onSubmit={() => setShowUserSetup(false)} />}
         </section>
     );
 }

@@ -54,6 +54,7 @@ export interface IDeviceRepository {
     findById(deviceId: number): Promise<Device | null>;
     findByType(deviceType: DeviceType): Promise<Device[]>;
     findByIcon(deviceIcon: IconType): Promise<Device[]>;
+    bookDevice(deviceId: number, userId: number): Promise<Device | null>;
 }
 
 export interface IDeviceService {
@@ -66,6 +67,7 @@ export interface IDeviceService {
     getDeviceById(deviceId: number): Promise<Device | null>;
     getDevicesByType(deviceType: DeviceType): Promise<Device[]>;
     getDevicesByIcon(deviceIcon: IconType): Promise<Device[]>;
+    bookDevice(deviceId: number, userId: number): Promise<Device | null>;
 }
 
 export interface IConnectionRepository {

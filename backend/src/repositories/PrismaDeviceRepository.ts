@@ -1,5 +1,6 @@
 import { DeviceType, IconType, PrismaClient, type Device } from "@prisma/client";
 import bcrypt from 'bcryptjs';
+import { EmitTypes } from "../../../common/src/index";
 import { IDeviceRepository } from "../types/classInterfaces";
 
 export class PrismaDeviceRepository implements IDeviceRepository {
@@ -83,6 +84,26 @@ export class PrismaDeviceRepository implements IDeviceRepository {
     async findByIcon(deviceIcon: IconType): Promise<Device[]> {
         return this.prisma.device.findMany({
             where: { icon: deviceIcon },
+        });
+    }
+
+    async bookDevice(deviceId: number, userId: number): Promise<Device | null> {
+        return await this.prisma.$transaction(async (tx) => {
+            // check if device is already booked
+            const current = await tx.device.findUnique({
+                where: { id: deviceId },
+                select: { userId: true }
+            });
+
+            if (current?.userId) {
+                throw new Error("ALREADY_BOOKED");
+            }
+
+            // otherwise update the device
+            return tx.device.update({
+                where: { id: deviceId },
+                data: { userId }
+            });
         });
     }
 }

@@ -18,8 +18,10 @@ import "@xyflow/react/dist/base.css"; // use to make custom node css
 import { toJpeg } from 'html-to-image';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
-import type { ReactFlowState } from "../../../../common/src/index";
+import { EmitTypes, type ReactFlowState } from "../../../../common/src/index";
 import { useAuth } from "../../hooks/useAuth.ts";
+import { useSocket } from "../../hooks/useSocket.ts";
+import { useToast } from "../../hooks/useToast.ts";
 import { useTopology } from "../../hooks/useTopology.ts";
 import { debounce } from "../../lib/helpers.ts";
 import { Device } from "../../models/Device.ts";
@@ -64,6 +66,17 @@ const TopologyCanvas = () => {
     const { authenticatedApiClient } = useAuth();
     const { id } = useParams();
     const { getNodes } = useReactFlow();
+    const { addToast } = useToast();
+
+    // connect to socket.io hub
+    const { on } = useSocket();
+
+    useEffect(() => {
+        const unsubscribe = on(EmitTypes.BookDevice, (data) => {
+            console.log(data);
+        })
+        return unsubscribe;
+    }, [on]);
 
     // load information from db on mount
     useEffect(() => {
@@ -204,7 +217,7 @@ const TopologyCanvas = () => {
         event.dataTransfer.dropEffect = "move";
     }, []);
     const onDrop = useCallback(
-        (event: React.DragEvent<HTMLElement>) => {
+        async (event: React.DragEvent<HTMLElement>) => {
             event.preventDefault();
             const dataString = event.dataTransfer.getData("application/reactflow");
             // check if the dropped element is valid
@@ -215,23 +228,30 @@ const TopologyCanvas = () => {
             // parse the data string to get the nodeType and deviceName
             const { nodeType, deviceData } = JSON.parse(dataString);
 
-            // create position to place the dropped node
-            const position = screenToFlowPosition({
-                x: event.clientX,
-                y: event.clientY,
-            });
+            // attempt to book device
+            try {
+                await authenticatedApiClient.bookDevice((deviceData as Device).id);
 
-            // create the new node
-            const newNode = {
-                id: deviceData.name,
-                type: nodeType,
-                position,
-                data: { deviceData }, // accessible within props.data for custom nodes
-            };
+                // create position to place the dropped node
+                const position = screenToFlowPosition({
+                    x: event.clientX,
+                    y: event.clientY,
+                });
 
-            setNodes((oldNodes) => oldNodes.concat(newNode));
+                // create the new node
+                const newNode = {
+                    id: deviceData.name,
+                    type: nodeType,
+                    position,
+                    data: { deviceData }, // accessible within props.data for custom nodes
+                };
+
+                setNodes((oldNodes) => oldNodes.concat(newNode));
+            } catch {
+                addToast({ id: Date.now().toString(), title: 'Creating Link', body: `This device is booked by another user`, status: 'error' })
+            }
         },
-        [screenToFlowPosition]
+        [screenToFlowPosition, authenticatedApiClient]
     );
 
     return (

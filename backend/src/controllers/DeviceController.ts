@@ -1,6 +1,8 @@
 import type { Device, DeviceType, IconType } from "@prisma/client";
 import type { NextFunction, Response } from "express";
+import { EmitTypes } from "../../../common/src/index";
 import { DIContainer } from "../config/DIContainer";
+import { io } from "../server";
 import type { AuthenticatedRequest } from '../types/types';
 
 export class DeviceController {
@@ -131,6 +133,28 @@ export class DeviceController {
             });
         } catch (error) {
             next(error);
+        }
+    }
+
+    async bookDevice(req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> {
+        try {
+            const { id } = req.params;
+            // will have a payload user id otherwise this request is not authenticated through middleware
+            const device = await this.deviceService.bookDevice(parseInt(id), req.jwt_payload?.id!);
+
+            // we successfully booked the device
+            if (device) {
+                io.emit(EmitTypes.BookDevice, {
+                    bookedDevice: device
+                });
+            }
+            res.status(200).json(device);
+        } catch (error) {
+            if (error instanceof Error && error.message === "ALREADY_BOOKED") {
+                res.status(409).json({ error: "Device already booked" });
+            } else {
+                next(error);
+            }
         }
     }
 }
