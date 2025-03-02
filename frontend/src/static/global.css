@@ -583,6 +583,7 @@ footer {
     align-items: center;
     gap: 10px;
 }
+
 .dot {
     width: 8px;
     height: 8px;
@@ -612,9 +613,13 @@ footer {
 }
 
 @keyframes colorChange {
-    0%, 80%, 100% {
+
+    0%,
+    80%,
+    100% {
         background-color: grey;
     }
+
     40% {
         background-color: darkgray;
     }
@@ -625,4 +630,9 @@ footer {
 /* disables edges to be clicked on by users */
 .react-flow__edge {
     pointer-events: none;
+}
+
+.react-flow__edge-path {
+    stroke: lightgray;
+    stroke-width: 2;
 }
