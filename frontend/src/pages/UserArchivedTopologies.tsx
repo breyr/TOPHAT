@@ -30,9 +30,9 @@ export default function UserArchivedTopologiesPage() {
             return;
         }
         try {
-            const response = await authenticatedApiClient.deleteTopology(topologyId);
+            await authenticatedApiClient.deleteTopology(topologyId);
             // update topologies list on success
-            setArchivedTopologies((prevTopologies) => prevTopologies.filter(topology => topology.id !== response.data?.topologyId));
+            setArchivedTopologies((prevTopologies) => prevTopologies.filter(topology => topology.id !== topologyId));
         } catch (error) {
             console.error('Error deleting topology:', error);
         }
@@ -43,11 +43,11 @@ export default function UserArchivedTopologiesPage() {
             return;
         }
         try {
-            const response = await authenticatedApiClient.updateTopology(topologyId, {
+            await authenticatedApiClient.updateTopology(topologyId, {
                 archived: false
             });
             // update topologies list on success
-            setArchivedTopologies((prevTopologies) => prevTopologies.filter(topology => topology.id !== response.data?.id));
+            setArchivedTopologies((prevTopologies) => prevTopologies.filter(topology => topology.id !== topologyId));
         } catch (error) {
             console.error('Error activating topology:', error);
         }

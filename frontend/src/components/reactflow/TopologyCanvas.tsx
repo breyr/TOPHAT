@@ -18,8 +18,9 @@ import "@xyflow/react/dist/base.css"; // use to make custom node css
 import { toJpeg } from 'html-to-image';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
-import type { ReactFlowState } from "../../../../common/src/index";
+import { type ReactFlowState } from "../../../../common/src/index";
 import { useAuth } from "../../hooks/useAuth.ts";
+import { useToast } from "../../hooks/useToast.ts";
 import { useTopology } from "../../hooks/useTopology.ts";
 import { debounce } from "../../lib/helpers.ts";
 import { Device } from "../../models/Device.ts";
@@ -64,33 +65,7 @@ const TopologyCanvas = () => {
     const { authenticatedApiClient } = useAuth();
     const { id } = useParams();
     const { getNodes } = useReactFlow();
-
-    // load information from db on mount
-    useEffect(() => {
-        setNodes(topologyData?.reactFlowState?.nodes ?? []);
-        setEdges(topologyData?.reactFlowState?.edges ?? []);
-    }, [topologyData]);
-
-    const onNodeContextMenu = useCallback(
-        (event, node: Node) => {
-            // Prevent native context menu from showing
-            event.preventDefault();
-
-            // Calculate position of the context menu. We want to make sure it
-            // doesn't get positioned off-screen.
-            if (!ref.current) return;
-            const pane = ref.current.getBoundingClientRect();
-            setMenu({
-                deviceData: node.data.deviceData as Device,
-                top: event.clientY < pane.height - 200 && event.clientY,
-                left: event.clientX < pane.width - 200 && event.clientX,
-                right: event.clientX >= pane.width - 200 ? pane.width - event.clientX : 0,
-                bottom: event.clientY >= pane.height - 200 ? pane.height - event.clientY : 0,
-            });
-        },
-        [setMenu],
-    );
-    const onPaneClick = useCallback(() => setMenu(null), [setMenu]);
+    const { addToast } = useToast();
 
     // logic to save a topology's react-flow state into the database
     const saveTopology = useCallback(async () => {
@@ -162,8 +137,83 @@ const TopologyCanvas = () => {
         [isChangesPending, saveTopology]
     );
 
+    // load information from db on mount
+    useEffect(() => {
+        const updateNodesWithDeviceData = (nodes: Node[]) => {
+            return nodes.map(node => {
+                if (node.data?.deviceData) {
+                    return {
+                        ...node,
+                        data: {
+                            ...node.data,
+                            deviceData: {
+                                ...node.data.deviceData,
+                                userId: topologyData?.userId
+                            }
+                        }
+                    };
+                }
+                return node;
+            });
+        };
+
+        const updatedNodes = updateNodesWithDeviceData(topologyData?.reactFlowState?.nodes ?? []);
+        setNodes(updatedNodes);
+        setEdges(topologyData?.reactFlowState?.edges ?? []);
+        setIsChangesPending(true); // Mark changes as pending to trigger save
+    }, [topologyData]);
+
+    useEffect(() => {
+        if (isChangesPending) {
+            saveTopology();
+        }
+    }, [isChangesPending, saveTopology]);
+
+    const onNodeContextMenu = useCallback(
+        (event, node: Node) => {
+            // Prevent native context menu from showing
+            event.preventDefault();
+
+            // Calculate position of the context menu. We want to make sure it
+            // doesn't get positioned off-screen.
+            if (!ref.current) return;
+            const pane = ref.current.getBoundingClientRect();
+            setMenu({
+                deviceData: node.data.deviceData as Device,
+                top: event.clientY < pane.height - 200 && event.clientY,
+                left: event.clientX < pane.width - 200 && event.clientX,
+                right: event.clientX >= pane.width - 200 ? pane.width - event.clientX : 0,
+                bottom: event.clientY >= pane.height - 200 ? pane.height - event.clientY : 0,
+            });
+        },
+        [setMenu],
+    );
+    const onPaneClick = useCallback(() => setMenu(null), [setMenu]);
+
     const onNodesChange = useCallback(
-        (changes: NodeChange[]) => {
+        async (changes: NodeChange[]) => {
+            const nodesToRemove = changes.filter(change => change.type === 'remove');
+
+            // if there are nodes being removed, unbook them first
+            if (nodesToRemove.length > 0) {
+                nodesToRemove.forEach(async (change) => {
+                    const nodeToRemove = nodes.find(node => node.id === change.id) as Node<{ deviceData?: Device; }>;
+
+                    if (nodeToRemove && nodeToRemove.data?.deviceData) {
+                        try {
+                            await authenticatedApiClient.unbookDevice(nodeToRemove.data.deviceData.id);
+                        } catch {
+                            addToast({
+                                id: Date.now().toString(),
+                                title: 'Unbooking Device',
+                                body: `Failed to unbook device ${nodeToRemove.data.deviceData.name}`,
+                                status: 'error'
+                            });
+                        }
+                    }
+                });
+            }
+
             setNodes((oldNodes) => {
                 const updatedNodes = applyNodeChanges(changes, oldNodes);
                 setIsChangesPending(true); // set the flag to true that changes are pending
@@ -204,7 +254,7 @@ const TopologyCanvas = () => {
         event.dataTransfer.dropEffect = "move";
     }, []);
     const onDrop = useCallback(
-        (event: React.DragEvent<HTMLElement>) => {
+        async (event: React.DragEvent<HTMLElement>) => {
             event.preventDefault();
             const dataString = event.dataTransfer.getData("application/reactflow");
             // check if the dropped element is valid
@@ -215,23 +265,35 @@ const TopologyCanvas = () => {
             // parse the data string to get the nodeType and deviceName
             const { nodeType, deviceData } = JSON.parse(dataString);
 
-            // create position to place the dropped node
-            const position = screenToFlowPosition({
-                x: event.clientX,
-                y: event.clientY,
-            });
+            // attempt to book device
+            try {
+                await authenticatedApiClient.bookDevice((deviceData as Device).id);
 
-            // create the new node
-            const newNode = {
-                id: deviceData.name,
-                type: nodeType,
-                position,
-                data: { deviceData }, // accessible within props.data for custom nodes
-            };
+                // create position to place the dropped node
+                const position = screenToFlowPosition({
+                    x: event.clientX,
+                    y: event.clientY,
+                });
 
-            setNodes((oldNodes) => oldNodes.concat(newNode));
+                // create the new node
+                const newNode = {
+                    id: deviceData.name,
+                    type: nodeType,
+                    position,
+                    data: {
+                        deviceData: {
+                            ...deviceData,
+                            userId: topologyData?.userId
+                        }
+                    }, // accessible within props.data for custom nodes
+                };
+
+                setNodes((oldNodes) => oldNodes.concat(newNode));
+            } catch {
+                addToast({ id: Date.now().toString(), title: 'Creating Link', body: `This device is booked by another user`, status: 'error' })
+            }
         },
-        [screenToFlowPosition]
+        [screenToFlowPosition, authenticatedApiClient]
     );
 
     return (

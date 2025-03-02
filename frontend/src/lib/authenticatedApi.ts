@@ -126,7 +126,7 @@ export class ApiClient {
     }
 
     async deleteTopology(id: number) {
-        return this.fetch<{ topologyId: number }>(`/api/topology/${id}`, {
+        return this.fetch<Topology>(`/api/topology/${id}`, {
             method: 'DELETE'
         });
     }
@@ -170,6 +170,18 @@ export class ApiClient {
 
     async getDevicesByIcon(deviceIcon: IconType) {
         return this.fetch<Device[]>(`/api/devices/icon/${deviceIcon}`);
+    }
+
+    async bookDevice(deviceId: number) {
+        return this.fetch<Device>(`/api/devices/${deviceId}/book`, {
+            method: 'PUT'
+        });
+    }
+
+    async unbookDevice(deviceId: number) {
+        return this.fetch<Device>(`/api/devices/${deviceId}/unbook`, {
+            method: 'PUT'
+        });
     }
 
     // Connection API Methods

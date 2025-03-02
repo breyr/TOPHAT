@@ -53,4 +53,12 @@ export class DeviceService implements IDeviceService {
     async getDevicesByIcon(deviceIcon: IconType): Promise<Device[]> {
         return this.deviceRepository.findByIcon(deviceIcon);
     }
+
+    async bookDevice(deviceId: number, userId: number): Promise<Device | null> {
+        return this.deviceRepository.bookDevice(deviceId, userId);
+    }
+
+    async unbookDevice(deviceId: number, userId: number): Promise<Device | null> {
+        return this.deviceRepository.unbookDevice(deviceId, userId);
+    }
 }
