@@ -79,7 +79,7 @@ const TopologyPageContent: React.FC = () => {
                                     } catch (error: any) {
                                         // capture booking errors but continue with other devices
                                         const deviceName = node.data.deviceData.name || 'Unknown device';
-                                        if (error.response?.status === 409) {
+                                        if (error.status === 409) {
                                             errors.push(`${deviceName} - already booked by another user`);
                                         } else {
                                             errors.push(`${deviceName} - booking failed`);
@@ -138,7 +138,7 @@ const TopologyPageContent: React.FC = () => {
                         {bookingErrors.map((e, idx) => (
                             <span key={idx}>{e}</span>
                         ))}
-                        <h4 onClick={() => navigateTo('/dashboard/')} className="hover:cursor-pointer hover:text-blue-400 border-b-2 border-spacing-2 flex flex-row items-center gap-2"> <ArrowLeft /> Go back to Dashboard</h4>
+                        <h4 onClick={() => navigateTo('/dashboard/')} className="hover:cursor-pointer hover:text-blue-400 border-b-2 border-spacing-2 flex flex-row items-center gap-1"> <ArrowLeft /> Go back to Dashboard</h4>
                     </div>
                 ) : (
                     <div className='flex-1 flex flex-col'>
