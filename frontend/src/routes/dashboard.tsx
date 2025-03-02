@@ -19,7 +19,7 @@ export default function DashboardLayout() {
     }, [user, navigateTo]); // useNavigate is a stable reference so this is okay
 
     const getTabClass = (path: string) => {
-        return location.pathname === `/dashboard${path}` ? "border-b-2 border-b-blue-400" : "border-b-2";
+        return location.pathname === `/dashboard${path}` ? "font-bold" : "";
     };
 
     return (
@@ -28,7 +28,7 @@ export default function DashboardLayout() {
             <section className="p-[1.875rem]">
             <h2 className="mt-0">Welcome, {user?.username}.</h2>
             {/* tabs */}
-                <div className="flex flex-row items-center gap-5">
+                <div className="flex flex-row items-center gap-6">
                     <Link to="/dashboard/" className={getTabClass("/")}>
                         Topologies
                     </Link>
