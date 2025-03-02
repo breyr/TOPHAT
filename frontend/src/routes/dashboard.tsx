@@ -26,7 +26,7 @@ export default function DashboardLayout() {
         <section className="flex flex-col h-lvh">
             <DashboardNav />
             <section className="p-[1.875rem]">
-                <h1>Welcome, {user?.username}.</h1>
+                <h2 className="mt-0">Welcome, {user?.username}.</h2>
                 {/* tabs */}
                 <div className="flex flex-row items-center gap-5">
                     <Link to="/dashboard/" className={getTabClass("/")}>

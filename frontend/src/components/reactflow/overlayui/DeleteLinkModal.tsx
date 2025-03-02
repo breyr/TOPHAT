@@ -31,6 +31,18 @@ export default function DeleteLinkModal({ deviceData, onClose }: DeleteLinkModal
     const [isDeleting, setIsDeleting] = useState<boolean>(false);
 
     useEffect(() => {
+        const handleEsc = (event: KeyboardEvent) => {
+          if (event.key === "Escape") {
+            onClose();
+          }
+        };
+        document.addEventListener("keydown", handleEsc);
+        return () => {
+          document.removeEventListener("keydown", handleEsc);
+        };
+      }, []);
+
+    useEffect(() => {
         const edgesForDevice = edges.filter(e => e.source === deviceData?.name).map(e => ({
             value: e.id,
             label: `(${e.source}) ${e.data?.sourcePort ?? ''} -> (${e.target}) ${e.data?.targetPort ?? ''}`,

@@ -1,11 +1,12 @@
 import React from "react";
-
+import { useEffect } from "react";
 interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
   onConfirm: () => void;
   name: string;
 }
+
 
 const DeletionModal: React.FC<ModalProps> = ({
   isOpen,
@@ -14,6 +15,18 @@ const DeletionModal: React.FC<ModalProps> = ({
   name,
 }) => {
   if (!isOpen) return null;
+
+  useEffect(() => {
+    const handleEsc = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        onClose();
+      }
+    };
+    document.addEventListener("keydown", handleEsc);
+    return () => {
+      document.removeEventListener("keydown", handleEsc);
+    };
+  }, []);
 
   return (
     <section className="bg-zinc-950 bg-opacity-50 w-full h-full fixed top-0 left-0 flex items-center justify-center z-50">

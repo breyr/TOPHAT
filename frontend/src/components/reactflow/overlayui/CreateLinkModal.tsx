@@ -27,6 +27,18 @@ export default function CreateLinkModal({ deviceData, currentDevicePorts, labDev
     const [occupiedPorts, setOccupiedPorts] = useState<string[]>([]);
 
     useEffect(() => {
+        const handleEsc = (event: KeyboardEvent) => {
+          if (event.key === "Escape") {
+            onClose();
+          }
+        };
+        document.addEventListener("keydown", handleEsc);
+        return () => {
+          document.removeEventListener("keydown", handleEsc);
+        };
+      }, []);
+
+    useEffect(() => {
         const edges = getEdges();
         const ports = edges.map((edge: Edge) => edge.id.split('-').filter((port: string) => port !== 'edge'));
         setOccupiedPorts(ports.flat());
