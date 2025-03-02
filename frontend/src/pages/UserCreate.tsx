@@ -93,7 +93,7 @@ export default function UserCreatePage() {
                                     className="r-btn primary w-full flex flex-row items-center justify-center gap-1"
                                     onClick={() => setShowUsersTables(false)}
                                 >
-                                    <ArrowLeft size={20} /> Admin login
+                                    <ArrowLeft size={20} /> Admin Login
                                 </button>
                                 <button
                                     className="r-btn primary w-full flex flex-row items-center justify-center gap-1"
