@@ -1,6 +1,6 @@
 import { Edge, MarkerType, useReactFlow } from "@xyflow/react";
 import { LinkRequest } from "common";
-import { Cable, Undo2} from "lucide-react";
+import { Cable, Undo2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useAuth } from "../../../hooks/useAuth";
 import { useToast } from "../../../hooks/useToast";
@@ -34,15 +34,15 @@ export default function CreateLinkModal({ deviceData, currentDevicePorts, labDev
 
     useEffect(() => {
         const handleEsc = (event: KeyboardEvent) => {
-          if (event.key === "Escape") {
-            onClose();
-          }
+            if (event.key === "Escape") {
+                onClose();
+            }
         };
         document.addEventListener("keydown", handleEsc);
         return () => {
-          document.removeEventListener("keydown", handleEsc);
+            document.removeEventListener("keydown", handleEsc);
         };
-      }, []);
+    }, []);
 
     useEffect(() => {
         if (deviceData?.name) {
@@ -196,7 +196,7 @@ export default function CreateLinkModal({ deviceData, currentDevicePorts, labDev
                 <div className="flex flex-row justify-between items-center">
                     <h3 className="text-xl font-bold">Creating Link for {deviceData?.name || "Lab Devices"}</h3>
                     <button onClick={onClose} className="r-btn text-blue-400 hover:text-blue-500 flex items-center">
-                        Back <Undo2 className="ml-1" size={18}/>
+                        Back <Undo2 className="ml-1" size={18} />
                     </button>
                 </div>
                 <div className="mb-4 p-4">

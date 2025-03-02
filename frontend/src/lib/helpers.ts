@@ -70,7 +70,7 @@ export const getCurvedPath = (
 export function substringFromFirstNumber(port: string) {
     const idx = port.search(/\d/);
     if (idx !== -1) {
-        return port.substring(idx);
+        return port.substring(0, 3) + port.substring(idx);
     }
     return "";
 }
