@@ -49,6 +49,11 @@ async function start() {
                 // send data to all currently connected clients
                 io.emit(EmitTypes.BookDevice, data);
             });
+
+            socket.on(EmitTypes.UnbookDevice, (data) => {
+                // send data to all currently connected clients
+                io.emit(EmitTypes.UnbookDevice, data);
+            });
         });
 
         // start server with socket.io attached
