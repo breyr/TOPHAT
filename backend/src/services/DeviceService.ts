@@ -57,4 +57,8 @@ export class DeviceService implements IDeviceService {
     async bookDevice(deviceId: number, userId: number): Promise<Device | null> {
         return this.deviceRepository.bookDevice(deviceId, userId);
     }
+
+    async unbookDevice(deviceId: number, userId: number): Promise<Device | null> {
+        return this.deviceRepository.unbookDevice(deviceId, userId);
+    }
 }

@@ -157,4 +157,26 @@ export class DeviceController {
             }
         }
     }
+
+    async unbookDevice(req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> {
+        try {
+            const { id } = req.params;
+            // will have a payload user id otherwise this request is not authenticated through middleware
+            const device = await this.deviceService.unbookDevice(parseInt(id), req.jwt_payload?.id!);
+
+            // we successfully unbooked the device
+            if (device) {
+                io.emit(EmitTypes.BookDevice, {
+                    unbookedDevice: device
+                });
+            }
+            res.status(200).json(device);
+        } catch (error) {
+            if (error instanceof Error && error.message === "UNAUTHORIZED") {
+                res.status(401).json({ error: "You are not authorized to unbook this device." });
+            } else {
+                next(error);
+            }
+        }
+    }
 }

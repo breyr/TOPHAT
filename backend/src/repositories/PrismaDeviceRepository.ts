@@ -106,4 +106,25 @@ export class PrismaDeviceRepository implements IDeviceRepository {
             });
         });
     }
+
+    async unbookDevice(deviceId: number, userId: number): Promise<Device | null> {
+        return await this.prisma.$transaction(async (tx) => {
+            // check if device is already booked
+            const current = await tx.device.findUnique({
+                where: { id: deviceId },
+                select: { userId: true }
+            });
+
+            // only allow unbooking of device if userIds match
+            if (current?.userId !== userId) {
+                throw new Error("UNAUTHORIZED");
+            }
+
+            // otherwise update the device
+            return tx.device.update({
+                where: { id: deviceId },
+                data: { userId: null }
+            });
+        });
+    }
 }

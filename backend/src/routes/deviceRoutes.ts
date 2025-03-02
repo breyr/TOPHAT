@@ -15,5 +15,6 @@ router.delete('/:id', authenticateToken, async (req: AuthenticatedRequest, res, 
 router.get('/type/:deviceType', authenticateToken, async (req: AuthenticatedRequest, res, next) => deviceController.getDevicesByType(req, res, next));
 router.get('/icon/:deviceIcon', authenticateToken, async (req: AuthenticatedRequest, res, next) => deviceController.getDevicesByIcon(req, res, next));
 router.put('/:id/book', authenticateToken, async (req: AuthenticatedRequest, res, next) => deviceController.bookDevice(req, res, next));
+router.put('/:id/unbook', authenticateToken, async (req: AuthenticatedRequest, res, next) => deviceController.unbookDevice(req, res, next));
 
 export { router as deviceRouter };
