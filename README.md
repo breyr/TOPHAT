@@ -15,10 +15,7 @@ Use JIRA to create a new branch from `dev`
    DATABASE_URL="postgres://demo:demo@localhost:5432/demo"
    SECRET_KEY="my_secret_key"
    ```
-4. Run `npm install` in the following locations:
-   1. `/common`
-   2. `/backend`
-   3. `/frontend`
+3. Run `npm install` in the root directory of this project.
   
 ### Starting Development Environment
 
@@ -34,13 +31,18 @@ When you are ready to submit a pull request, make sure you merge from your branc
 
 ## Releases
 
-Peridocially we will create release branches from `dev`. These branches will follow these naming conventions:
+Peridocially we will create release branches from `dev`. These branches will follow these naming convention:
 
-`r-devtest` or `r-<Major>-<Minor>-<Build>`
+`release-<Major>-<Minor>-<Build>`
 
-**`devtest`** is used for rapid iteration for testing docker images, or you could test locally.
+**`<Major>-<Minor>-<Build>`** is used to create a new image per release, tagged with `release-<Major>-<Minor>-<Build>`
 
-**`<Major>-<Minor>-<Build>`** is used to create a new image per release, tagged with `r-<Major>-<Minor>-<Build>`
+### Steps for release:
+
+1. Create release branch from dev
+2. Make any changes in that release branch to make sure everything builds
+3. Merge release branch into main
+4. Merge main into dev
 
 ## Images
 
