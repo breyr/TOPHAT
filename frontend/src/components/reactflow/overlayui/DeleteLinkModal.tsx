@@ -1,7 +1,7 @@
 import { Spinner } from "@material-tailwind/react";
 import { Edge, useEdges, useReactFlow } from "@xyflow/react";
 import { LinkRequest } from "common";
-import { Cable, X } from "lucide-react";
+import { Cable, Undo2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useAuth } from "../../../hooks/useAuth";
 import { useToast } from "../../../hooks/useToast";
@@ -41,6 +41,18 @@ export default function DeleteLinkModal({ deviceData, onClose }: DeleteLinkModal
         }));
         setAvailableConnections(edgesForDevice);
     }, [edges, deviceData]);
+
+    useEffect(() => {
+        const handleEsc = (event: KeyboardEvent) => {
+          if (event.key === "Escape") {
+            onClose();
+          }
+        };
+        document.addEventListener("keydown", handleEsc);
+        return () => {
+          document.removeEventListener("keydown", handleEsc);
+        };
+      }, []);
 
     const handleSelectChange = (selectedOption: Option) => {
         const selectedEdges = new Set(selectedConnections);
@@ -153,9 +165,9 @@ export default function DeleteLinkModal({ deviceData, onClose }: DeleteLinkModal
         <section className="bg-zinc-950 bg-opacity-50 w-full h-full fixed top-0 left-0 flex items-center justify-center z-50">
             <div className="bg-[#ffffff] w-2/5 p-6 rounded-lg shadow-lg">
                 <div className="flex flex-row justify-between items-center">
-                    <h2 className="m-0">Delete Link(s) for {deviceData?.name || "Lab Devices"}</h2>
-                    <button onClick={onClose} className="r-btn text-red-500 hover:text-red-700">
-                        <X />
+                    <h3 className="text-xl font-bold">Delete Link(s) for {deviceData?.name || "Lab Devices"}</h3>
+                    <button onClick={onClose} className="r-btn text-blue-400 hover:text-blue-500 flex items-center">
+                        Back <Undo2 className="ml-1" size={18}/>
                     </button>
                 </div>
                 <div className="mb-4 p-4">

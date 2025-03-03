@@ -42,7 +42,7 @@ export default function IndexPage() {
                 </div>
                 <div className="flex-1 flex flex-col justify-center">
                     <section className="px-16">
-                        <h1 className="text-[2rem] mb-2">Capstone Testbed</h1>
+                    <h1 className="text-[2rem] mb-2">TOPHAT</h1>
                         {!onboardComplete && <div className="flex flex-row items-center">
                             <p>First time setup?</p>
                             <p className="r-btn tertiary flex items-center hover:cursor-pointer" onClick={() => navigate("/onboard/users")}>

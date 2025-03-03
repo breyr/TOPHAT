@@ -10,7 +10,6 @@ import {
     addEdge,
     applyEdgeChanges,
     applyNodeChanges,
-    getNodesBounds,
     getViewportForBounds,
     useReactFlow
 } from "@xyflow/react";
@@ -64,7 +63,7 @@ const TopologyCanvas = () => {
     const { setIsSaving, topologyData, setLastUpdated } = useTopology();
     const { authenticatedApiClient } = useAuth();
     const { id } = useParams();
-    const { getNodes } = useReactFlow();
+    const { getNodes, getNodesBounds } = useReactFlow();
     const { addToast } = useToast();
 
     // logic to save a topology's react-flow state into the database
@@ -122,7 +121,7 @@ const TopologyCanvas = () => {
                 setIsSaving(false);
             }
         }
-    }, [id, rfInstance, getNodes, authenticatedApiClient, setIsSaving, setLastUpdated]);
+    }, [id, rfInstance, getNodes, getNodesBounds, authenticatedApiClient, setIsSaving, setLastUpdated]);
 
     // useMemo is required here because on component re-renders, debounce will be recreated
     // this causes issues like saves being spammed

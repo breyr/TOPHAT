@@ -321,7 +321,7 @@ function ConnectionsTable({ interconnectDevices, labDevices }: ConnectionsTableP
                 const availablePorts = getFilteredPorts(selectedDevice, selectedPort);
 
                 if (!selectedDevice) {
-                    return <span className="text-gray-400">Select an interconnect device</span>;
+                    return;
                 }
 
                 return (

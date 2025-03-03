@@ -224,7 +224,7 @@ export default function LabDevicesTable({
         {
             name: 'SN',
             sortable: true,
-            cell: (row: Device) => renderCell(row, 'serialNumber', 'Serial Number')
+            cell: (row: Device) => renderCell(row, 'serialNumber', 'SN')
         },
         {
             name: 'Description',

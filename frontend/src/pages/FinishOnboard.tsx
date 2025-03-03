@@ -15,10 +15,10 @@ function OnboardingPage() {
                     <PartyPopper className="text-blue-500 w-12 h-12" />
                 </div>
                 <h1 className="text-4xl font-extrabold mb-4 text-gray-800">
-                    Welcome to <span className="text-blue-600">T.O.P.</span>
+                    Welcome to <span className="text-blue-600">TOPHAT</span>
                 </h1>
                 <p className="text-gray-600 text-lg mb-8">
-                    You're all set to start creating amazing network topologies. Don’t worry, you can always update your
+                    You're all set to start creating network topologies. Don’t worry, you can always update your
                     setup later. Have fun!
                 </p>
                 <button

@@ -117,9 +117,9 @@ const TopologyPageContent: React.FC = () => {
             {
                 loading ? (
                     <div className="flex-1 flex justify-center items-center">
-                        <h1 className="mr-2">
-                            {isBookingDevices ? 'Attempting to book devices' : 'Loading'}
-                        </h1>
+                        <h2 className="m-5 mr-2 pb-4">
+                             Loading
+                        </h2>
                         <div className="loader">
                             <div className="dot"></div>
                             <div className="dot"></div>

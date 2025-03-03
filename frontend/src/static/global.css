@@ -585,11 +585,11 @@ footer {
 }
 
 .dot {
-    width: 15px;
-    height: 15px;
-    background-color: #3498db;
+    width: 8px;
+    height: 8px;
+    background-color: lightgray;
     border-radius: 50%;
-    animation: bounce 1.2s infinite ease-in-out;
+    animation: colorChange 1.2s infinite ease-in-out;
 }
 
 .dot:nth-child(1) {
@@ -612,16 +612,16 @@ footer {
     animation-delay: 0.24s;
 }
 
-@keyframes bounce {
+@keyframes colorChange {
 
     0%,
     80%,
     100% {
-        transform: scale(0);
+        background-color: grey;
     }
 
     40% {
-        transform: scale(1);
+        background-color: darkgray;
     }
 }
 
@@ -630,4 +630,9 @@ footer {
 /* disables edges to be clicked on by users */
 .react-flow__edge {
     pointer-events: none;
+}
+
+.react-flow__edge-path {
+    stroke: lightgray;
+    stroke-width: 2;
 }

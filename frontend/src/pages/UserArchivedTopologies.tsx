@@ -65,7 +65,7 @@ export default function UserArchivedTopologiesPage() {
                         <TopologyCard key={topology.id} {...topology} onDelete={() => handleDelete(topology.id)} onArchive={() => handleArchive(topology.id)} readOnly={true} />
                     ))
                 ) : (
-                    <p>No archived topologies found.</p>
+                    <p className="pt-4">No archived topologies found.</p>
                 )
             )}
         </section>

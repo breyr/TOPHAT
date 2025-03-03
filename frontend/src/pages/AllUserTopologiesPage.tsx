@@ -53,16 +53,16 @@ export default function AllUserTopologiesPage() {
 
 
   return (
-    <section className="pt-4 flex flex-col gap-y-4">
+    <section className="pt-4 flex flex-col gap-y-4 mt-4">
       {users.length ? (
         users.map((u) => {
           const userTopologies = topologies.filter(
             (topology) => topology.userId === u.id
           );
           return (
-            <div key={u.id} className="relative p-2">
+            <div key={u.id} className="relative p-2 pt-6">
               <p className='absolute -top-1 left-4 bg-[#ffffff] px-2'>{u.email}</p>
-              <section className="flex flex-row flex-wrap gap-x-8 p-2 border rounded">
+              <section className="flex flex-row flex-wrap gap-x-8 p-2 border rounded pl-7">
                 {userTopologies.length ? (
                   userTopologies.map((topology) => (
                     <TopologyCard
@@ -81,7 +81,7 @@ export default function AllUserTopologiesPage() {
           );
         })
       ) : (
-        <p>No users found.</p>
+        <p className='pt-6'>No users found.</p>
       )}
     </section>
   );

@@ -6,7 +6,7 @@ import {
     type EdgeProps,
     type ReactFlowState,
 } from '@xyflow/react';
-import { getCurvedPath } from '../../../lib/helpers';
+import { getCurvedPath, substringFromFirstNumber } from '../../../lib/helpers';
 
 // Define the parameter type for path functions
 export type GetSpecialPathParams = {
@@ -154,7 +154,7 @@ export default function MultiPathEdge({
                         className="text-black font-bold absolute text-[0.5rem]"
                         style={{ transform: `translate(-50%, -50%) translate(${startPos.x}px, ${startPos.y}px)` }}
                     >
-                        {data.sourcePort}
+                        {substringFromFirstNumber(data.sourcePort)}
                     </div>
                 )}
                 {data?.targetPort && (
@@ -162,7 +162,7 @@ export default function MultiPathEdge({
                         className="text-black font-bold absolute text-[0.5rem]"
                         style={{ transform: `translate(-50%, -50%) translate(${endPos.x}px, ${endPos.y}px)` }}
                     >
-                        {data.targetPort}
+                        {substringFromFirstNumber(data.targetPort)}
                     </div>
                 )}
             </EdgeLabelRenderer>

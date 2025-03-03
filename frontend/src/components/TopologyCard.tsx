@@ -85,11 +85,10 @@ const TopologyCard: React.FC<TopologyProps> = ({
   }, [thumbnail]);
 
   return (
-    <div className="relative">
+    <div className="relative group">
       <button
         onClick={handleDeleteClick}
-        className="absolute top-0 right-[-20px] m-1 p-2 shadow-md text-red-500 bg-gray-50 rounded-full hover:bg-gray-100 z-10"
-      >
+        className="hidden group-hover:block absolute top-0 right-[-20px] m-1 p-2 shadow-md text-red-500 bg-gray-50 rounded-full hover:bg-gray-100 z-10">
         <Trash size={16} />
       </button>
       <div

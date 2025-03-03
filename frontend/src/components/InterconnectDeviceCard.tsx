@@ -1,4 +1,4 @@
-import { Edit, PlusCircle, Save, Server, Trash, X } from "lucide-react";
+import { Edit, PlusCircle, Save, Server, Trash, Undo2 } from "lucide-react";
 import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import { useAuth } from "../hooks/useAuth";
 import { Device } from "../models/Device";
@@ -44,6 +44,18 @@ function AddInterconnectModal({ deviceInformation, deviceNumber, onClose, onSave
             setSecretPassword(deviceInformation.secretPassword);
         }
     }, [deviceInformation]);
+
+    useEffect(() => {
+        const handleEsc = (event: KeyboardEvent) => {
+          if (event.key === "Escape") {
+            onClose();
+          }
+        };
+        document.addEventListener("keydown", handleEsc);
+        return () => {
+          document.removeEventListener("keydown", handleEsc);
+        };
+      }, []);
 
     const handleSave = (e: React.FormEvent) => {
         e.preventDefault();
@@ -122,9 +134,9 @@ function AddInterconnectModal({ deviceInformation, deviceNumber, onClose, onSave
         <section className="bg-zinc-950 bg-opacity-50 w-full h-full fixed top-0 left-0 flex items-center justify-center z-50">
             <div className="bg-[#ffffff] w-3/5 p-6 rounded-lg shadow-lg">
                 <div className="flex flex-row justify-between items-center">
-                    <h2 className="m-0">{deviceInformation ? `Edit Interconnect Device #${deviceNumber}` : `Add Interconnect Device #${deviceNumber}`}</h2>
-                    <button onClick={onClose} className="r-btn text-red-500 hover:text-red-700">
-                        <X />
+                    <h3 className="text-xl font-bold px-3 my-4">{deviceInformation ? `Edit Interconnect ${deviceNumber}` : `Add Interconnect ${deviceNumber}`}</h3>
+                    <button onClick={onClose} className="r-btn text-blue-400 hover:text-blue-500 flex items-center">
+                        Back <Undo2 className="ml-1" size={18}/>
                     </button>
                 </div>
                 <div className="p-4">
@@ -324,10 +336,10 @@ export default function InterconnectDeviceCard({ deviceNumber, deviceInformation
         <>
             <div
                 onClick={() => setIsModalOpen(true)}
-                className={`my-5 rounded-md size-96 border-2 flex flex-col justify-center items-center gap-3 text-gray-300 transition-all duration-300 ease-in-out transform hover:scale-95 hover:cursor-pointer ${deviceInformation ? 'bg-blue-50 border-blue-400' : 'bg-gray-50 border-gray-300'
+                className={`my-5 rounded-md w-80 h-48 border-2 flex flex-col justify-center items-center gap-3 text-gray-300 transition-all duration-300 ease-in-out transform hover:scale-95 hover:cursor-pointer ${deviceInformation ? 'bg-blue-50 border-blue-400' : 'bg-gray-50 border-gray-300'
                     }`}>
                 {deviceInformation ? <Server size={48} className="text-blue-500" /> : <PlusCircle size={48} />}
-                <p className="text-lg">{deviceInformation ? "Edit" : "Add"} Interconnect Device {deviceNumber}</p>
+                <p className="text-lg">{deviceInformation ? "" : "Add"} Interconnect {deviceNumber}</p>
             </div>
             {isModalOpen && (
                 <AddInterconnectModal
