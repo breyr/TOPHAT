@@ -13,10 +13,10 @@ interface LinkOperationParams {
     secondDevicePort: string;
 }
 
-export function useLinkOperations() {
+// Create a base hook with API operations that don't depend on ReactFlow
+export function useLinkOperationsBase() {
     const { authenticatedApiClient } = useAuth();
     const { addToast, updateToast } = useToast();
-    const { getNodes, setEdges } = useReactFlow<Node<{ deviceData?: Device; }>, Edge>();
 
     // get connection information for a specific device and port
     const fetchConnectionDetails = async (deviceName: string, devicePort: string) => {
@@ -63,6 +63,181 @@ export function useLinkOperations() {
         return Number(port.split('/').pop()) * deviceNumber;
     };
 
+    // API operations without ReactFlow dependencies
+    const performLinkOperation = async (params: LinkOperationParams, operation: 'create' | 'delete', createToastPerLink: boolean = true) => {
+        const { firstDeviceName, firstDevicePort, secondDeviceName, secondDevicePort } = params;
+        let toastId: string | undefined = undefined;
+        if (createToastPerLink) toastId = Date.now().toString();
+
+        const operationTitle = operation === 'create' ? 'Creating Link' : 'Deleting Link';
+
+        try {
+            if (createToastPerLink) addToast({
+                id: toastId!,
+                title: operationTitle,
+                body: `${operation === 'create' ? 'Connecting' : 'Disconnecting'} ${firstDeviceName} on port ${firstDevicePort} to ${secondDeviceName} on port ${secondDevicePort}`,
+                status: 'pending'
+            });
+
+            // Fetch and validate connection info
+            const firstConnectionInfo = await fetchConnectionDetails(firstDeviceName, firstDevicePort);
+            const secondConnectionInfo = await fetchConnectionDetails(secondDeviceName, secondDevicePort);
+
+            if (!firstConnectionInfo || !secondConnectionInfo) {
+                if (createToastPerLink) updateToast(toastId!, 'error', operationTitle, 'Connection information not found.');
+                return false;
+            }
+
+            // Fetch and validate interconnect devices
+            const firstInterconnectInfo = await fetchInterconnectDevice(firstConnectionInfo);
+            const secondInterconnectInfo = await fetchInterconnectDevice(secondConnectionInfo);
+
+            if (!validateInterconnectDevice(firstInterconnectInfo, toastId) ||
+                !validateInterconnectDevice(secondInterconnectInfo, toastId)) {
+                return false;
+            }
+
+            // Prepare link payload
+            const interconnect1Prefix = removePortNumber(firstConnectionInfo.interconnectDevicePort);
+            const interconnect2Prefix = removePortNumber(secondConnectionInfo.interconnectDevicePort);
+
+            const offsetPort1 = calculateOffsetPort(
+                firstConnectionInfo.interconnectDevicePort,
+                firstInterconnectInfo!.deviceNumber!
+            );
+
+            const offsetPort2 = calculateOffsetPort(
+                secondConnectionInfo.interconnectDevicePort,
+                secondInterconnectInfo!.deviceNumber!
+            );
+
+            const linkPayload: LinkRequest = {
+                interconnect1IP: firstInterconnectInfo!.ipAddress,
+                interconnect1Prefix,
+                interconnect2IP: secondInterconnectInfo!.ipAddress,
+                interconnect2Prefix,
+                interconnectPortID1: offsetPort1,
+                interconnectPortID2: offsetPort2,
+                username: firstInterconnectInfo!.username!,
+                password: firstInterconnectInfo!.password!,
+                secret: firstInterconnectInfo!.secretPassword!
+            };
+
+            // Perform the requested operation
+            const res = operation === 'create'
+                ? await authenticatedApiClient.createLink(linkPayload)
+                : await authenticatedApiClient.clearLink(linkPayload);
+
+            if ((res as any).status === 'success') {
+                if (createToastPerLink) updateToast(toastId!, 'success', `Successfully ${operation === 'create' ? 'Created' : 'Deleted'} Link`);
+                return true;
+            } else {
+                if (createToastPerLink) updateToast(toastId!, 'error', `Failed to ${operation === 'create' ? 'Create' : 'Delete'} Link`);
+                return false;
+            }
+        } catch {
+            if (createToastPerLink) updateToast(toastId!, 'error', operationTitle, 'Could not establish connection to devices.');
+            return false;
+        }
+    };
+
+    // Public API for non-ReactFlow components
+    const createLink = async (params: LinkOperationParams, createToastPerLink: boolean = true) => {
+        return performLinkOperation(params, 'create', createToastPerLink);
+    };
+
+    const deleteLink = async (params: LinkOperationParams, createToastPerLink: boolean = true) => {
+        return performLinkOperation(params, 'delete', createToastPerLink);
+    };
+
+    const createLinkBulk = async (selectedConnections: Set<Option>): Promise<{ numFailed: number, numSucceed: number }> => {
+        let successCount = 0;
+
+        const createPromises = Array.from(selectedConnections).map(async (sc) => {
+            const linkOptionParams = {
+                firstDeviceName: sc.firstLabDevice,
+                firstDevicePort: sc.firstLabDevicePort,
+                secondDeviceName: sc.secondLabDevice,
+                secondDevicePort: sc.secondLabDevicePort
+            };
+
+            const result = await createLink(linkOptionParams, false);
+
+            return {
+                connection: sc,
+                success: result
+            };
+        });
+
+        const results = await Promise.all(createPromises);
+        successCount = results.filter(r => r.success).length;
+
+        return {
+            numFailed: results.length - successCount,
+            numSucceed: successCount
+        };
+    };
+
+    const deleteLinkBulk = async (selectedConnections: Set<Option>): Promise<number> => {
+        let successCount = 0;
+        const numSelectedConnections = selectedConnections.size;
+        const toastId = Date.now().toString();
+
+        addToast({
+            id: toastId,
+            title: 'Deleting Link',
+            body: `Clearing ${numSelectedConnections} link${numSelectedConnections > 1 ? 's' : ''}`,
+            status: 'pending'
+        });
+
+        const deletePromises = Array.from(selectedConnections).map(async (sc) => {
+            const result = await deleteLink({
+                firstDeviceName: sc.firstLabDevice,
+                firstDevicePort: sc.firstLabDevicePort,
+                secondDeviceName: sc.secondLabDevice,
+                secondDevicePort: sc.secondLabDevicePort
+            }, false);
+
+            return {
+                connection: sc,
+                success: result
+            };
+        });
+
+        const results = await Promise.all(deletePromises);
+        successCount = results.filter(r => r.success).length;
+
+        if (successCount === numSelectedConnections) {
+            updateToast(toastId, 'success', 'Successfully Cleared Links',
+                `All ${numSelectedConnections} link${numSelectedConnections > 1 ? 's were' : ' was'} successfully cleared`);
+        } else {
+            updateToast(toastId, 'error', 'Partially Cleared Links',
+                `${successCount} of ${numSelectedConnections} link${numSelectedConnections > 1 ? 's were' : ' was'} successfully cleared`);
+        }
+
+        const failedConnections = results.filter(r => !r.success).map(r => r.connection);
+
+        if (failedConnections.length > 0) {
+            console.error(`Failed to clear ${failedConnections.length} links:`, failedConnections);
+        }
+
+        return failedConnections.length;
+    };
+
+    return {
+        createLink,
+        deleteLink,
+        createLinkBulk,
+        deleteLinkBulk
+    };
+}
+
+// Enhanced hook that includes ReactFlow functionality (must be used within ReactFlowProvider)
+export function useLinkOperations() {
+    const baseOperations = useLinkOperationsBase();
+    const { getNodes, setEdges } = useReactFlow<Node<{ deviceData?: Device; }>, Edge>();
+    const { addToast } = useToast();
+
     const createEdge = (params: LinkOperationParams) => {
         const { firstDeviceName, firstDevicePort, secondDeviceName, secondDevicePort } = params;
         const nodes = getNodes();
@@ -96,93 +271,25 @@ export function useLinkOperations() {
         );
     };
 
+    // Override the base methods to include ReactFlow operations
     const createLink = async (params: LinkOperationParams, createToastPerLink: boolean = true) => {
-        const { firstDeviceName, firstDevicePort, secondDeviceName, secondDevicePort } = params;
-        let toastId: string | undefined = undefined;
-        if (createToastPerLink) toastId = Date.now().toString();
-
-        try {
-            if (createToastPerLink) addToast({
-                id: toastId!,
-                title: 'Creating Link',
-                body: `Connecting ${firstDeviceName} on port ${firstDevicePort} to ${secondDeviceName} on port ${secondDevicePort}`,
-                status: 'pending'
-            });
-
-            // Fetch and validate connection info
-            const firstConnectionInfo = await fetchConnectionDetails(firstDeviceName, firstDevicePort);
-            const secondConnectionInfo = await fetchConnectionDetails(secondDeviceName, secondDevicePort);
-
-            if (!firstConnectionInfo || !secondConnectionInfo) {
-                if (createToastPerLink) updateToast(toastId!, 'error', 'Creating Link', 'Connection information not found.');
-                return false;
-            }
-
-            // Fetch and validate interconnect devices
-            const firstInterconnectInfo = await fetchInterconnectDevice(firstConnectionInfo);
-            const secondInterconnectInfo = await fetchInterconnectDevice(secondConnectionInfo);
-
-            if (!validateInterconnectDevice(firstInterconnectInfo, toastId) ||
-                !validateInterconnectDevice(secondInterconnectInfo, toastId)) {
-                return false;
-            }
-
-            // Prepare link creation payload
-            const interconnect1Prefix = removePortNumber(firstConnectionInfo.interconnectDevicePort);
-            const interconnect2Prefix = removePortNumber(secondConnectionInfo.interconnectDevicePort);
-
-            const offsetPort1 = calculateOffsetPort(
-                firstConnectionInfo.interconnectDevicePort,
-                firstInterconnectInfo!.deviceNumber!
-            );
-
-            const offsetPort2 = calculateOffsetPort(
-                secondConnectionInfo.interconnectDevicePort,
-                secondInterconnectInfo!.deviceNumber!
-            );
-
-            const createLinkPayload: LinkRequest = {
-                interconnect1IP: firstInterconnectInfo!.ipAddress,
-                interconnect1Prefix,
-                interconnect2IP: secondInterconnectInfo!.ipAddress,
-                interconnect2Prefix,
-                interconnectPortID1: offsetPort1,
-                interconnectPortID2: offsetPort2,
-                username: firstInterconnectInfo!.username!,
-                password: firstInterconnectInfo!.password!,
-                secret: firstInterconnectInfo!.secretPassword!
-            };
-
-            const res = await authenticatedApiClient.createLink(createLinkPayload);
-
-            if ((res as any).status === 'success') {
-                createEdge(params);
-                if (createToastPerLink) updateToast(toastId!, 'success', 'Successfully Created Link');
-                return true;
-            } else {
-                if (createToastPerLink) updateToast(toastId!, 'error', 'Failed to Create Link');
-                return false;
-            }
-        } catch {
-            if (createToastPerLink) updateToast(toastId!, 'error', 'Creating Link', 'Could not establish connection to devices.');
-            return false;
+        const result = await baseOperations.createLink(params, createToastPerLink);
+        if (result) {
+            createEdge(params);
         }
+        return result;
     };
 
     const createLinkBulk = async (selectedConnections: Set<Option>): Promise<{ numFailed: number, numSucceed: number }> => {
-        // to keep track of how many completed
-        let successCount = 0;
-
         const createPromises = Array.from(selectedConnections).map(async (sc) => {
-            // for each selected connection we need to make a delete link request
             const linkOptionParams = {
                 firstDeviceName: sc.firstLabDevice,
                 firstDevicePort: sc.firstLabDevicePort,
                 secondDeviceName: sc.secondLabDevice,
                 secondDevicePort: sc.secondLabDevicePort
-            }
+            };
 
-            const result = await createLink(linkOptionParams);
+            const result = await baseOperations.createLink(linkOptionParams, false);
 
             if (result) {
                 createEdge(linkOptionParams);
@@ -190,102 +297,29 @@ export function useLinkOperations() {
 
             return {
                 connection: sc,
-                success: result // whether link was cleared or not
-            }
+                success: result
+            };
         });
 
         const results = await Promise.all(createPromises);
+        const successCount = results.filter(r => r.success).length;
 
-        successCount = results.filter(r => r.success).length;
-
-        const failedConnections = results
-            .filter(r => !r.success)
-            .map(r => r.connection);
-
-        return { numFailed: failedConnections.length, numSucceed: successCount };
-    }
-
-    const deleteLink = async (params: LinkOperationParams) => {
-        const { firstDeviceName, firstDevicePort, secondDeviceName, secondDevicePort } = params;
-
-        try {
-            // Similar logic to createLink to fetch connection details
-            const firstConnectionInfo = await fetchConnectionDetails(firstDeviceName, firstDevicePort);
-            const secondConnectionInfo = await fetchConnectionDetails(secondDeviceName, secondDevicePort);
-
-            if (!firstConnectionInfo || !secondConnectionInfo) {
-                return false;
-            }
-
-            const firstInterconnectInfo = await fetchInterconnectDevice(firstConnectionInfo);
-            const secondInterconnectInfo = await fetchInterconnectDevice(secondConnectionInfo);
-
-            if (!validateInterconnectDevice(firstInterconnectInfo) ||
-                !validateInterconnectDevice(secondInterconnectInfo)) {
-                return false;
-            }
-
-            // Prepare link deletion payload
-            const interconnect1Prefix = removePortNumber(firstConnectionInfo.interconnectDevicePort);
-            const interconnect2Prefix = removePortNumber(secondConnectionInfo.interconnectDevicePort);
-
-            const offsetPort1 = calculateOffsetPort(
-                firstConnectionInfo.interconnectDevicePort,
-                firstInterconnectInfo!.deviceNumber!
-            );
-
-            const offsetPort2 = calculateOffsetPort(
-                secondConnectionInfo.interconnectDevicePort,
-                secondInterconnectInfo!.deviceNumber!
-            );
-
-            const deleteLinkPayload: LinkRequest = {
-                interconnect1IP: firstInterconnectInfo!.ipAddress,
-                interconnect1Prefix,
-                interconnect2IP: secondInterconnectInfo!.ipAddress,
-                interconnect2Prefix,
-                interconnectPortID1: offsetPort1,
-                interconnectPortID2: offsetPort2,
-                username: firstInterconnectInfo!.username!,
-                password: firstInterconnectInfo!.password!,
-                secret: firstInterconnectInfo!.secretPassword!
-            };
-
-            const res = await authenticatedApiClient.clearLink(deleteLinkPayload);
-
-            if ((res as any).status === 'success') {
-                return true;
-            } else {
-                return false;
-            }
-        } catch {
-            return false;
-        }
+        return {
+            numFailed: results.length - successCount,
+            numSucceed: successCount
+        };
     };
 
     const deleteLinkBulk = async (selectedConnections: Set<Option>): Promise<number> => {
-        // to keep track of how many completed
-        let successCount = 0;
-        const numSelectedConnections = selectedConnections.size;
-        // show toast for progress of clearing links
-        const toastId = Date.now().toString();
-        addToast(
-            {
-                id: toastId,
-                title: 'Deleting Link',
-                body: `Clearing ${numSelectedConnections} link${numSelectedConnections > 1 ? 's' : ''}`,
-                status: 'pending'
-            }
-        );
-
         const deletePromises = Array.from(selectedConnections).map(async (sc) => {
-            // for each selected connection we need to make a delete link request
-            const result = await deleteLink({
+            const params = {
                 firstDeviceName: sc.firstLabDevice,
                 firstDevicePort: sc.firstLabDevicePort,
                 secondDeviceName: sc.secondLabDevice,
                 secondDevicePort: sc.secondLabDevicePort
-            });
+            };
+
+            const result = await baseOperations.deleteLink(params, false);
 
             if (result) {
                 deleteEdge(sc.value); // sc.value is the edge's unique id
@@ -293,36 +327,40 @@ export function useLinkOperations() {
 
             return {
                 connection: sc,
-                success: result // whether link was cleared or not
-            }
+                success: result
+            };
         });
 
         const results = await Promise.all(deletePromises);
+        const successCount = results.filter(r => r.success).length;
+        const numSelectedConnections = selectedConnections.size;
 
-        successCount = results.filter(r => r.success).length;
-
+        const toastId = Date.now().toString();
         if (successCount === numSelectedConnections) {
-            updateToast(toastId, 'success', 'Successfully Cleared Links',
-                `All ${numSelectedConnections} link${numSelectedConnections > 1 ? 's were' : ' was'} successfully cleared`);
+            addToast({
+                id: toastId,
+                title: 'Successfully Cleared Links',
+                body: `All ${numSelectedConnections} link${numSelectedConnections > 1 ? 's were' : ' was'} successfully cleared`,
+                status: 'success'
+            });
         } else {
-            updateToast(toastId, 'error', 'Partially Cleared Links',
-                `${successCount} of ${numSelectedConnections} link${numSelectedConnections > 1 ? 's were' : ' was'} successfully cleared`);
+            addToast({
+                id: toastId,
+                title: 'Partially Cleared Links',
+                body: `${successCount} of ${numSelectedConnections} link${numSelectedConnections > 1 ? 's were' : ' was'} successfully cleared`,
+                status: 'error'
+            });
         }
 
-        const failedConnections = results
-            .filter(r => !r.success)
-            .map(r => r.connection);
-
-        if (failedConnections.length > 0) {
-            console.error(`Failed to clear ${failedConnections.length} links:`, failedConnections);
-        }
-
-        return failedConnections.length;
-    }
+        return results.length - successCount;
+    };
 
     return {
+        ...baseOperations,
         createLink,
         createLinkBulk,
         deleteLinkBulk,
+        createEdge,
+        deleteEdge
     };
 }

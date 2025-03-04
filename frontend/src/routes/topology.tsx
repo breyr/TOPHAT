@@ -7,7 +7,7 @@ import TopologyName from '../components/reactflow/overlayui/TopologyName';
 import TopologyCanvasWrapper from '../components/reactflow/TopologyCanvas';
 import { TopologyProvider } from '../context/TopologyContext';
 import { useAuth } from '../hooks/useAuth';
-import { useLinkOperations } from '../hooks/useLinkOperations';
+import { useLinkOperationsBase } from '../hooks/useLinkOperations';
 import { useTopology } from '../hooks/useTopology';
 import { Device } from '../models/Device';
 
@@ -18,7 +18,7 @@ type ErrorState = {
 
 const TopologyPageContent: React.FC = () => {
     const { setTopologyData, setLastUpdated } = useTopology();
-    const { createLinkBulk } = useLinkOperations();
+    const { createLinkBulk } = useLinkOperationsBase();
     const [error, setError] = useState<ErrorState>({ type: null, message: '' });
     const [loading, setLoading] = useState<boolean>(true);
     const [bookingErrors, setBookingErrors] = useState<string[]>([]);
@@ -91,7 +91,7 @@ const TopologyPageContent: React.FC = () => {
                         }
 
                         // check if we had any errors before creating links - also must have edges
-                        if (errors.length !== 0 && res.data.reactFlowState?.edges) {
+                        if (errors.length === 0 && res.data.reactFlowState?.edges) {
                             // Get a list of Options to pass into the clearLinkBulk function
                             const edgesForTopology = res.data.reactFlowState?.edges.map(e => ({
                                 value: e.id,
@@ -128,7 +128,7 @@ const TopologyPageContent: React.FC = () => {
 
             hasFetchedData.current = true;
         })();
-    }, [user, authenticatedApiClient, id, setTopologyData, setLastUpdated, navigateTo, createLinkBulk]);
+    }, [user, authenticatedApiClient, id, setTopologyData, setLastUpdated, navigateTo]);
 
     return (
         <section className="flex flex-col h-screen">

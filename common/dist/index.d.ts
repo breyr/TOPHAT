@@ -23,6 +23,10 @@ type Edge = {
     source: string;
     target: string;
     id: string;
+    data: {
+        sourcePort: string;
+        targetPort: string;
+    };
 };
 type Viewport = {
     x: number;

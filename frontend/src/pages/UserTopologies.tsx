@@ -5,12 +5,12 @@ import { useEffect, useState } from "react";
 import CreateTopology from "../components/CreateTopology";
 import TopologyCard from "../components/TopologyCard";
 import { useAuth } from "../hooks/useAuth";
-import { useLinkOperations } from "../hooks/useLinkOperations";
+import { useLinkOperationsBase } from "../hooks/useLinkOperations";
 import { Device } from "../models/Device";
 
 export default function UserTopologiesPage() {
     const { token, authenticatedApiClient } = useAuth();
-    const { deleteLinkBulk } = useLinkOperations();
+    const { deleteLinkBulk } = useLinkOperationsBase();
     const [topologies, setTopologies] = useState([] as Topology[]);
     const [isLoading, setIsLoading] = useState(true);
 
@@ -49,7 +49,6 @@ export default function UserTopologiesPage() {
                 // if there are devices to unbook, wait for all requests to complete
                 if (devicePromises.length > 0) {
                     await Promise.all(devicePromises);
-                    console.log(`Unbooked ${devicePromises.length} devices from topology ${topologyData.id}`);
                 }
             }
         } catch (error) {
