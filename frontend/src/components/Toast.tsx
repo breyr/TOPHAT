@@ -44,11 +44,11 @@ export default function LinkToast({ title, body, status, onDismiss }: ToastProps
                             <div className="flex flex-row justify-between">
                                 <Typography className="font-bold">{title}</Typography>
                                 {status !== 'pending' ? (
-                                    <Typography className="underline hover:cursor-pointer" onClick={onDismiss}>
+                                    <Typography className="underline hover:cursor-pointer ml-8" onClick={onDismiss}>
                                         dismiss
                                     </Typography>
                                 ) : (
-                                    <Typography className="underline hover:cursor-pointer" onClick={() => setIsMinimized(!isMinimized)}>
+                                    <Typography className="underline hover:cursor-pointer ml-8" onClick={() => setIsMinimized(!isMinimized)}>
                                         hide
                                     </Typography>
                                 )}
