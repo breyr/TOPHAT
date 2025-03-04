@@ -5,10 +5,12 @@ import { useEffect, useState } from "react";
 import CreateTopology from "../components/CreateTopology";
 import TopologyCard from "../components/TopologyCard";
 import { useAuth } from "../hooks/useAuth";
+import { useLinkOperations } from "../hooks/useLinkOperations";
 import { Device } from "../models/Device";
 
 export default function UserTopologiesPage() {
     const { token, authenticatedApiClient } = useAuth();
+    const { deleteLinkBulk } = useLinkOperations();
     const [topologies, setTopologies] = useState([] as Topology[]);
     const [isLoading, setIsLoading] = useState(true);
 
@@ -67,13 +69,28 @@ export default function UserTopologiesPage() {
                 // Unbook devices first
                 await unbookDevicesInTopology(topology);
 
-                // Then delete the topology
-                await authenticatedApiClient.deleteTopology(topologyId);
+                // Get a list of Options to pass into the clearLinkBulk function
+                const edgesForTopology = topology.reactFlowState?.edges.map(e => ({
+                    value: e.id,
+                    label: `(${e.source}) ${e.data?.sourcePort ?? ''} -> (${e.target}) ${e.data?.targetPort ?? ''}`,
+                    firstLabDevice: e.source,
+                    firstLabDevicePort: e.data?.sourcePort ?? '',
+                    secondLabDevice: e.target,
+                    secondLabDevicePort: e.data?.targetPort ?? '',
+                }));
 
-                // Update UI regardless of what the delete response contains
-                setTopologies((prevTopologies) =>
-                    prevTopologies.filter(t => t.id !== topologyId)
-                );
+                // Clear Links
+                const numFailures = await deleteLinkBulk(new Set(edgesForTopology));
+
+                if (numFailures === 0) {
+                    // Then delete the topology
+                    await authenticatedApiClient.deleteTopology(topologyId);
+
+                    // Update UI regardless of what the delete response contains
+                    setTopologies((prevTopologies) =>
+                        prevTopologies.filter(t => t.id !== topologyId)
+                    );
+                }
             }
         } catch (error) {
             console.error('Error deleting topology:', error);
@@ -92,15 +109,31 @@ export default function UserTopologiesPage() {
                 // Unbook devices first
                 await unbookDevicesInTopology(topology);
 
-                // Then archive the topology
-                await authenticatedApiClient.updateTopology(topologyId, {
-                    archived: true
-                });
+                // Get a list of Options to pass into the clearLinkBulk function
+                const edgesForTopology = topology.reactFlowState?.edges.map(e => ({
+                    value: e.id,
+                    label: `(${e.source}) ${e.data?.sourcePort ?? ''} -> (${e.target}) ${e.data?.targetPort ?? ''}`,
+                    firstLabDevice: e.source,
+                    firstLabDevicePort: e.data?.sourcePort ?? '',
+                    secondLabDevice: e.target,
+                    secondLabDevicePort: e.data?.targetPort ?? '',
+                }));
 
-                // Update UI regardless of what the update response contains
-                setTopologies((prevTopologies) =>
-                    prevTopologies.filter(t => t.id !== topologyId)
-                );
+                // Clear Links
+                const numFailures = await deleteLinkBulk(new Set(edgesForTopology));
+
+                if (numFailures === 0) {
+                    // Then archive the topology
+                    await authenticatedApiClient.updateTopology(topologyId, {
+                        archived: true
+                    });
+
+                    // Update UI regardless of what the update response contains
+                    setTopologies((prevTopologies) =>
+                        prevTopologies.filter(t => t.id !== topologyId)
+                    );
+                }
+
             }
         } catch (error) {
             console.error('Error archiving topology:', error);

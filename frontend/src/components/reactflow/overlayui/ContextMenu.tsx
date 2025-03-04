@@ -1,9 +1,12 @@
-import { Edge, Node, useReactFlow } from "@xyflow/react";
+import { Edge, Node, useEdges, useReactFlow } from "@xyflow/react";
 import { Trash } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { useAuth } from "../../../hooks/useAuth";
+import { useLinkOperations } from "../../../hooks/useLinkOperations";
 import { generatePorts } from "../../../lib/helpers";
 import { Device } from "../../../models/Device";
+import { CustomEdge } from "../../../types/frontend";
+import { Option } from "../../MultiSelect";
 import CreateLinkModal from "./CreateLinkModal";
 import DeleteLinkModal from "./DeleteLinkModal";
 
@@ -25,10 +28,13 @@ export default function ContextMenu({
     onClick
 }: ContextMenuProps) {
     const { authenticatedApiClient } = useAuth();
+    const edges = useEdges<CustomEdge>();
+    const { deleteLinkBulk } = useLinkOperations();
     const [labDevices, setLabDevices] = useState<Device[]>([]);
     const [currentDevicePorts, setCurrentDevicePorts] = useState<string[]>([]);
     const [isCreateLinkModalOpen, setIsCreateLinkModalOpen] = useState<boolean>(false);
     const [isDeleteLinkModalOpen, setIsDeleteLinkModalOpen] = useState<boolean>(false);
+    const [currentEdges, setCurrentEdges] = useState<Option[]>([]);
     const { setNodes } = useReactFlow<Node<{ deviceData?: Device; }>, Edge>();
 
     useEffect(() => {
@@ -52,9 +58,26 @@ export default function ContextMenu({
         }
     }, [deviceData]);
 
-    const deleteNode = useCallback(() => {
+    // get edges for this node
+    useEffect(() => {
+        const edgesForDevice = edges.filter(e => e.source === deviceData?.name).map(e => ({
+            value: e.id,
+            label: `(${e.source}) ${e.data?.sourcePort ?? ''} -> (${e.target}) ${e.data?.targetPort ?? ''}`,
+            firstLabDevice: e.source,
+            firstLabDevicePort: e.data?.sourcePort ?? '',
+            secondLabDevice: e.target,
+            secondLabDevicePort: e.data?.targetPort ?? '',
+        }));
+        setCurrentEdges(edgesForDevice);
+    }, [edges, deviceData]);
+
+    const deleteNode = useCallback(async () => {
         if (deviceData) {
-            setNodes((nodes) => nodes.filter((n) => n.data.deviceData?.id !== deviceData.id));
+            const numFailures = await deleteLinkBulk(new Set(currentEdges));
+            // delete node only if there are 0 failures
+            if (numFailures === 0) {
+                setNodes((nodes) => nodes.filter((n) => n.data.deviceData?.id !== deviceData.id));
+            }
             onClick();
         }
     }, [deviceData, setNodes]);

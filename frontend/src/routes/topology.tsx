@@ -7,6 +7,7 @@ import TopologyName from '../components/reactflow/overlayui/TopologyName';
 import TopologyCanvasWrapper from '../components/reactflow/TopologyCanvas';
 import { TopologyProvider } from '../context/TopologyContext';
 import { useAuth } from '../hooks/useAuth';
+import { useLinkOperations } from '../hooks/useLinkOperations';
 import { useTopology } from '../hooks/useTopology';
 import { Device } from '../models/Device';
 
@@ -17,10 +18,11 @@ type ErrorState = {
 
 const TopologyPageContent: React.FC = () => {
     const { setTopologyData, setLastUpdated } = useTopology();
+    const { createLinkBulk } = useLinkOperations();
     const [error, setError] = useState<ErrorState>({ type: null, message: '' });
     const [loading, setLoading] = useState<boolean>(true);
-    const [isBookingDevices, setIsBookingDevices] = useState<boolean>(false);
     const [bookingErrors, setBookingErrors] = useState<string[]>([]);
+    const [createLinkError, setCreateLinkError] = useState<boolean>(false);
     const hasFetchedData = useRef(false);
 
     const { id } = useParams();
@@ -66,7 +68,6 @@ const TopologyPageContent: React.FC = () => {
 
                     // attempt to book devices required for topology
                     if (res.data.reactFlowState?.nodes) {
-                        setIsBookingDevices(true);
                         const nodes = res.data.reactFlowState?.nodes as Node<{ deviceData?: Device }>[] | undefined;
                         const errors: string[] = [];
 
@@ -89,8 +90,26 @@ const TopologyPageContent: React.FC = () => {
                             }
                         }
 
-                        // update state with any errors
-                        if (errors.length > 0) {
+                        // check if we had any errors before creating links - also must have edges
+                        if (errors.length !== 0 && res.data.reactFlowState?.edges) {
+                            // Get a list of Options to pass into the clearLinkBulk function
+                            const edgesForTopology = res.data.reactFlowState?.edges.map(e => ({
+                                value: e.id,
+                                label: `(${e.source}) ${e.data?.sourcePort ?? ''} -> (${e.target}) ${e.data?.targetPort ?? ''}`,
+                                firstLabDevice: e.source,
+                                firstLabDevicePort: e.data?.sourcePort ?? '',
+                                secondLabDevice: e.target,
+                                secondLabDevicePort: e.data?.targetPort ?? '',
+                            }));
+
+                            // Create Links
+                            const { numFailed } = await createLinkBulk(new Set(edgesForTopology));
+
+                            if (numFailed > 0) {
+                                setCreateLinkError(true);
+                            }
+                        } else {
+                            // set errors
                             setBookingErrors(errors);
                         }
                     }
@@ -104,13 +123,12 @@ const TopologyPageContent: React.FC = () => {
             } finally {
                 setTimeout(() => {
                     setLoading(false);
-                    setIsBookingDevices(false);
                 }, 2000); // 1-second delay after successful booking of all devices
             }
 
             hasFetchedData.current = true;
         })();
-    }, [user, authenticatedApiClient, id, setTopologyData, setLastUpdated, navigateTo]);
+    }, [user, authenticatedApiClient, id, setTopologyData, setLastUpdated, navigateTo, createLinkBulk]);
 
     return (
         <section className="flex flex-col h-screen">
@@ -118,7 +136,7 @@ const TopologyPageContent: React.FC = () => {
                 loading ? (
                     <div className="flex-1 flex justify-center items-center">
                         <h2 className="m-5 mr-2 pb-4">
-                             Loading
+                            Loading
                         </h2>
                         <div className="loader">
                             <div className="dot"></div>
@@ -138,6 +156,11 @@ const TopologyPageContent: React.FC = () => {
                         {bookingErrors.map((e, idx) => (
                             <span key={idx}>{e}</span>
                         ))}
+                        <h4 onClick={() => navigateTo('/dashboard/')} className="hover:cursor-pointer hover:text-blue-400 border-b-2 border-spacing-2 flex flex-row items-center gap-1"> <ArrowLeft /> Go back to Dashboard</h4>
+                    </div>
+                ) : createLinkError ? (
+                    <div className='flex-1 flex flex-col justify-center items-center'>
+                        <h1 className="text-2xl font-bold text-red-500">Failed to Create Link(s)</h1>
                         <h4 onClick={() => navigateTo('/dashboard/')} className="hover:cursor-pointer hover:text-blue-400 border-b-2 border-spacing-2 flex flex-row items-center gap-1"> <ArrowLeft /> Go back to Dashboard</h4>
                     </div>
                 ) : (
