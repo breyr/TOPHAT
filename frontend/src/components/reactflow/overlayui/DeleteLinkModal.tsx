@@ -1,12 +1,11 @@
 import { Spinner } from "@material-tailwind/react";
-import { Edge, useEdges, useReactFlow } from "@xyflow/react";
-import { LinkRequest } from "common";
+import { useEdges } from "@xyflow/react";
 import { Cable, Undo2 } from "lucide-react";
 import { useEffect, useState } from "react";
-import { useAuth } from "../../../hooks/useAuth";
 import { useEscapeKey } from "../../../hooks/useEscapeKey";
-import { useToast } from "../../../hooks/useToast";
+import { useLinkOperations } from "../../../hooks/useLinkOperations";
 import { Device } from "../../../models/Device";
+import { CustomEdge } from "../../../types/frontend";
 import { MultiSelect, Option } from "../../MultiSelect";
 
 interface DeleteLinkModalProps {
@@ -14,19 +13,9 @@ interface DeleteLinkModalProps {
     onClose: () => void;
 }
 
-interface CustomEdge extends Edge {
-    data: {
-        sourcePort: string;
-        targetPort: string;
-    }
-}
-
 export default function DeleteLinkModal({ deviceData, onClose }: DeleteLinkModalProps) {
-    const { authenticatedApiClient } = useAuth();
-    const { addToast, updateToast } = useToast();
-    const { setEdges } = useReactFlow();
+    const { deleteLinkBulk } = useLinkOperations();
     const edges = useEdges<CustomEdge>();
-
     const [availableConnections, setAvailableConnections] = useState<Option[]>([]);
     const [selectedConnections, setSelectedConnections] = useState<Set<Option>>(new Set());
     const [isDeleting, setIsDeleting] = useState<boolean>(false);
@@ -58,97 +47,7 @@ export default function DeleteLinkModal({ deviceData, onClose }: DeleteLinkModal
     const handleDeleteLinks = async () => {
         onClose();
         setIsDeleting(true);
-        const deletedConnectionIds = new Set<string>();
-
-        const deletePromises = Array.from(selectedConnections).map(async (selectedConnection) => {
-            const toastId = Date.now().toString();
-            const connectionLabel = selectedConnection.label;
-            addToast({ id: toastId, title: 'Deleting Link', body: `Deleting ${connectionLabel}`, status: 'pending' });
-
-            try {
-                const connectionInfo = availableConnections.find(c => c.value === selectedConnection.value);
-                if (!connectionInfo) {
-                    updateToast(toastId, 'error', 'Connection information not found.');
-                    return;
-                }
-
-                const firstDeviceConnections = await authenticatedApiClient.getConnectionsByDeviceName(connectionInfo.firstLabDevice);
-                if (!connectionInfo.secondLabDevice) {
-                    updateToast(toastId, 'error', 'Second lab device not selected.');
-                    return;
-                }
-                const secondDeviceConnections = await authenticatedApiClient.getConnectionsByDeviceName(connectionInfo.secondLabDevice);
-
-                const firstConnectionInfo = firstDeviceConnections.data?.find(c => c.labDevicePort === connectionInfo.firstLabDevicePort);
-                const secondConnectionInfo = secondDeviceConnections.data?.find(c => c.labDevicePort === connectionInfo.secondLabDevicePort);
-
-                if (!firstConnectionInfo || !secondConnectionInfo) {
-                    updateToast(toastId, 'error', 'Connection information not found.');
-                    return;
-                }
-
-                const interconnectDevices = await authenticatedApiClient.getDevicesByType('INTERCONNECT');
-                const firstInterconnectInfo = interconnectDevices.data?.find(d => d.name === firstConnectionInfo.interconnectDeviceName);
-                const secondInterconnectInfo = interconnectDevices.data?.find(d => d.name === secondConnectionInfo.interconnectDeviceName);
-
-                if (!firstInterconnectInfo || !secondInterconnectInfo) {
-                    updateToast(toastId, 'error', 'Interconnect information not found. Please message an Administrator.');
-                    return;
-                }
-
-                if (firstInterconnectInfo.deviceNumber == null || firstInterconnectInfo.username == null || firstInterconnectInfo.password == null || firstInterconnectInfo.secretPassword == null ||
-                    secondInterconnectInfo.deviceNumber == null || secondInterconnectInfo.username == null || secondInterconnectInfo.password == null || secondInterconnectInfo.secretPassword == null) {
-                    updateToast(toastId, 'error', 'Interconnect is not configured properly. Please message an Administrator.');
-                    return;
-                }
-
-                const ip1 = firstInterconnectInfo.ipAddress ?? 'none';
-                const ip2 = secondInterconnectInfo.ipAddress ?? 'none';
-
-                if (ip1 === 'none' || ip2 === 'none') {
-                    updateToast(toastId, 'error', 'Interconnect is not configured properly. Please message an Administrator.');
-                    return;
-                }
-
-                const removePortNumber = (port: string) => port.replace(/\/\d+$/, '/');
-
-                const interconnect1Prefix = removePortNumber(firstConnectionInfo.interconnectDevicePort);
-                const interconnect2Prefix = removePortNumber(secondConnectionInfo.interconnectDevicePort);
-
-                const offsetPort1 = Number(firstConnectionInfo.interconnectDevicePort.split('/').pop()) * firstInterconnectInfo.deviceNumber;
-                const offsetPort2 = Number(secondConnectionInfo.interconnectDevicePort.split('/').pop()) * secondInterconnectInfo.deviceNumber;
-
-                const deleteLinkPayload: LinkRequest = {
-                    interconnect1IP: ip1,
-                    interconnect1Prefix,
-                    interconnect2IP: ip2,
-                    interconnect2Prefix,
-                    interconnectPortID1: offsetPort1,
-                    interconnectPortID2: offsetPort2,
-                    username: firstInterconnectInfo.username,
-                    password: firstInterconnectInfo.password,
-                    secret: firstInterconnectInfo.secretPassword
-                };
-
-                const res = await authenticatedApiClient.clearLink(deleteLinkPayload);
-                if ((res as any).status !== 'success') {
-                    updateToast(toastId, 'error', 'Failed to delete link.');
-                    console.error("Failed to delete link");
-                    return;
-                }
-
-                updateToast(toastId, 'success', 'Successfully deleted link');
-                deletedConnectionIds.add(selectedConnection.value);
-            } catch (error) {
-                console.error("Error deleting link:", error);
-                updateToast(toastId, 'error', `Error deleting link: ${connectionLabel}. Please contact an Administrator.`);
-            }
-        });
-
-        await Promise.all(deletePromises);
-
-        // update edges to remove those deleted
-        setEdges((prevEdges) => prevEdges.filter(edge => !deletedConnectionIds.has(edge.id)));
+        deleteLinkBulk(selectedConnections);
         setIsDeleting(false);
     };
 

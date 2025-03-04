@@ -5,8 +5,8 @@ export interface Option {
     label: string;
     firstLabDevice: string;
     firstLabDevicePort: string;
-    secondLabDevice: string | null | undefined;
-    secondLabDevicePort: string | null | undefined;
+    secondLabDevice: string;
+    secondLabDevicePort: string;
 }
 
 interface MultiSelectProps {
