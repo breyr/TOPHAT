@@ -73,4 +73,10 @@ export function substringFromFirstNumber(port: string) {
         return port.substring(0, 3) + port.substring(idx);
     }
     return "";
-}
+};
+
+// validate email format
+export function validateEmail(email: string) {
+    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return re.test(String(email).toLowerCase());
+};

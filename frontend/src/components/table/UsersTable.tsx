@@ -3,7 +3,7 @@ import { CircleMinus, Download, Loader2, UserRoundPlus } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import DataTable from "react-data-table-component";
 import { useAuth } from "../../hooks/useAuth";
-import { generateTempPassword } from "../../lib/helpers";
+import { generateTempPassword, validateEmail } from "../../lib/helpers";
 import { User } from "../../models/User";
 import customStyles from "./dataTableStyles";
 
@@ -15,12 +15,6 @@ export default function UsersTable() {
 
     // Store pending updates in a ref to prevent unnecessary re-renders
     const pendingUpdates = useRef<{ [key: string]: NodeJS.Timeout }>({});
-
-    // validate email format
-    const validateEmail = (email: string) => {
-        const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        return re.test(String(email).toLowerCase());
-    };
 
     // check if email is unique
     const isEmailUnique = async (email: string) => {

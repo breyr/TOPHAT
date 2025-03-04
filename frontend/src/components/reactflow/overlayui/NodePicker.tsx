@@ -41,9 +41,9 @@ export default function NodePicker() {
         setUsedDevices(new Set(deviceNames));
     }, [nodes]);
 
-    // socket listener for when devices get booked
+    // socket listeners
     useEffect(() => {
-        const unsubscribe = on(EmitTypes.BookDevice, (data) => {
+        const bookUnsubscribe = on(EmitTypes.BookDevice, (data) => {
             const bookedDevice = data.bookedDevice;
 
             if (bookedDevice) {
@@ -53,12 +53,8 @@ export default function NodePicker() {
                 })
             }
         });
-        return unsubscribe;
-    }, [on]);
 
-    // socket listener for when devices get unbooked
-    useEffect(() => {
-        const unsubscribe = on(EmitTypes.UnbookDevice, (data) => {
+        const unbookUnsubscribe = on(EmitTypes.UnbookDevice, (data) => {
             const unbookedDevice = data.unbookedDevice;
 
             if (unbookedDevice) {
@@ -68,7 +64,11 @@ export default function NodePicker() {
                 })
             }
         });
-        return unsubscribe;
+
+        return () => {
+            bookUnsubscribe();
+            unbookUnsubscribe();
+        }
     }, [on]);
 
     return (
