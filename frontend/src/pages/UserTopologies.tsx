@@ -65,6 +65,14 @@ export default function UserTopologiesPage() {
             const topology = getResponse.data;
 
             if (topology) {
+                const deletedTopology = topologies.find((t) => t.id === topologyId);
+                const deletedTopologyIndex = topologies.findIndex((t) => t.id === topologyId);
+
+                // Update UI - remove the topology immediately
+                setTopologies((prevTopologies) =>
+                    prevTopologies.filter(t => t.id !== deletedTopology?.id)
+                );
+
                 // Unbook devices first
                 await unbookDevicesInTopology(topology);
 
@@ -82,13 +90,23 @@ export default function UserTopologiesPage() {
                 const numFailures = await deleteLinkBulk(new Set(edgesForTopology));
 
                 if (numFailures === 0) {
-                    // Then delete the topology
+                    // then delete the topology
                     await authenticatedApiClient.deleteTopology(topologyId);
+                } else {
+                    // add topology back
+                    setTopologies((prevTopologies) => {
+                        const newTopologies = [...prevTopologies];
 
-                    // Update UI regardless of what the delete response contains
-                    setTopologies((prevTopologies) =>
-                        prevTopologies.filter(t => t.id !== topologyId)
-                    );
+                        // if we have a valid index and a deleted topology
+                        if (deletedTopologyIndex >= 0 && deletedTopology) {
+                            // insert back at original position
+                            newTopologies.splice(deletedTopologyIndex, 0, deletedTopology);
+                        } else if (deletedTopology) {
+                            newTopologies.push(deletedTopology);
+                        }
+
+                        return newTopologies;
+                    });
                 }
             }
         } catch (error) {
@@ -105,6 +123,15 @@ export default function UserTopologiesPage() {
             const topology = getResponse.data;
 
             if (topology) {
+                const archivedTopology = topologies.find((t) => t.id === topologyId);
+                const archivedTopologyIndex = topologies.findIndex((t) => t.id === topologyId);
+
+                // Update UI - remove the topology immediately
+                setTopologies((prevTopologies) =>
+                    prevTopologies.filter(t => t.id !== archivedTopology?.id)
+                );
+
+
                 // Unbook devices first
                 await unbookDevicesInTopology(topology);
 
@@ -126,11 +153,21 @@ export default function UserTopologiesPage() {
                     await authenticatedApiClient.updateTopology(topologyId, {
                         archived: true
                     });
+                } else {
+                    // add topology back
+                    setTopologies((prevTopologies) => {
+                        const newTopologies = [...prevTopologies];
 
-                    // Update UI regardless of what the update response contains
-                    setTopologies((prevTopologies) =>
-                        prevTopologies.filter(t => t.id !== topologyId)
-                    );
+                        // if we have a valid index and a deleted topology
+                        if (archivedTopologyIndex >= 0 && archivedTopology) {
+                            // insert back at original position
+                            newTopologies.splice(archivedTopologyIndex, 0, archivedTopology);
+                        } else if (archivedTopology) {
+                            newTopologies.push(archivedTopology);
+                        }
+
+                        return newTopologies;
+                    });
                 }
 
             }
