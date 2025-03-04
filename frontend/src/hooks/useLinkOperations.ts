@@ -208,10 +208,10 @@ export function useLinkOperationsBase() {
         successCount = results.filter(r => r.success).length;
 
         if (successCount === numSelectedConnections) {
-            updateToast(toastId, 'success', 'Successfully Cleared Links',
-                `All ${numSelectedConnections} link${numSelectedConnections > 1 ? 's were' : ' was'} successfully cleared`);
+            updateToast(toastId, 'success', 'Successfully Cleared Link(s)',
+                `${numSelectedConnections} link${numSelectedConnections > 1 ? 's were' : ' was'} successfully cleared`);
         } else {
-            updateToast(toastId, 'error', 'Partially Cleared Links',
+            updateToast(toastId, 'error', 'Partially Cleared Link(s)',
                 `${successCount} of ${numSelectedConnections} link${numSelectedConnections > 1 ? 's were' : ' was'} successfully cleared`);
         }
 
@@ -339,8 +339,8 @@ export function useLinkOperations() {
         if (successCount === numSelectedConnections) {
             addToast({
                 id: toastId,
-                title: 'Successfully Cleared Links',
-                body: `All ${numSelectedConnections} link${numSelectedConnections > 1 ? 's were' : ' was'} successfully cleared`,
+                title: 'Successfully Cleared Link(s)',
+                body: `${numSelectedConnections} link${numSelectedConnections > 1 ? 's were' : ' was'} successfully cleared`,
                 status: 'success'
             });
         } else {

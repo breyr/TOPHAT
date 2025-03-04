@@ -72,15 +72,34 @@ export default function ContextMenu({
     }, [edges, deviceData]);
 
     const deleteNode = useCallback(async () => {
-        if (deviceData) {
-            const numFailures = await deleteLinkBulk(new Set(currentEdges));
-            // delete node only if there are 0 failures
-            if (numFailures === 0) {
+        if (!deviceData) {
+            onClick(); // Close the context menu if no device data
+            return;
+        }
+
+        // Note: unbooking logic is kept within TopologyCanvas.tsx
+        try {
+            // Check if the device has any edges
+            const edgesForDevice = edges.filter(e => e.source === deviceData.name || e.target === deviceData.name);
+            console.log(edgesForDevice);
+            if (edgesForDevice.length > 0) {
+                // attempt to delete all links
+                const numFailures = await deleteLinkBulk(new Set(currentEdges));
+
+                // only remove the node if all links were successfully deleted
+                if (numFailures === 0) {
+                    setNodes((nodes) => nodes.filter((n) => n.data.deviceData?.id !== deviceData.id));
+                }
+            } else {
+                // unbook device
                 setNodes((nodes) => nodes.filter((n) => n.data.deviceData?.id !== deviceData.id));
             }
-            onClick();
+        } catch (error) {
+            console.error("Error deleting node:", error);
+        } finally {
+            onClick(); // close the context menu
         }
-    }, [deviceData, setNodes]);
+    }, [deviceData, setNodes, currentEdges]);
 
     return (
         <div
