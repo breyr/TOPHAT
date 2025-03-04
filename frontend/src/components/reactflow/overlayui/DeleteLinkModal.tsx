@@ -4,6 +4,7 @@ import { LinkRequest } from "common";
 import { Cable, Undo2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useAuth } from "../../../hooks/useAuth";
+import { useEscapeKey } from "../../../hooks/useEscapeKey";
 import { useToast } from "../../../hooks/useToast";
 import { Device } from "../../../models/Device";
 import { MultiSelect, Option } from "../../MultiSelect";
@@ -30,6 +31,8 @@ export default function DeleteLinkModal({ deviceData, onClose }: DeleteLinkModal
     const [selectedConnections, setSelectedConnections] = useState<Set<Option>>(new Set());
     const [isDeleting, setIsDeleting] = useState<boolean>(false);
 
+    useEscapeKey(onClose);
+
     useEffect(() => {
         const edgesForDevice = edges.filter(e => e.source === deviceData?.name).map(e => ({
             value: e.id,
@@ -41,18 +44,6 @@ export default function DeleteLinkModal({ deviceData, onClose }: DeleteLinkModal
         }));
         setAvailableConnections(edgesForDevice);
     }, [edges, deviceData]);
-
-    useEffect(() => {
-        const handleEsc = (event: KeyboardEvent) => {
-          if (event.key === "Escape") {
-            onClose();
-          }
-        };
-        document.addEventListener("keydown", handleEsc);
-        return () => {
-          document.removeEventListener("keydown", handleEsc);
-        };
-      }, []);
 
     const handleSelectChange = (selectedOption: Option) => {
         const selectedEdges = new Set(selectedConnections);
@@ -167,7 +158,7 @@ export default function DeleteLinkModal({ deviceData, onClose }: DeleteLinkModal
                 <div className="flex flex-row justify-between items-center">
                     <h3 className="text-xl font-bold">Delete Link(s) for {deviceData?.name || "Lab Devices"}</h3>
                     <button onClick={onClose} className="r-btn text-blue-400 hover:text-blue-500 flex items-center">
-                        Back <Undo2 className="ml-1" size={18}/>
+                        Back <Undo2 className="ml-1" size={18} />
                     </button>
                 </div>
                 <div className="mb-4 p-4">

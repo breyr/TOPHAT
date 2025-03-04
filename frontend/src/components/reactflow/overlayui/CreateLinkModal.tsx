@@ -3,6 +3,7 @@ import { LinkRequest } from "common";
 import { Cable, Undo2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useAuth } from "../../../hooks/useAuth";
+import { useEscapeKey } from "../../../hooks/useEscapeKey";
 import { useToast } from "../../../hooks/useToast";
 import { generatePorts } from "../../../lib/helpers";
 import { Device } from "../../../models/Device";
@@ -26,23 +27,13 @@ export default function CreateLinkModal({ deviceData, currentDevicePorts, labDev
     const [filteredLabDevices] = useState<Device[]>(labDevices);
     const [occupiedPorts, setOccupiedPorts] = useState<string[]>([]);
 
+    useEscapeKey(onClose);
+
     useEffect(() => {
         const edges = getEdges();
         const ports = edges.map((edge: Edge) => edge.id.split('-').filter((port: string) => port !== 'edge'));
         setOccupiedPorts(ports.flat());
     }, [getEdges]);
-
-    useEffect(() => {
-        const handleEsc = (event: KeyboardEvent) => {
-            if (event.key === "Escape") {
-                onClose();
-            }
-        };
-        document.addEventListener("keydown", handleEsc);
-        return () => {
-            document.removeEventListener("keydown", handleEsc);
-        };
-    }, []);
 
     useEffect(() => {
         if (deviceData?.name) {

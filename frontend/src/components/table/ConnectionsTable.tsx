@@ -2,6 +2,7 @@ import { CreateConnectionRequestPayload } from 'common';
 import { useEffect, useMemo, useState } from 'react';
 import DataTable from 'react-data-table-component';
 import { useAuth } from '../../hooks/useAuth';
+import { generatePorts } from '../../lib/helpers';
 import { Connection } from '../../models/Connection';
 import { Device } from '../../models/Device';
 import customStyles from './dataTableStyles';
@@ -10,15 +11,6 @@ interface ConnectionsTableProps {
     interconnectDevices: Device[];
     labDevices: Device[];
 }
-
-// utility function to generate ports from a port definition string
-const generatePorts = (portDefinition: string): string[] => {
-    const [prefix, range] = portDefinition.split('|');
-    if (!range) return [];
-    const [start, end] = range.split('-').map(Number);
-    if (isNaN(start) || isNaN(end)) return [];
-    return Array.from({ length: end - start + 1 }, (_, i) => `${prefix}${start + i}`);
-};
 
 function ConnectionsTable({ interconnectDevices, labDevices }: ConnectionsTableProps) {
     const { authenticatedApiClient } = useAuth();

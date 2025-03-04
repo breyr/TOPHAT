@@ -1,5 +1,5 @@
 import { CircleMinus, CirclePlus, Save } from 'lucide-react';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import DataTable from 'react-data-table-component';
 import customStyles from './dataTableStyles';
 
@@ -19,7 +19,6 @@ const DevicePortsTable: React.FC<DevicePortsTableProps> = ({ deviceId, ports, on
 
     const [devicePorts, setDevicePorts] = useState<Port[]>([]);
     const [initialPorts, setInitialPorts] = useState<string>('');
-    const [isSaveDisabled, setIsSaveDisabled] = useState<boolean>(true);
     const [currentPage, setCurrentPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(5);
 
@@ -40,17 +39,19 @@ const DevicePortsTable: React.FC<DevicePortsTableProps> = ({ deviceId, ports, on
         }
     }, [ports]);
 
-    useEffect(() => {
+    const isSaveDisabled = useMemo(() => {
         const currentPorts = devicePorts.map((port) => `${port.prefix}|${port.range}`).join(',');
-        setIsSaveDisabled(currentPorts === initialPorts);
+        return currentPorts === initialPorts;
     }, [devicePorts, initialPorts]);
 
     const addNewRow = () => {
-        const blankPort: Port = {
-            prefix: '',
-            range: ''
-        };
-        setDevicePorts((prevPorts) => [...prevPorts, blankPort]);
+        setDevicePorts((prevPorts) => [
+            ...prevPorts,
+            {
+                prefix: '',
+                range: ''
+            }
+        ]);
     };
 
     const handleTableInputChange = (index: number, e: React.ChangeEvent<HTMLInputElement>) => {

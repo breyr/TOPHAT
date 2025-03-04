@@ -5,17 +5,19 @@ import LinkToast from './Toast';
 const ToastContainer: React.FC = () => {
     const { toasts, removeToast } = useToast();
 
+    const toastElements = toasts.map(t => (
+        <LinkToast
+            key={t.id}
+            title={t.title}
+            body={t.body}
+            status={t.status}
+            onDismiss={() => removeToast(t.id)}
+        />
+    ));
+
     return (
         <div className="fixed bottom-4 right-4 space-y-2 z-50 flex flex-col gap-2 max-w-96">
-            {toasts.map(toast => (
-                <LinkToast
-                    key={toast.id}
-                    title={toast.title}
-                    body={toast.body}
-                    status={toast.status}
-                    onDismiss={() => removeToast(toast.id)}
-                />
-            ))}
+            {toastElements}
         </div>
     );
 };
