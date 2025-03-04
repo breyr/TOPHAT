@@ -35,6 +35,7 @@ export default function ContextMenu({
     const [isCreateLinkModalOpen, setIsCreateLinkModalOpen] = useState<boolean>(false);
     const [isDeleteLinkModalOpen, setIsDeleteLinkModalOpen] = useState<boolean>(false);
     const [currentEdges, setCurrentEdges] = useState<Option[]>([]);
+    const [disableDelete, setDisableDelete] = useState<boolean>(false);
     const { setNodes } = useReactFlow<Node<{ deviceData?: Device; }>, Edge>();
 
     useEffect(() => {
@@ -79,6 +80,8 @@ export default function ContextMenu({
 
         // Note: unbooking logic is kept within TopologyCanvas.tsx
         try {
+            onClick(); // close the context menu
+            setDisableDelete(true);
             // Check if the device has any edges
             const edgesForDevice = edges.filter(e => e.source === deviceData.name || e.target === deviceData.name);
             console.log(edgesForDevice);
@@ -97,7 +100,7 @@ export default function ContextMenu({
         } catch (error) {
             console.error("Error deleting node:", error);
         } finally {
-            onClick(); // close the context menu
+            setDisableDelete(false);
         }
     }, [deviceData, setNodes, currentEdges]);
 
@@ -111,7 +114,7 @@ export default function ContextMenu({
                 <h3 className="text-lg font-bold">
                     {deviceData?.name}
                 </h3>
-                <button onClick={deleteNode}><Trash className="text-red-600 hover:bg-red-200 hover:rounded-full p-1" size={30} /></button>
+                <button onClick={deleteNode} disabled={disableDelete} className={disableDelete ? 'hover:cursor-not-allowed text-gray-400 bg-gray-50 rounded-full' : 'hover:cursor-pointer text-red-600'}><Trash className={`${!disableDelete && 'hover:bg-red-200'} hover:rounded-full p-1`} size={30} /></button>
             </div>
             {/* <div className="flex flex-col flex-wrap text-sm mb-2">
                 <span><strong>Model:</strong> {deviceData?.model}</span>

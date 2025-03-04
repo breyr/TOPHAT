@@ -185,7 +185,7 @@ export function useLinkOperationsBase() {
 
         addToast({
             id: toastId,
-            title: 'Deleting Link',
+            title: 'Clearing Link(s)',
             body: `Clearing ${numSelectedConnections} link${numSelectedConnections > 1 ? 's' : ''}`,
             status: 'pending'
         });
@@ -208,10 +208,10 @@ export function useLinkOperationsBase() {
         successCount = results.filter(r => r.success).length;
 
         if (successCount === numSelectedConnections) {
-            updateToast(toastId, 'success', 'Successfully Cleared Link(s)',
+            updateToast(toastId, 'success', 'Cleared Link(s)',
                 `${numSelectedConnections} link${numSelectedConnections > 1 ? 's were' : ' was'} successfully cleared`);
         } else {
-            updateToast(toastId, 'error', 'Partially Cleared Link(s)',
+            updateToast(toastId, 'error', 'Cleared Link(s)',
                 `${successCount} of ${numSelectedConnections} link${numSelectedConnections > 1 ? 's were' : ' was'} successfully cleared`);
         }
 
@@ -236,7 +236,7 @@ export function useLinkOperationsBase() {
 export function useLinkOperations() {
     const baseOperations = useLinkOperationsBase();
     const { getNodes, setEdges } = useReactFlow<Node<{ deviceData?: Device; }>, Edge>();
-    const { addToast } = useToast();
+    const { addToast, updateToast } = useToast();
 
     const createEdge = (params: LinkOperationParams) => {
         const { firstDeviceName, firstDevicePort, secondDeviceName, secondDevicePort } = params;
@@ -311,6 +311,16 @@ export function useLinkOperations() {
     };
 
     const deleteLinkBulk = async (selectedConnections: Set<Option>): Promise<number> => {
+        const numSelectedConnections = selectedConnections.size;
+        const toastId = Date.now().toString();
+
+        addToast({
+            id: toastId,
+            title: 'Clearing Link(s)',
+            body: `Attempting to clear ${numSelectedConnections} link${numSelectedConnections > 1 ? 's' : ''}`,
+            status: 'pending'
+        });
+
         const deletePromises = Array.from(selectedConnections).map(async (sc) => {
             const params = {
                 firstDeviceName: sc.firstLabDevice,
@@ -333,23 +343,11 @@ export function useLinkOperations() {
 
         const results = await Promise.all(deletePromises);
         const successCount = results.filter(r => r.success).length;
-        const numSelectedConnections = selectedConnections.size;
 
-        const toastId = Date.now().toString();
         if (successCount === numSelectedConnections) {
-            addToast({
-                id: toastId,
-                title: 'Successfully Cleared Link(s)',
-                body: `${numSelectedConnections} link${numSelectedConnections > 1 ? 's were' : ' was'} successfully cleared`,
-                status: 'success'
-            });
+            updateToast(toastId, 'success', 'Cleared Link(s)', `${numSelectedConnections} link${numSelectedConnections > 1 ? 's were' : ' was'} successfully cleared`);
         } else {
-            addToast({
-                id: toastId,
-                title: 'Partially Cleared Links',
-                body: `${successCount} of ${numSelectedConnections} link${numSelectedConnections > 1 ? 's were' : ' was'} successfully cleared`,
-                status: 'error'
-            });
+            updateToast(toastId, 'error', 'Cleared Link(s)', `${successCount} of ${numSelectedConnections} link${numSelectedConnections > 1 ? 's were' : ' was'} successfully cleared`);
         }
 
         return results.length - successCount;

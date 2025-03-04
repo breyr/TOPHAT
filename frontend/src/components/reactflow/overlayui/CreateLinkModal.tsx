@@ -65,13 +65,13 @@ export default function CreateLinkModal({ deviceData, currentDevicePorts, labDev
     }, [selectedSecondDevice, labDevices]);
 
     const handleCreateLink = async () => {
+        onClose();
         await createLink({
             firstDeviceName: selectedFirstDevice,
             firstDevicePort: selectedFirstDevicePort,
             secondDeviceName: selectedSecondDevice,
             secondDevicePort: selectedSecondDevicePort
         });
-        onClose();
     }
 
     return (
