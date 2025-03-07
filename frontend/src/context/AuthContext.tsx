@@ -168,13 +168,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
         const expirationTime = authState.user.exp! * 1000;
         const currentTime = Date.now();
-        const timeRemaining = expirationTime - currentTime;
-        const minutesRemaining = Math.floor(timeRemaining / 60000);
-        const secondsRemaining = Math.floor((timeRemaining % 60000) / 1000);
-
-        console.log(`[Auth] Token expires in: ${minutesRemaining}m ${secondsRemaining}s`);
-        console.log(`[Auth] Expiration time: ${new Date(expirationTime).toLocaleTimeString()}`);
-        console.log(`[Auth] Current time: ${new Date(currentTime).toLocaleTimeString()}`);
 
         if (expirationTime < currentTime) {
             console.log("[Auth] Token already expired, logging out");
@@ -182,8 +175,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         } else {
             // set refresh to trigger 1 minute before expiration
             const timeout = expirationTime - currentTime - 60 * 1000;
-            console.log(`[Auth] Setting refresh timeout for: ${Math.floor(timeout / 1000)}s from now`);
-            console.log(`[Auth] Refresh will trigger at: ${new Date(Date.now() + timeout).toLocaleTimeString()}`);
 
             const timerId = setTimeout(() => {
                 console.log("[Auth] Refresh timeout triggered, refreshing token");
