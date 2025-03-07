@@ -4,7 +4,7 @@ import jwt from 'jsonwebtoken';
 dotenv.config();
 
 const SECRET_KEY = process.env.SECRET_KEY as string;
-const EXPIRES_IN = '2m';
+const EXPIRES_IN = '1h';
 const REFRESH_EXPIRES_IN = '7d';
 
 export const createJwtToken = (id: number, username: string, email: string, accountType: string, accountStatus: string) => {
