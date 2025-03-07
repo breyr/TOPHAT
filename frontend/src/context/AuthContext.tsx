@@ -72,29 +72,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         }
     }, [logout]);
 
-    useEffect(() => {
-        const token = sessionStorage.getItem("token");
-        if (token) {
-            const user = jwtDecode<CustomJwtPayload>(token);
-            setAuthState({ token, user });
-
-            const expirationTime = user.exp! * 1000;
-            const currentTime = Date.now();
-
-            if (expirationTime < currentTime) {
-                logout();
-            } else {
-                const timeout = expirationTime - currentTime - 60 * 1000;
-                const timerId = setTimeout(() => {
-                    refreshAccessToken();
-                }, timeout);
-
-                return () => clearTimeout(timerId);
-            }
-        }
-        setLoadingAuthState(false);
-    }, [logout, refreshAccessToken]);
-
     const login = async (usernameOrEmail: string, password: string): Promise<{ success: boolean, message?: string }> => {
         try {
             const response = await fetch('/api/auth/login', {
@@ -166,6 +143,50 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const authenticatedApiClient = useMemo(() => new ApiClient({
         getToken
     }), [getToken]);
+
+    // check to see if we have a token stored on component mount
+    useEffect(() => {
+        const token = sessionStorage.getItem("token");
+        if (token) {
+            try {
+                const user = jwtDecode<CustomJwtPayload>(token);
+                console.log("[Auth] Token found in session storage");
+                setAuthState({ token, user });
+            } catch (error) {
+                console.error("[Auth] Error parsing token:", error);
+                logout();
+            }
+        } else {
+            console.log("[Auth] No token found in session storage");
+        }
+        setLoadingAuthState(false);
+    }, [logout]);
+
+    // useEffect for automatic token refresh
+    useEffect(() => {
+        if (!authState.user?.exp) return;
+
+        const expirationTime = authState.user.exp! * 1000;
+        const currentTime = Date.now();
+
+        if (expirationTime < currentTime) {
+            console.log("[Auth] Token already expired, logging out");
+            logout();
+        } else {
+            // set refresh to trigger 1 minute before expiration
+            const timeout = expirationTime - currentTime - 60 * 1000;
+
+            const timerId = setTimeout(() => {
+                console.log("[Auth] Refresh timeout triggered, refreshing token");
+                refreshAccessToken();
+            }, timeout);
+
+            return () => {
+                console.log("[Auth] Cleanup: clearing refresh timeout");
+                clearTimeout(timerId);
+            }
+        }
+    }, [authState.user, logout, refreshAccessToken]);
 
     return (
         <AuthContext.Provider

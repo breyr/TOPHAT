@@ -53,8 +53,8 @@ export class UserController {
 
     async refreshToken(req: AuthenticatedRequest, res: Response, next: NextFunction) {
         try {
-            const { userId, username, email, accountType, accountStatus } = req.jwt_payload as CustomJwtPayload;
-            const token = createJwtToken(userId, username, email, accountType, accountStatus);
+            const { id, username, email, accountType, accountStatus } = req.jwt_payload as CustomJwtPayload;
+            const token = createJwtToken(id, username, email, accountType, accountStatus);
 
             res.status(200).json({
                 message: 'Token refreshed successfully',
