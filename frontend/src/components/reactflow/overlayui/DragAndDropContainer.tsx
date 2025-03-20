@@ -1,3 +1,4 @@
+import { useAuth } from "../../../hooks/useAuth";
 import DraggableItem, { DraggableItemProps } from "./DraggableItem";
 
 interface DragAndDropContainerProps {
@@ -5,7 +6,8 @@ interface DragAndDropContainerProps {
 }
 
 export default function DragAndDropContainer({ devices }: DragAndDropContainerProps) {
-    const allDevicesUsed = devices.every(device => device.isUsed);
+    const { user } = useAuth();
+    const allDevicesUsed = devices.filter((device) => device.deviceData.userId != user?.id);
 
     return (
         <div className="flex flex-wrap overflow-y-auto min-h-28 py-0">

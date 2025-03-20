@@ -83,63 +83,39 @@ function ConnectionsTable({ interconnectDevices, labDevices }: ConnectionsTableP
             }
         };
 
-        if (labDevicesLoaded) {
-            const currentPortsMap: Record<string, Set<string>> = {};
+        if (!labDevicesLoaded) return;
 
-            labDevices.forEach(device => {
-                const portsArray = device.ports.split(',');
-                const generatedPorts = portsArray.flatMap(portDef => generatePorts(portDef));
-                currentPortsMap[device.name] = new Set(generatedPorts);
-            });
+        const newLabDevices = labDevices.filter(device => !seenLabDevices.has(device.name) && device.ports);
 
-            const newConnections: CreateConnectionRequestPayload[] = [];
-            // a new lab device if we didn't see it on the initial component mount AND the device has at least one port specification
-            const newLabDevices = labDevices.filter(device => !seenLabDevices.has(device.name) && device.ports);
+        if (newLabDevices.length === 0) return;
 
-            // generate new connections for the new device's ports
-            // update seenLabDevices
-            newLabDevices.forEach(device => {
-                const portsArray = device.ports.split(',');
-                const generatedPorts = portsArray.flatMap(portDef => generatePorts(portDef));
+        const newConnections: CreateConnectionRequestPayload[] = [];
 
-                generatedPorts.forEach(port => {
-                    newConnections.push({
-                        labDeviceName: device.name,
-                        labDevicePort: port,
-                        interconnectDeviceName: '',
-                        interconnectDevicePort: ''
-                    });
-                });
+        newLabDevices.forEach(device => {
+            const generatedPorts = device.ports.split(',').flatMap(portDef => generatePorts(portDef));
 
-                setSeenLabDevices(prev => new Set(prev).add(device.name));
-            });
-
-            // handle adding new connections if ports specifications have been added
-            labDevices.forEach(device => {
-                // get the lab device port for each connection
-                const existingPorts = connections
-                    .filter(conn => conn.labDeviceName === device.name)
-                    .map(conn => conn.labDevicePort);
-
-                // filter the new ports from the existing ports for this device
-                const newPorts = Array.from(currentPortsMap[device.name] || []).filter(port => !existingPorts.includes(port));
-
-                // add to new connections
-                newPorts.forEach(port => {
-                    newConnections.push({
-                        labDeviceName: device.name,
-                        labDevicePort: port,
-                        interconnectDeviceName: '',
-                        interconnectDevicePort: ''
-                    });
+            generatedPorts.forEach(port => {
+                newConnections.push({
+                    labDeviceName: device.name,
+                    labDevicePort: port,
+                    interconnectDeviceName: '',
+                    interconnectDevicePort: ''
                 });
             });
+        });
 
-            if (newConnections.length > 0) {
-                storeNewConnections(newConnections);
-            }
+        if (newConnections.length > 0) {
+            storeNewConnections(newConnections);
         }
-    }, [labDevices, labDevicesLoaded, seenLabDevices]);
+
+        // Update seenLabDevices *outside* the loop
+        setSeenLabDevices(prev => {
+            const updatedSet = new Set(prev);
+            newLabDevices.forEach(device => updatedSet.add(device.name));
+            return updatedSet;
+        });
+
+    }, [labDevices, labDevicesLoaded]);
 
     // handle deletion of connections when a lab device is deleted or ports are removed from a lab device
     useEffect(() => {

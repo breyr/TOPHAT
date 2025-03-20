@@ -1,6 +1,7 @@
 import { Edge, useReactFlow } from "@xyflow/react";
 import { Cable, Undo2 } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useAuth } from "../../../hooks/useAuth";
 import { useEscapeKey } from "../../../hooks/useEscapeKey";
 import { useLinkOperations } from "../../../hooks/useLinkOperations";
 import { generatePorts } from "../../../lib/helpers";
@@ -14,6 +15,7 @@ interface CreateLinkModalProps {
 }
 
 export default function CreateLinkModal({ deviceData, currentDevicePorts, labDevices, onClose }: CreateLinkModalProps) {
+    const { user } = useAuth();
     const { getEdges } = useReactFlow();
     const { createLink } = useLinkOperations();
     const [selectedFirstDevice, setSelectedFirstDevice] = useState<string>("");
@@ -94,7 +96,7 @@ export default function CreateLinkModal({ deviceData, currentDevicePorts, labDev
                                 disabled={!!deviceData?.name}
                             >
                                 <option value="">Select a Device</option>
-                                {labDevices.map((device) => (
+                                {labDevices.filter((device) => device.userId == null || device.userId == user?.id).map((device) => (
                                     <option key={device.id} value={device.name} disabled={device.name === selectedSecondDevice}>
                                         {device.name}
                                     </option>
@@ -124,7 +126,7 @@ export default function CreateLinkModal({ deviceData, currentDevicePorts, labDev
                                 className="block w-full mt-1 rounded-md bg-[#ffffff] focus:outline-none"
                             >
                                 <option value="">Select a Device</option>
-                                {filteredLabDevices.map((device) => (
+                                {filteredLabDevices.filter((device) => device.userId == null || device.userId == user?.id).map((device) => (
                                     <option key={device.id} value={device.name} disabled={device.name === selectedFirstDevice}>
                                         {device.name}
                                     </option>
