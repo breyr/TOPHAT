@@ -26,19 +26,25 @@ function ConnectionsTable({ interconnectDevices, labDevices }: ConnectionsTableP
     useEffect(() => {
         const initializeConnections = async () => {
             try {
+                // First, get all existing connections
                 const res = await authenticatedApiClient.getAllConnections();
                 setConnections(res.data ?? []);
+                
+                // Extract the unique set of lab device names from existing connections
+                const existingLabDeviceNames = new Set(
+                    (res.data ?? []).map(conn => conn.labDeviceName)
+                );
+                
+                // Initialize seenLabDevices with ALL lab devices that already have connections
+                setSeenLabDevices(existingLabDeviceNames);
             } catch (e) {
                 console.error(e);
             } finally {
                 setLabDevicesLoaded(true);
             }
         };
-
-        // only initialize connections when we haven't loaded the lab devices yet
+    
         if (!labDevicesLoaded && labDevices.length > 0) {
-            const initialSeenLabDevices = new Set(labDevices.map(device => device.name));
-            setSeenLabDevices(initialSeenLabDevices);
             initializeConnections();
         }
     }, [labDevices, labDevicesLoaded]);
