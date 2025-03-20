@@ -138,6 +138,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             ...prevState,
             user: updatedUser,
         }));
+
+        sessionStorage.setItem('userAccountStatus', updatedUser.accountStatus);
+        sessionStorage.setItem('userName', updatedUser.username);
     };
 
     const authenticatedApiClient = useMemo(() => new ApiClient({
@@ -150,7 +153,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         if (token) {
             try {
                 const user = jwtDecode<CustomJwtPayload>(token);
-                console.log("[Auth] Token found in session storage");
+                
+                // Check for saved account status and override token value if present
+                const savedAccountStatus = sessionStorage.getItem('userAccountStatus');
+
+                if (savedAccountStatus) {
+                    user.accountStatus = savedAccountStatus as AccountStatus;
+                }
+                
+
+                const savedUserName = sessionStorage.getItem('userName');
+                if (savedUserName) {
+                    user.username = savedUserName;
+                }
+                
                 setAuthState({ token, user });
             } catch (error) {
                 console.error("[Auth] Error parsing token:", error);
