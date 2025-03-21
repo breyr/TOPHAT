@@ -1,5 +1,5 @@
 import { CreateConnectionRequestPayload } from 'common';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import DataTable from 'react-data-table-component';
 import { useAuth } from '../../hooks/useAuth';
 import { generatePorts } from '../../lib/helpers';
@@ -14,73 +14,45 @@ interface ConnectionsTableProps {
 
 function ConnectionsTable({ interconnectDevices, labDevices }: ConnectionsTableProps) {
     const { authenticatedApiClient } = useAuth();
+
     const [connections, setConnections] = useState<Connection[]>([]);
-    const [usedPorts, setUsedPorts] = useState<Record<string, Set<string>>>({});
+    const [deviceNameToUsedPortsMap, setDeviceNameToUsedPortsMap] = useState<Record<string, Set<string>>>({});
     const [currentPage, setCurrentPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(5);
-    const [seenLabDevices, setSeenLabDevices] = useState<Set<string>>(new Set());
-    const [labDevicesLoaded, setLabDevicesLoaded] = useState(false);
+    const isCreatingNewConnectionsRef = useRef(false);
 
-    // initialize seenLabDevices when labDevices are loaded
-    // this useEffect is for the initial component mount where we render connections from the DB
+    // 1. Load connections from the database on mount
     useEffect(() => {
-        const initializeConnections = async () => {
+        const loadConnections = async () => {
             try {
-                // First, get all existing connections
                 const res = await authenticatedApiClient.getAllConnections();
                 setConnections(res.data ?? []);
-                
-                // Extract the unique set of lab device names from existing connections
-                const existingLabDeviceNames = new Set(
-                    (res.data ?? []).map(conn => conn.labDeviceName)
-                );
-                
-                // Initialize seenLabDevices with ALL lab devices that already have connections
-                setSeenLabDevices(existingLabDeviceNames);
             } catch (e) {
                 console.error(e);
-            } finally {
-                setLabDevicesLoaded(true);
             }
-        };
-    
-        if (!labDevicesLoaded && labDevices.length > 0) {
-            initializeConnections();
         }
-    }, [labDevices, labDevicesLoaded]);
+        loadConnections();
+    }, [authenticatedApiClient]);
 
-    // Set available port information for interconnect devices
-    const availablePortsMap = useMemo(() => {
-        const map: Record<string, string[]> = {};
-        interconnectDevices.forEach((d) => {
-            if (d.ports) {
-                const portsArray = d.ports.split(',');
-                const ports = portsArray.flatMap((portDef) => generatePorts(portDef));
-                map[d.name] = ports;
-            }
-        });
-        return map;
-    }, [interconnectDevices]);
-
-    // update usedPorts state when connections change
+    // Update deviceNameToUsedPortsMap when a user modified connections
     useEffect(() => {
-        const updatedUsedPorts: Record<string, Set<string>> = {};
-        connections.forEach(({ interconnectDeviceName, interconnectDevicePort }) => {
-            if (interconnectDeviceName && interconnectDevicePort) {
-                if (!updatedUsedPorts[interconnectDeviceName]) {
-                    updatedUsedPorts[interconnectDeviceName] = new Set();
+        const updatedUserPortsMap: Record<string, Set<string>> = {};
+        connections.forEach((connection) => {
+            if (connection.interconnectDeviceName && connection.interconnectDevicePort) {
+                if (!updatedUserPortsMap[connection.interconnectDeviceName]) {
+                    updatedUserPortsMap[connection.interconnectDeviceName] = new Set();
                 }
-                updatedUsedPorts[interconnectDeviceName].add(interconnectDevicePort);
+                updatedUserPortsMap[connection.interconnectDeviceName].add(connection.interconnectDevicePort);
             }
         });
-        setUsedPorts(updatedUsedPorts);
+        setDeviceNameToUsedPortsMap(updatedUserPortsMap);
     }, [connections]);
 
-    // handle new lab device connection creation and the addition of ports
+    // Handle new lab device connections
     useEffect(() => {
-        const storeNewConnections = async (connections: CreateConnectionRequestPayload[]) => {
+        const storeNewConnections = async (newConnections: CreateConnectionRequestPayload[]) => {
             try {
-                const res = await authenticatedApiClient.createConnectionBulk(connections);
+                const res = await authenticatedApiClient.createConnectionBulk(newConnections);
                 if (res.data) {
                     setConnections(prevConnections => [...prevConnections, ...res.data!]);
                 }
@@ -89,47 +61,34 @@ function ConnectionsTable({ interconnectDevices, labDevices }: ConnectionsTableP
             }
         };
 
-        if (!labDevicesLoaded) return;
-
-        const newLabDevices = labDevices.filter(device => !seenLabDevices.has(device.name) && device.ports);
-
-        if (newLabDevices.length === 0) return;
-
-        const newConnections: CreateConnectionRequestPayload[] = [];
-
-        newLabDevices.forEach(device => {
-            const generatedPorts = device.ports.split(',').flatMap(portDef => generatePorts(portDef));
-
-            generatedPorts.forEach(port => {
-                newConnections.push({
-                    labDeviceName: device.name,
-                    labDevicePort: port,
-                    interconnectDeviceName: '',
-                    interconnectDevicePort: ''
+        // we only want to create connections when 
+        // 1. the lab device has something for ports defined
+        // 2. its a device name that doesn't already have connections present
+        const newLabDevices = labDevices.filter(device => device.ports && !connections.some(c => c.labDeviceName === device.name));
+        if (newLabDevices.length > 0) {
+            const newConnections: CreateConnectionRequestPayload[] = [];
+            newLabDevices.forEach(device => {
+                const generatedPorts = device.ports.split(',').flatMap(portDef => generatePorts(portDef));
+                generatedPorts.forEach(port => {
+                    newConnections.push({
+                        labDeviceName: device.name,
+                        labDevicePort: port,
+                        interconnectDeviceName: '',
+                        interconnectDevicePort: ''
+                    });
                 });
             });
-        });
-
-        if (newConnections.length > 0) {
+            isCreatingNewConnectionsRef.current = true;
             storeNewConnections(newConnections);
         }
 
-        // Update seenLabDevices *outside* the loop
-        setSeenLabDevices(prev => {
-            const updatedSet = new Set(prev);
-            newLabDevices.forEach(device => updatedSet.add(device.name));
-            return updatedSet;
-        });
+    }, [labDevices, connections, authenticatedApiClient]);
 
-    }, [labDevices, labDevicesLoaded]);
-
-    // handle deletion of connections when a lab device is deleted or ports are removed from a lab device
+    // Handle deletion of lab device connections
     useEffect(() => {
-        // function to delete connections in the database
         const deleteConnectionsFromDb = async (connectionsToDelete: Connection[]) => {
             try {
                 const res = await authenticatedApiClient.deleteConnectionBulk(connectionsToDelete);
-                // update connections state to reflect deletions
                 if (res.data) {
                     setConnections(prevConnections =>
                         prevConnections.filter(conn =>
@@ -140,31 +99,24 @@ function ConnectionsTable({ interconnectDevices, labDevices }: ConnectionsTableP
             } catch (e) {
                 console.error(e);
             }
+        };
+
+        const existingLabDeviceNames = new Set(labDevices.map(device => device.name));
+        const connectionsToDelete = connections.filter(conn => !existingLabDeviceNames.has(conn.labDeviceName));
+        if (connectionsToDelete.length > 0) {
+            deleteConnectionsFromDb(connectionsToDelete);
         }
+    }, [labDevices, connections, authenticatedApiClient]);
 
-        if (labDevicesLoaded) {
-            const existingLabDeviceNames = new Set(labDevices.map(device => device.name));
-            const currentPortsMap: Record<string, Set<string>> = {};
-
-            labDevices.forEach(device => {
-                const portsArray = device.ports.split(',');
-                const generatedPorts = portsArray.flatMap(portDef => generatePorts(portDef));
-                currentPortsMap[device.name] = new Set(generatedPorts);
-            });
-
-            const connectionsToDelete = connections.filter(conn =>
-                !existingLabDeviceNames.has(conn.labDeviceName) ||
-                !currentPortsMap[conn.labDeviceName]?.has(conn.labDevicePort)
-            );
-
-            if (connectionsToDelete.length > 0) {
-                deleteConnectionsFromDb(connectionsToDelete);
-            }
-        }
-    }, [labDevices, labDevicesLoaded]); // do not add connections to this
-
-    // handle deletion of interconnect information for connections with deleted interconnect port or device
+    // Handle updates to lab device ports
     useEffect(() => {
+
+        // only handle updates if we aren't creating connections because a new lab device was created
+        if (isCreatingNewConnectionsRef.current) {
+            isCreatingNewConnectionsRef.current = false;
+            return;
+        }
+
         const updateConnectionsInDb = async (updatedConnections: Connection[]) => {
             try {
                 const res = await authenticatedApiClient.updateConnectionBulk(updatedConnections);
@@ -180,23 +132,90 @@ function ConnectionsTable({ interconnectDevices, labDevices }: ConnectionsTableP
             }
         };
 
-        if (labDevicesLoaded) {
-            const existingInterconnectDeviceNames = new Set(interconnectDevices.map(device => device.name));
-            const updatedConnections = connections.filter(conn =>
-                !existingInterconnectDeviceNames.has(conn.interconnectDeviceName) ||
-                !availablePortsMap[conn.interconnectDeviceName]?.includes(conn.interconnectDevicePort)
-            ).map(conn => ({
+        const storeNewConnections = async (newConnections: CreateConnectionRequestPayload[]) => {
+            try {
+                const res = await authenticatedApiClient.createConnectionBulk(newConnections);
+                if (res.data) {
+                    setConnections(prevConnections => [...prevConnections, ...res.data!]);
+                }
+            } catch (e) {
+                console.error(e);
+            }
+        };
+
+        const deleteConnectionsFromDb = async (connectionsToDelete: Connection[]) => {
+            try {
+                const res = await authenticatedApiClient.deleteConnectionBulk(connectionsToDelete);
+                if (res.data) {
+                    setConnections(prevConnections =>
+                        prevConnections.filter(conn =>
+                            !connectionsToDelete.some(toDelete => toDelete.id === conn.id)
+                        )
+                    );
+                }
+            } catch (e) {
+                console.error(e);
+            }
+        };
+
+        // get the current state of ports per lab device
+        const currentPortsMap: Record<string, Set<string>> = {};
+        labDevices.forEach(device => {
+            const portsArray = device.ports.split(',');
+            const generatedPorts = portsArray.flatMap(portDef => generatePorts(portDef));
+            currentPortsMap[device.name] = new Set(generatedPorts);
+        });
+
+        // identify connections with invalid ports and reset their labDevicePort
+        const updatedConnections = connections.filter(conn => !currentPortsMap[conn.labDeviceName]?.has(conn.labDevicePort))
+            .map(conn => ({
                 ...conn,
-                interconnectDeviceName: '',
-                interconnectDevicePort: '',
+                labDevicePort: ''
             }));
 
-            // Only update if there are changes
-            if (updatedConnections.length > 0) {
-                updateConnectionsInDb(updatedConnections);
-            }
+        if (updatedConnections.length > 0) {
+            updateConnectionsInDb(updatedConnections);
         }
-    }, [interconnectDevices, availablePortsMap, labDevicesLoaded]); // do not add connections to this
+
+        // identify and create new connections for newly added ports
+        console.log('[Update]' + connections);
+        const newConnections: CreateConnectionRequestPayload[] = [];
+        labDevices.forEach(device => {
+            const existingPorts = new Set(connections.filter(conn => conn.labDeviceName === device.name).map(conn => conn.labDevicePort));
+            const newPorts = Array.from(currentPortsMap[device.name]!).filter(port => !existingPorts.has(port));
+            newPorts.forEach(port => {
+                newConnections.push({
+                    labDeviceName: device.name,
+                    labDevicePort: port,
+                    interconnectDeviceName: '',
+                    interconnectDevicePort: ''
+                });
+            });
+        });
+        console.log('[Update]' + newConnections);
+
+        if (newConnections.length > 0) {
+            storeNewConnections(newConnections);
+        }
+
+        // identify and delete connections for removed ports
+        const connectionsToDelete = connections.filter(conn => !currentPortsMap[conn.labDeviceName]?.has(conn.labDevicePort));
+        if (connectionsToDelete.length > 0) {
+            deleteConnectionsFromDb(connectionsToDelete);
+        }
+    }, [labDevices, connections, authenticatedApiClient]);
+
+    const availablePortsMap = useMemo(() => {
+        const map: Record<string, string[]> = {};
+        interconnectDevices.forEach((d) => {
+            if (d.ports) {
+                const portsArray = d.ports.split(',');
+                const ports = portsArray.flatMap((portDef) => generatePorts(portDef));
+                map[d.name] = ports;
+            }
+        });
+        return map;
+    }, [interconnectDevices]);
 
     const handleDeviceChange = async (index: number, newDeviceName: string) => {
         const updatedConnections = [...connections];
@@ -212,7 +231,6 @@ function ConnectionsTable({ interconnectDevices, labDevices }: ConnectionsTableP
             await authenticatedApiClient.updateConnection(updatedConnections[index].id, updatedConnections[index]);
         } catch (e) {
             console.error(e);
-            // revert to the previous state if the API call fails
             setConnections(prevConnections => {
                 const revertedConnections = [...prevConnections];
                 revertedConnections[index] = previousConnection;
@@ -234,7 +252,6 @@ function ConnectionsTable({ interconnectDevices, labDevices }: ConnectionsTableP
             await authenticatedApiClient.updateConnection(updatedConnections[index].id, updatedConnections[index]);
         } catch (e) {
             console.error(e);
-            // revert to the previous state if the API call fails
             setConnections(prevConnections => {
                 const revertedConnections = [...prevConnections];
                 revertedConnections[index] = previousConnection;
@@ -245,7 +262,7 @@ function ConnectionsTable({ interconnectDevices, labDevices }: ConnectionsTableP
 
     const getFilteredPorts = (deviceName: string, selectedPort: string): string[] => {
         const allPorts = availablePortsMap[deviceName] || [];
-        const usedPortsForDevice = usedPorts[deviceName] || new Set();
+        const usedPortsForDevice = deviceNameToUsedPortsMap[deviceName] || new Set();
 
         return allPorts.filter(port => port === selectedPort || !usedPortsForDevice.has(port));
     };
