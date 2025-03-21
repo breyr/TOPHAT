@@ -1,6 +1,7 @@
 import { Edge, Node, useReactFlow } from "@xyflow/react";
 import { LinkRequest } from "common";
 import { Option } from "../components/MultiSelect";
+import { substringFromFirstNumber } from "../lib/helpers";
 import { Connection } from "../models/Connection";
 import { Device } from "../models/Device";
 import { useAuth } from "./useAuth";
@@ -75,7 +76,7 @@ export function useLinkOperationsBase() {
             if (createToastPerLink) addToast({
                 id: toastId!,
                 title: operationTitle,
-                body: `${operation === 'create' ? 'Connecting' : 'Disconnecting'} ${firstDeviceName} on port ${firstDevicePort} to ${secondDeviceName} on port ${secondDevicePort}`,
+                body: `${operation === 'create' ? 'Connecting' : 'Disconnecting'} ${firstDeviceName}[${substringFromFirstNumber(firstDevicePort)}] <> ${secondDeviceName}[${substringFromFirstNumber(secondDevicePort)}]`,
                 status: 'pending'
             });
 
@@ -209,10 +210,10 @@ export function useLinkOperationsBase() {
 
         if (successCount === numSelectedConnections) {
             updateToast(toastId, 'success', 'Cleared Link(s)',
-                `${numSelectedConnections} link${numSelectedConnections > 1 ? 's were' : ' was'} successfully cleared`);
+                `${numSelectedConnections} link${numSelectedConnections > 1 || numSelectedConnections == 0 ? 's were' : ' was'} successfully cleared`);
         } else {
             updateToast(toastId, 'error', 'Cleared Link(s)',
-                `${successCount} of ${numSelectedConnections} link${numSelectedConnections > 1 ? 's were' : ' was'} successfully cleared`);
+                `${successCount} of ${numSelectedConnections} link${numSelectedConnections > 1 || numSelectedConnections == 0 ? 's were' : ' was'} successfully cleared`);
         }
 
         const failedConnections = results.filter(r => !r.success).map(r => r.connection);
