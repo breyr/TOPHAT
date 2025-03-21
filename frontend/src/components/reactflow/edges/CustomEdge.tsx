@@ -27,7 +27,7 @@ export default function MultiPathEdge({
     sourcePosition,
     targetPosition,
     data,
-}: EdgeProps & { data?: { sourcePort?: string; targetPort?: string; edgeType?: number; forcePathType?: number } }) {
+}: EdgeProps & { data?: { sourcePort?: string; targetPort?: string; edgeType?: number; forcePathType?: number, status?: string } }) {
     // Get edge info from store
     const edgeInfo = useStore((s: ReactFlowState) => {
         // Get all edges between these nodes (both directions)
@@ -145,9 +145,15 @@ export default function MultiPathEdge({
 
     const { startPos, endPos } = calculateLabelPosition();
 
+    const edgeStyle = {
+        stroke: data?.status === 'deleting' ? 'oklch(0.808 0.114 19.571)' : 'lightgray',
+        strokeWidth: (data?.status === 'pending' || data?.status === 'deleting') ? 1 : 2,
+        strokeDasharray: (data?.status === 'pending' || data?.status === 'deleting') ? '2 4' : '0',
+    };
+
     return (
         <>
-            <BaseEdge path={path} />
+            <BaseEdge path={path} style={edgeStyle} />
             <EdgeLabelRenderer>
                 {data?.sourcePort && (
                     <div

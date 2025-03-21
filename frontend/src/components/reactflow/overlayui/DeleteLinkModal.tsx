@@ -4,6 +4,7 @@ import { Cable, Undo2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useEscapeKey } from "../../../hooks/useEscapeKey";
 import { useLinkOperations } from "../../../hooks/useLinkOperations";
+import { substringFromFirstNumber } from "../../../lib/helpers";
 import { Device } from "../../../models/Device";
 import { CustomEdge } from "../../../types/frontend";
 import { MultiSelect, Option } from "../../MultiSelect";
@@ -25,7 +26,7 @@ export default function DeleteLinkModal({ deviceData, onClose }: DeleteLinkModal
     useEffect(() => {
         const edgesForDevice = edges.filter(e => e.source === deviceData?.name).map(e => ({
             value: e.id,
-            label: `(${e.source}) ${e.data?.sourcePort ?? ''} -> (${e.target}) ${e.data?.targetPort ?? ''}`,
+            label: `${e.source}[${substringFromFirstNumber(e.data?.sourcePort) ?? ''}] <> ${e.target}[${substringFromFirstNumber(e.data?.targetPort) ?? ''}]`,
             firstLabDevice: e.source,
             firstLabDevicePort: e.data?.sourcePort ?? '',
             secondLabDevice: e.target,

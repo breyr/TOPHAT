@@ -256,6 +256,7 @@ export function useLinkOperations() {
                 data: {
                     sourcePort: firstDevicePort,
                     targetPort: secondDevicePort,
+                    status: 'pending',
                 }
             };
 
@@ -266,6 +267,14 @@ export function useLinkOperations() {
         return false;
     };
 
+    const updateEdgeStatus = (edgeId: string, status: string) => {
+        setEdges((edges) =>
+            edges.map((edge: Edge) =>
+                edge.id === edgeId ? { ...edge, data: { ...edge.data, status } } : edge
+            )
+        );
+    };
+
     const deleteEdge = (edgeId: string) => {
         setEdges((edges) =>
             edges.filter((edge: Edge) => edge.id !== edgeId)
@@ -274,9 +283,14 @@ export function useLinkOperations() {
 
     // Override the base methods to include ReactFlow operations
     const createLink = async (params: LinkOperationParams, createToastPerLink: boolean = true) => {
+        const edgeId = `edge-${params.firstDevicePort}-${params.secondDevicePort}`;
+        createEdge(params);
         const result = await baseOperations.createLink(params, createToastPerLink);
+        // Update edge status or remove edge based on the result
         if (result) {
-            createEdge(params);
+            updateEdgeStatus(edgeId, 'success');
+        } else {
+            deleteEdge(edgeId);
         }
         return result;
     };
@@ -292,8 +306,14 @@ export function useLinkOperations() {
 
             const result = await baseOperations.createLink(linkOptionParams, false);
 
+            const edgeId = `edge-${linkOptionParams.firstDevicePort}-${linkOptionParams.secondDevicePort}`;
+            createEdge(linkOptionParams);
+
+            // Update edge status or remove edge based on the result
             if (result) {
-                createEdge(linkOptionParams);
+                updateEdgeStatus(edgeId, 'success');
+            } else {
+                deleteEdge(edgeId);
             }
 
             return {
@@ -330,10 +350,16 @@ export function useLinkOperations() {
                 secondDevicePort: sc.secondLabDevicePort
             };
 
+            // update edge to make it dashed
+            updateEdgeStatus(sc.value, 'deleting'); // sc.value is the edge's unique id
+
             const result = await baseOperations.deleteLink(params, false);
 
+            // Update edge status or remove edge based on the result
             if (result) {
                 deleteEdge(sc.value); // sc.value is the edge's unique id
+            } else {
+                updateEdgeStatus(sc.value, 'failed'); // sc.value is the edge's unique id
             }
 
             return {
