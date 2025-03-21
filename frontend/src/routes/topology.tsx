@@ -17,7 +17,7 @@ type ErrorState = {
 };
 
 const TopologyPageContent: React.FC = () => {
-    const { setTopologyData, setLastUpdated } = useTopology();
+    const { topologyData, setTopologyData, setLastUpdated } = useTopology();
     const { createLinkBulk } = useLinkOperationsBase();
     const [error, setError] = useState<ErrorState>({ type: null, message: '' });
     const [loading, setLoading] = useState<boolean>(true);
@@ -129,6 +129,18 @@ const TopologyPageContent: React.FC = () => {
             hasFetchedData.current = true;
         })();
     }, [user, authenticatedApiClient, id, setTopologyData, setLastUpdated, navigateTo]);
+
+    // set page title
+    useEffect(() => {
+        if (!topologyData?.name) return;
+
+        document.title = topologyData.name;
+
+        // reset page title
+        return () => {
+            document.title = 'TOPHAT'
+        }
+    }, [topologyData?.name]);
 
     return (
         <section className="flex flex-col h-screen">
