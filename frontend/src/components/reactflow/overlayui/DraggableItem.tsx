@@ -21,7 +21,7 @@ const DraggableItem: React.FC<DraggableItemProps> = ({ nodeSvg, nodeType, device
             onDragStart={isAvailableToUser ? (event) => onDragStart(event, nodeType) : undefined}
             draggable={isAvailableToUser}
         >
-            <div className="w-12 h-12 mb-2">
+            <div className="w-12 h-12 mb-1">
                 {nodeSvg}
             </div>
             <p className='text-sm text-gray-700'>

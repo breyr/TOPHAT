@@ -11,7 +11,7 @@ export default function DragAndDropContainer({ devices }: DragAndDropContainerPr
     const allDevicesUsed = devices.filter((device) => device.deviceData.userId != user?.id);
 
     return (
-        <div className="flex flex-wrap overflow-y-auto min-h-28 py-0">
+        <div className="flex flex-wrap overflow-y-auto min-h-28 py-0 px-4">
             {
                 devices.length === 0 ? (
                     <div className="flex justify-center items-center w-full">

@@ -92,7 +92,7 @@ export default function NodePicker() {
             {/* Tab Button */}
             <div
                 className={`
-                fixed right-0
+                fixed right-[-2px]
                 mt-20
                 transform -rotate-90 origin-top-left
                 bg-blue-500 text-[#ffffff] cursor-pointer 

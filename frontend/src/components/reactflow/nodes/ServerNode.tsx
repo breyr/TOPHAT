@@ -33,7 +33,7 @@ export default function ServerNode(props: NodeProps<ServerNode>) {
                     isConnectable={false}
                 />
             </div>
-            <p className="absolute" style={{ bottom: '-1rem', fontSize: '0.5rem' }}>
+            <p className="absolute" style={{ bottom: '-0.85rem', fontSize: '0.5rem' }}>
                 {props.data.deviceData?.name}
             </p>
         </div>
