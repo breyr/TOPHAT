@@ -1,5 +1,4 @@
 import { Edge, Node, useEdges, useReactFlow } from "@xyflow/react";
-import { Trash } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { useAuth } from "../../../hooks/useAuth";
 import { useLinkOperations } from "../../../hooks/useLinkOperations";
@@ -23,8 +22,6 @@ export default function ContextMenu({
     deviceData,
     top,
     left,
-    right,
-    bottom,
     onClick
 }: ContextMenuProps) {
     const { authenticatedApiClient } = useAuth();
@@ -105,23 +102,16 @@ export default function ContextMenu({
     }, [deviceData, setNodes, currentEdges]);
 
     return (
-        <div
-            style={{ top, left, right, bottom }}
-            className="absolute z-10 h-40 w-52 overflow-y-auto bg-[#ffffff] border border-gray-300 rounded-md shadow-lg p-5 pt-4"
-            onClick={(event) => event.stopPropagation()}
-        >
-            <div className="mb-2 flex flex-row justify-between items-center">
-                <h3 className="text-lg font-bold">
-                    {deviceData?.name}
-                </h3>
-                <button onClick={deleteNode} disabled={disableDelete} className={disableDelete ? 'hover:cursor-not-allowed text-gray-400 bg-gray-50 rounded-full' : 'hover:cursor-pointer text-red-600'}><Trash className={`${!disableDelete && 'hover:bg-red-200'} hover:rounded-full p-1`} size={30} /></button>
+        <>
+            <div
+                style={{ top, left }}
+                className="absolute z-10 bg-gray-100 border border-gray-300 rounded-md shadow-lg p-1 flex flex-col gap-1"
+                onClick={(event) => event.stopPropagation()}
+            >
+                <button className="r-btn w-full hover:bg-gray-200 text-left" onClick={() => setIsCreateLinkModalOpen(true)}>Create Link</button>
+                <button className="r-btn w-full hover:bg-gray-200 text-left" onClick={() => setIsDeleteLinkModalOpen(true)}>Delete Link</button>
+                <button onClick={deleteNode} disabled={disableDelete} className="r-btn w-full hover:bg-red-200 text-left">Remove Device </button>
             </div>
-            {/* <div className="flex flex-col flex-wrap text-sm mb-2">
-                <span><strong>Model:</strong> {deviceData?.model}</span>
-                <span><strong>SN:</strong> {deviceData?.serialNumber}</span>
-            </div> */}
-            <button className="r-btn secondary w-full mb-3" onClick={() => setIsCreateLinkModalOpen(true)}>Create Link</button>
-            <button className="r-btn secondary danger w-full" onClick={() => setIsDeleteLinkModalOpen(true)}>Delete Link</button>
             {isCreateLinkModalOpen && deviceData && (
                 <CreateLinkModal
                     deviceData={deviceData}
@@ -136,6 +126,6 @@ export default function ContextMenu({
                     onClose={() => setIsDeleteLinkModalOpen(false)}
                 />
             )}
-        </div>
+        </>
     );
 }
