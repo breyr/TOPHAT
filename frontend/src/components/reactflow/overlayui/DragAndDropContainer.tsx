@@ -7,6 +7,7 @@ interface DragAndDropContainerProps {
 
 export default function DragAndDropContainer({ devices }: DragAndDropContainerProps) {
     const { user } = useAuth();
+    // all devices should be marked as in use when they have a value for userId that doesn't match the current user's id
     const allDevicesUsed = devices.filter((device) => device.deviceData.userId != user?.id);
 
     return (
@@ -16,7 +17,7 @@ export default function DragAndDropContainer({ devices }: DragAndDropContainerPr
                     <div className="flex justify-center items-center w-full">
                         <p className="italic text-gray-300">No devices.</p>
                     </div>
-                ) : allDevicesUsed ? (
+                ) : allDevicesUsed.length === 0 ? (
                     <div className="flex justify-center items-center w-full">
                         <p className="italic text-gray-300">No devices available.</p>
                     </div>
