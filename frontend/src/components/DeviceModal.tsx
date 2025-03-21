@@ -3,6 +3,7 @@ import React from "react";
 import { Device } from "../models/Device";
 import DeviceDescriptionTextArea from "./DeviceDescriptionTextArea";
 import DevicePortsTable from "./table/DevicePortsTable";
+import { useEscapeKey } from "../hooks/useEscapeKey";
 
 // deviceInformation is used for non-editing mode, viewing what is currently in the database
 // editingData is used for when a user is editing the device and hasn't saved the changes yet;
@@ -40,6 +41,9 @@ const DeviceModal: React.FC<DeviceModalProps> = ({
         if (onUpdateDescription) onUpdateDescription(deviceData!.id, updatedDescription);
         setIsOpen(false);
     }
+
+    // close the modal when the escape key is pressed
+    useEscapeKey(() => setIsOpen(false));
 
     return (
         <section className="bg-zinc-950 bg-opacity-50 w-full h-full fixed top-0 left-0 flex items-center justify-center z-50">
