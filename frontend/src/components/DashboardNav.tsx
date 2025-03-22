@@ -1,4 +1,3 @@
-import { GraduationCap } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
@@ -19,8 +18,8 @@ export default function DashboardNav() {
 
     return (
         <nav className="w-full flex flex-row items-center justify-between border-b-2 py-2 px-2">
-            <div className="flex flex-row gap-1 items-center">
-                <GraduationCap size={27} className="mx-2 pb-1" />
+            <div className="flex flex-row gap-2 items-center ml-2">
+                <img src="/hat.png" alt="Hat Icon" className="size-7" />
                 <h4 className="p-0 m-0 tracking-wider text-lg">TOP<span className="text-blue-500">HAT</span></h4>
             </div>
             <div className="flex flex-row items-center gap-2">

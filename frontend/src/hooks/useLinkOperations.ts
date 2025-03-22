@@ -153,6 +153,16 @@ export function useLinkOperationsBase() {
 
     const createLinkBulk = async (selectedConnections: Set<Option>): Promise<{ numFailed: number, numSucceed: number }> => {
         let successCount = 0;
+        const numSelectedConnections = selectedConnections.size;
+
+        const toastId = Date.now().toString();
+
+        addToast({
+            id: toastId,
+            title: 'Reinitializing Link(s)',
+            body: `Creating ${numSelectedConnections} link${numSelectedConnections > 1 ? 's' : ''} for preexisting node connections.`,
+            status: 'pending'
+        });
 
         const createPromises = Array.from(selectedConnections).map(async (sc) => {
             const linkOptionParams = {
@@ -172,6 +182,14 @@ export function useLinkOperationsBase() {
 
         const results = await Promise.all(createPromises);
         successCount = results.filter(r => r.success).length;
+
+        if (successCount === numSelectedConnections) {
+            updateToast(toastId, 'success', 'Reinitializing Link(s)',
+                `${numSelectedConnections} link${numSelectedConnections > 1 || numSelectedConnections == 0 ? 's were' : ' was'} successfully reinitialized.`);
+        } else {
+            updateToast(toastId, 'error', 'Reinitializing Link(s)',
+                `${successCount} of ${numSelectedConnections} link${numSelectedConnections > 1 || numSelectedConnections == 0 ? 's were' : ' was'} successfully reinitialized.`);
+        }
 
         return {
             numFailed: results.length - successCount,

@@ -1,4 +1,5 @@
 import { Checkbox, Typography } from '@material-tailwind/react';
+import { useTopology } from '../hooks/useTopology';
 
 export interface Option {
     value: string;
@@ -16,6 +17,7 @@ interface MultiSelectProps {
 }
 
 export function MultiSelect({ options, isDeleting, onChange }: MultiSelectProps) {
+    const { isReinintializingLinks } = useTopology();
     const handleCheckboxChange = (option: Option) => {
         onChange(option);
     };
@@ -28,7 +30,7 @@ export function MultiSelect({ options, isDeleting, onChange }: MultiSelectProps)
                         id={`checkbox-${option.value}`}
                         color="error"
                         onChange={() => handleCheckboxChange(option)}
-                        disabled={isDeleting}
+                        disabled={isDeleting || isReinintializingLinks}
                     >
                         <Checkbox.Indicator />
                     </Checkbox>
