@@ -53,7 +53,7 @@ export default function LinkToast({ title, body, status, onDismiss }: ToastProps
                                     </Typography>
                                 )}
                             </div>
-                            <Typography>{body}</Typography>
+                            <Typography type='p'>{body}</Typography>
                         </Alert.Content>
                     )
                 }

@@ -27,31 +27,107 @@ export default function MultiPathEdge({
     sourcePosition,
     targetPosition,
     data,
-}: EdgeProps & { data?: { sourcePort?: string; targetPort?: string; edgeType?: number; forcePathType?: number } }) {
-    // Get edge info from store
+}: EdgeProps & { data?: { sourcePort?: string; targetPort?: string; edgeType?: number; forcePathType?: number, status?: string } }) {
+    // Get edge info from store with improved bidirectional handling
     const edgeInfo = useStore((s: ReactFlowState) => {
-        // Get all edges between these nodes (both directions)
-        const allEdgesBetweenNodes = s.edges.filter(
-            (e) =>
-                (e.source === source && e.target === target) ||
-                (e.source === target && e.target === source)
+        // Find all edges between these two nodes (both directions)
+        const edgesBetweenNodes = s.edges.filter(e =>
+            (e.source === source && e.target === target) ||
+            (e.source === target && e.target === source)
         );
 
-        // Count edges going from source to target (same direction)
-        const parallelEdges = s.edges.filter(
-            (e) => e.source === source && e.target === target
+        // Group edges by their exact direction
+        const sourceToTargetEdges = edgesBetweenNodes.filter(e =>
+            e.source === source && e.target === target
+        );
+        const targetToSourceEdges = edgesBetweenNodes.filter(e =>
+            e.source === target && e.target === source
         );
 
-        // Find the index of the current edge among parallel edges
-        const edgeIndex = parallelEdges.findIndex((e) => e.id === id);
+        // Determine which direction group this edge belongs to
+        const isSourceToTarget = source === source && target === target;
 
-        // Get total count of edges
-        const totalEdgeCount = parallelEdges.length;
+        // Find index of this edge within its direction group
+        const edgesInSameDirection = isSourceToTarget ? sourceToTargetEdges : targetToSourceEdges;
+        const edgeIndex = edgesInSameDirection.findIndex(e => e.id === id);
+
+        // Count edges in each direction
+        const sourceToTargetCount = sourceToTargetEdges.length;
+        const targetToSourceCount = targetToSourceEdges.length;
+
+        // Determine if this is a bidirectional case (edges exist in both directions)
+        const hasBidirectionalEdges = sourceToTargetCount > 0 && targetToSourceCount > 0;
+
+        // Total number of edges between the nodes
+        const totalEdgeCount = sourceToTargetCount + targetToSourceCount;
+
+        let calculatedPathType;
+
+        if (data?.forcePathType !== undefined) {
+            // Use forced path type if provided
+            calculatedPathType = data.forcePathType;
+        } else if (data?.edgeType !== undefined) {
+            // Use provided edge type
+            calculatedPathType = data.edgeType;
+        } else if (hasBidirectionalEdges) {
+            // For bidirectional edges:
+            // Always make one edge straight when there's an odd total count
+            const shouldHaveStraightEdge = totalEdgeCount % 2 === 1;
+
+            if (shouldHaveStraightEdge) {
+                // When we have an odd total number of edges between nodes:
+                if (sourceToTargetCount >= targetToSourceCount) {
+                    // If source→target has more edges, make one of them straight
+                    if (isSourceToTarget && edgeIndex === 0) {
+                        calculatedPathType = 0; // First source→target edge is straight
+                    } else if (isSourceToTarget) {
+                        // Other source→target edges get positive curves
+                        calculatedPathType = 1 + ((edgeIndex - 1) * 2); // Odd numbers: 1, 3, 5...
+                    } else {
+                        // All target→source edges get negative curves
+                        calculatedPathType = -2 - (edgeIndex * 2); // Even negative numbers: -2, -4, -6...
+                    }
+                } else {
+                    // If target→source has more edges, make one of them straight
+                    if (!isSourceToTarget && edgeIndex === 0) {
+                        calculatedPathType = 0; // First target→source edge is straight
+                    } else if (!isSourceToTarget) {
+                        // Other target→source edges get negative curves
+                        calculatedPathType = -2 - ((edgeIndex - 1) * 2); // Even negative numbers: -2, -4, -6...
+                    } else {
+                        // All source→target edges get positive curves
+                        calculatedPathType = 1 + (edgeIndex * 2); // Odd numbers: 1, 3, 5...
+                    }
+                }
+            } else {
+                // Even total edge count - all edges are curved
+                if (isSourceToTarget) {
+                    // Source→Target edges get positive curves
+                    calculatedPathType = 1 + (edgeIndex * 2); // Odd numbers: 1, 3, 5...
+                } else {
+                    // Target→Source edges get negative curves
+                    calculatedPathType = -2 - (edgeIndex * 2); // Even negative numbers: -2, -4, -6...
+                }
+            }
+        } else {
+            // Single direction case
+            // If odd number of edges, make the first one straight and the rest curved
+            if (edgesInSameDirection.length % 2 === 1 && edgeIndex === 0) {
+                calculatedPathType = 0; // First edge is straight
+            } else {
+                // For curved edges, alternate between positive and negative
+                const indexOffset = edgesInSameDirection.length % 2 === 1 ? 1 : 0;
+                const curveIndex = edgeIndex + indexOffset;
+                calculatedPathType = curveIndex % 2 === 0 ? (curveIndex + 1) : -(curveIndex + 1);
+            }
+        }
 
         return {
-            edgeIndex,
-            totalEdgeCount,
-            allEdgesCount: allEdgesBetweenNodes.length
+            pathType: calculatedPathType,
+            totalEdgeCount: edgesInSameDirection.length,
+            allEdgesCount: totalEdgeCount,
+            hasBidirectionalEdges,
+            isSourceToTarget
         };
     });
 
@@ -64,55 +140,67 @@ export default function MultiPathEdge({
         targetPosition,
     };
 
-    // Determine path type
-    // 1. Use forced path type if provided in data
-    // 2. Otherwise, calculate based on index
-    const pathType = data?.forcePathType !== undefined
-        ? data.forcePathType
-        : (data?.edgeType !== undefined ? data.edgeType : edgeInfo.edgeIndex);
+    // Use the calculated path type
+    const pathType = edgeInfo.pathType;
 
-    // For more than 3 edges, we need a strategy to distribute them
+    // Calculate angle and distance to determine optimal curve parameters
+    const dx = targetX - sourceX;
+    const dy = targetY - sourceY;
+
+    // Determine connection orientation
+    const isVertical = Math.abs(dx) < 20; // Nearly vertical
+    const isHorizontal = Math.abs(dy) < 20; // Nearly horizontal
+
+    // Get appropriate offset based on path type and connection characteristics
     const getPathOffset = () => {
-        // Calculate base offset - depends on the total number of edges
-        // More edges = larger base offset to better separate them
-        const baseOffset = 40 + (edgeInfo.totalEdgeCount * 5);
+        // Base offset adjusted by connection type
+        let baseOffset;
+
+        if (isVertical) {
+            // For vertical connections, use a larger offset to spread edges horizontally
+            baseOffset = 50;
+        } else if (isHorizontal) {
+            // For horizontal connections
+            baseOffset = 35;
+        } else {
+            // For diagonal connections
+            baseOffset = 40;
+        }
 
         if (pathType === 0) {
-            // First edge is straight
+            // Straight edge
             return 0;
         } else {
-            // For other edges, calculate an appropriate offset
-            // Odd path types go above, even path types go below
-            const isAbove = pathType % 2 === 1;
+            // Get the absolute path type (ignoring sign)
+            const absPathType = Math.abs(pathType);
 
-            // Calculate magnitude based on how far from the center we are
-            // (pathType + 1) / 2 gives us 1, 1, 2, 2, 3, 3, etc.
-            const magnitude = Math.ceil(pathType / 2) * baseOffset;
+            // Calculate magnitude based on path type
+            const magnitude = Math.ceil(absPathType / 2) * baseOffset;
 
-            // Apply direction based on whether it should be above or below
-            return isAbove ? magnitude : -magnitude;
+            // Use the sign of the path type to determine direction
+            return pathType > 0 ? magnitude : -magnitude;
         }
     };
 
     const offset = getPathOffset();
 
-    // calculate path based on path type and offset
+    // Calculate path based on path type and offset
     let path = '';
 
     if (pathType === 0) {
-        // first edge is straight
+        // Use straight path when pathType is 0
         [path] = getStraightPath(edgePathParams);
     } else {
-        // all other edges are curved with varying offsets
+        // Use curved path with calculated offset
         path = getCurvedPath(
             { sourceX, sourceY, targetX, targetY },
             offset
         );
     }
 
-    // calculate label positions based on the path type
+    // Calculate label positions based on the path
     const calculateLabelPosition = () => {
-        // base position calculations (percentage along the path)
+        // Base position calculations
         const startPos = {
             x: sourceX + (targetX - sourceX) * 0.2,
             y: sourceY + (targetY - sourceY) * 0.2
@@ -123,7 +211,7 @@ export default function MultiPathEdge({
             y: sourceY + (targetY - sourceY) * 0.8
         };
 
-        // if it's a curved path, adjust label positions to follow the curve
+        // Adjust for curve
         if (pathType !== 0) {
             const dx = targetX - sourceX;
             const dy = targetY - sourceY;
@@ -131,8 +219,7 @@ export default function MultiPathEdge({
             const perpX = -dy / length;
             const perpY = dx / length;
 
-            // add a scaled offset in the curve direction
-            // we use a factor to avoid placing labels too far from the visible path
+            // Scaled offset for label positioning
             const offsetFactor = 0.25;
             startPos.x += perpX * offset * offsetFactor;
             startPos.y += perpY * offset * offsetFactor;
@@ -145,9 +232,15 @@ export default function MultiPathEdge({
 
     const { startPos, endPos } = calculateLabelPosition();
 
+    const edgeStyle = {
+        stroke: data?.status === 'deleting' ? 'oklch(0.808 0.114 19.571)' : 'lightgray',
+        strokeWidth: (data?.status === 'pending' || data?.status === 'deleting') ? 1 : 2,
+        strokeDasharray: (data?.status === 'pending' || data?.status === 'deleting') ? '2 4' : '0',
+    };
+
     return (
         <>
-            <BaseEdge path={path} />
+            <BaseEdge path={path} style={edgeStyle} />
             <EdgeLabelRenderer>
                 {data?.sourcePort && (
                     <div

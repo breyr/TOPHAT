@@ -659,8 +659,3 @@ footer {
 .react-flow__edge {
     pointer-events: none;
 }
-
-.react-flow__edge-path {
-    stroke: lightgray;
-    stroke-width: 2;
-}
