@@ -19,16 +19,16 @@ export default function ServerNode(props: NodeProps<ServerNode>) {
                 <Handle
                     type="source"
                     id="source"
-                    position={Position.Right}
-                    className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-transparent"
+                    position={Position.Bottom}
+                    className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-transparent"
                     style={{ width: 10, height: 10 }}
                     isConnectable={false}
                 />
                 <Handle
                     type="target"
                     id="target"
-                    position={Position.Left}
-                    className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-transparent"
+                    position={Position.Bottom}
+                    className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-transparent"
                     style={{ width: 10, height: 10 }}
                     isConnectable={false}
                 />
