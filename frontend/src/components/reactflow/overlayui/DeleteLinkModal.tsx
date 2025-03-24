@@ -1,7 +1,7 @@
 import { Spinner } from "@material-tailwind/react";
 import { useEdges } from "@xyflow/react";
 import { Cable, Undo2 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useMemo, useState } from "react";
 import { useEscapeKey } from "../../../hooks/useEscapeKey";
 import { useLinkOperations } from "../../../hooks/useLinkOperations";
 import { substringFromFirstNumber } from "../../../lib/helpers";
@@ -17,22 +17,20 @@ interface DeleteLinkModalProps {
 export default function DeleteLinkModal({ deviceData, onClose }: DeleteLinkModalProps) {
     const { deleteLinkBulk } = useLinkOperations();
     const edges = useEdges<CustomEdge>();
-    const [availableConnections, setAvailableConnections] = useState<Option[]>([]);
     const [selectedConnections, setSelectedConnections] = useState<Set<Option>>(new Set());
     const [isDeleting, setIsDeleting] = useState<boolean>(false);
 
     useEscapeKey(onClose);
 
-    useEffect(() => {
-        const edgesForDevice = edges.filter(e => e.source === deviceData?.name).map(e => ({
+    const availableConnections = useMemo(() => {
+        return edges.filter(e => e.source === deviceData?.name).map(e => ({
             value: e.id,
-            label: `${e.source}[${substringFromFirstNumber(e.data?.sourcePort) ?? ''}] <> ${e.target}[${substringFromFirstNumber(e.data?.targetPort) ?? ''}]`,
+            label: `${e.source}[${substringFromFirstNumber(e.data?.sourcePort)}] <> ${e.target}[${substringFromFirstNumber(e.data?.targetPort)}]`,
             firstLabDevice: e.source,
             firstLabDevicePort: e.data?.sourcePort ?? '',
             secondLabDevice: e.target,
             secondLabDevicePort: e.data?.targetPort ?? '',
         }));
-        setAvailableConnections(edgesForDevice);
     }, [edges, deviceData]);
 
     const handleSelectChange = (selectedOption: Option) => {
@@ -56,26 +54,22 @@ export default function DeleteLinkModal({ deviceData, onClose }: DeleteLinkModal
         <section className="bg-zinc-950 bg-opacity-50 w-full h-full fixed top-0 left-0 flex items-center justify-center z-50">
             <div className="bg-[#ffffff] w-2/5 p-6 rounded-lg shadow-lg">
                 <div className="flex flex-row justify-between items-center">
-                    <h3 className="text-xl font-bold">Delete Link(s) for {deviceData?.name || "Lab Devices"}</h3>
+                    <h3 className="text-xl font-bold">Delete Link(s) Originating From {deviceData?.name || "Lab Devices"}</h3>
                     <button onClick={onClose} className="r-btn text-blue-400 hover:text-blue-500 flex items-center">
                         Back <Undo2 className="ml-1" size={18} />
                     </button>
                 </div>
-                <div className="mb-4 p-4">
-                    <div className="flex flex-col gap-2">
-                        {
-                            availableConnections.length > 0 ? (
-                                <MultiSelect
-                                    options={availableConnections}
-                                    isDeleting={isDeleting}
-                                    onChange={handleSelectChange}
-                                />
-                            ) : (
-                                <p className="text-center p-8 italic">No available links.</p>
-                            )
-                        }
-                    </div>
-                </div>
+                {
+                    availableConnections.length > 0 ? (
+                        <MultiSelect
+                            options={availableConnections}
+                            isDeleting={isDeleting}
+                            onChange={handleSelectChange}
+                        />
+                    ) : (
+                        <p className="text-center p-8 italic">No available links.</p>
+                    )
+                }
                 <div className="p-5 flex flex-row justify-end">
                     <button
                         className="r-btn primary danger flex flex-row items-center justify-center gap-1"
