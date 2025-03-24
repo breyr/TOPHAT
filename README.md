@@ -1,10 +1,8 @@
 # T.O.P. (Topology Orchestration Platform)
 
-Tasks can be found [here](https://redinfra.atlassian.net/jira/software/projects/RED/boards/1)
-
 ## Developing
 
-Use JIRA to create a new branch from `dev`
+Create a new branch from `dev`
 
 ### Setting Up
 
@@ -43,6 +41,10 @@ Peridocially we will create release branches from `dev`. These branches will fol
 2. Make any changes in that release branch to make sure everything builds
 3. Merge release branch into main
 4. Merge main into dev
+
+### Notes on Using Production Compose File
+
+The `SECRET_KEY` value must be the same for **backend** and **interconnect-api**.
 
 ## Images
 
