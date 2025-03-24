@@ -23,9 +23,9 @@ export function MultiSelect({ options, isDeleting, onChange }: MultiSelectProps)
     };
 
     return (
-        <div className="w-full min-h-32 overflow-y-auto flex flex-wrap items-start gap-3">
+        <div className="w-full min-h-32 p-4">
             {options.map(option => (
-                <div key={option.value} className="flex items-center gap-2">
+                <div key={option.value} className="flex items-center">
                     <Checkbox
                         id={`checkbox-${option.value}`}
                         color="error"
