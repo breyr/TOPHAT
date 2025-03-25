@@ -24,7 +24,8 @@ export default function CreateLinkModal({ deviceData, currentDevicePorts, labDev
     const [selectedSecondDevicePort, setSelectedSecondDevicePort] = useState<string>("");
     const [availablePorts, setAvailablePorts] = useState<string[]>([]);
     const [filteredLabDevices] = useState<Device[]>(labDevices);
-    const [occupiedPorts, setOccupiedPorts] = useState<string[]>([]);
+    const [firstDeviceOccupiedPorts, setFirstDeviceOccupiedPorts] = useState<string[]>([]);
+    const [secondDeviceOccupiedPorts, setSecondDeviceOccupiedPorts] = useState<string[]>([]);
 
     useEscapeKey(onClose);
 
@@ -32,11 +33,19 @@ export default function CreateLinkModal({ deviceData, currentDevicePorts, labDev
     const nodes = getNodes();
     const currentNodesInTopology = new Set(nodes.map(n => n.data?.deviceData?.name));
 
+    // get occupied ports when selectedFirstDevice changes
     useEffect(() => {
         const edges = getEdges();
-        const ports = edges.map((edge: Edge) => edge.id.split('-').filter((port: string) => port !== 'edge'));
-        setOccupiedPorts(ports.flat());
-    }, [getEdges]);
+        const ports = edges.filter((edge: Edge) => edge.data?.source === selectedFirstDevice).map((edge: Edge) => edge.id.split('-').filter((port: string) => port !== 'edge'));
+        setFirstDeviceOccupiedPorts(ports.flat());
+    }, [selectedFirstDevice, getEdges]);
+
+    // get occupied ports when selectedSecondDevice changes
+    useEffect(() => {
+        const edges = getEdges();
+        const ports = edges.filter((edge: Edge) => edge.data?.source === selectedSecondDevice).map((edge: Edge) => edge.id.split('-').filter((port: string) => port !== 'edge'));
+        setSecondDeviceOccupiedPorts(ports.flat());
+    }, [selectedSecondDevice, getEdges]);
 
     useEffect(() => {
         if (deviceData?.name) {
@@ -116,8 +125,8 @@ export default function CreateLinkModal({ deviceData, currentDevicePorts, labDev
                             >
                                 <option value="">Select a Port</option>
                                 {(deviceData ? currentDevicePorts : filteredLabDevices.map(device => device.ports.split(',').flatMap(portDef => generatePorts(portDef)))).flat().map((port, index) => (
-                                    <option key={index} value={port} disabled={occupiedPorts.includes(port)}>
-                                        {port}  {occupiedPorts.includes(port) ? '(in use)' : ''}
+                                    <option key={index} value={port} disabled={firstDeviceOccupiedPorts.includes(port)}>
+                                        {port}  {firstDeviceOccupiedPorts.includes(port) ? '(in use)' : ''}
                                     </option>
                                 ))}
                             </select>
@@ -146,8 +155,8 @@ export default function CreateLinkModal({ deviceData, currentDevicePorts, labDev
                             >
                                 <option value="">Select Port</option>
                                 {availablePorts.map((port, idx) => (
-                                    <option key={idx} value={port} disabled={occupiedPorts.includes(port)}>
-                                        {port} {occupiedPorts.includes(port) ? '(in use)' : ''}
+                                    <option key={idx} value={port} disabled={secondDeviceOccupiedPorts.includes(port)}>
+                                        {port} {secondDeviceOccupiedPorts.includes(port) ? '(in use)' : ''}
                                     </option>
                                 ))}
                             </select>
