@@ -1,7 +1,7 @@
 import { Node } from "@xyflow/react";
 import type { PartialAppUser, Topology } from 'common';
 import { useEffect, useState } from 'react';
-import TopologyCard from '../components/TopologyCard';
+import TopologyDetailCard from "../components/TopologyDetailCard";
 import { useAuth } from '../hooks/useAuth';
 import { useLinkOperationsBase } from "../hooks/useLinkOperations";
 import { Device } from '../models/Device';
@@ -136,7 +136,7 @@ export default function AllUserTopologiesPage() {
               <section className="flex flex-row flex-wrap gap-x-8 p-2 border rounded pl-7">
                 {userTopologies.length ? (
                   userTopologies.map((topology) => (
-                    <TopologyCard
+                    <TopologyDetailCard
                       key={topology.id}
                       {...topology}
                       onDelete={() => handleDelete(topology.id)}
