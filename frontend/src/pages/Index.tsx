@@ -11,11 +11,9 @@ export default function IndexPage() {
 
 
     // on mount if the token exists redirect to the dashboard
-    useEffect(() => {
-        if (user) {
-            navigate("/dashboard/")
-        }
-    }, [user, navigate]);
+    if (user && onboardComplete) {
+        navigate("/dashboard/")
+    }
 
     useEffect(() => {
         const fetchConfig = async () => {

@@ -1,5 +1,5 @@
 import { CreateConnectionRequestPayload } from 'common';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import DataTable from 'react-data-table-component';
 import { useAuth } from '../../hooks/useAuth';
 import { generatePorts } from '../../lib/helpers';
@@ -17,8 +17,6 @@ function ConnectionsTable({ interconnectDevices, labDevices }: ConnectionsTableP
 
     const [connections, setConnections] = useState<Connection[]>([]);
     const [deviceNameToUsedPortsMap, setDeviceNameToUsedPortsMap] = useState<Record<string, Set<string>>>({});
-    const [currentPage, setCurrentPage] = useState(0);
-    const [rowsPerPage, setRowsPerPage] = useState(5);
     const isInitialLoadRef = useRef(true);
     const isUpdatingConnectionsRef = useRef(false);
 
@@ -209,57 +207,54 @@ function ConnectionsTable({ interconnectDevices, labDevices }: ConnectionsTableP
         return map;
     }, [interconnectDevices]);
 
-    const handleDeviceChange = async (index: number, newDeviceName: string) => {
-        const updatedConnections = [...connections];
-        const previousConnection = { ...updatedConnections[index] };
-        updatedConnections[index] = {
-            ...updatedConnections[index],
-            interconnectDeviceName: newDeviceName,
-            interconnectDevicePort: '', // reset port when device changes
-        };
+    const handleDeviceChange = useCallback(async (connectionId: number, newDeviceName: string) => {
+        const updatedConnections = connections.map(conn =>
+            conn.id === connectionId ? { ...conn, interconnectDeviceName: newDeviceName, interconnectDevicePort: '' } : conn
+        );
+        const previousConnection = connections.find(conn => conn.id === connectionId);
         setConnections(updatedConnections);
 
         try {
-            await authenticatedApiClient.updateConnection(updatedConnections[index].id, updatedConnections[index]);
+            const updatedConnection = updatedConnections.find(conn => conn.id === connectionId);
+            if (updatedConnection) {
+                await authenticatedApiClient.updateConnection(connectionId, updatedConnection);
+            }
         } catch (e) {
             console.error(e);
-            setConnections(prevConnections => {
-                const revertedConnections = [...prevConnections];
-                revertedConnections[index] = previousConnection;
-                return revertedConnections;
-            });
+            setConnections(prevConnections => prevConnections.map(conn =>
+                conn.id === connectionId ? previousConnection! : conn
+            ));
         }
-    };
+    }, [connections, authenticatedApiClient]);
 
-    const handlePortChange = async (index: number, newPort: string) => {
-        const updatedConnections = [...connections];
-        const previousConnection = { ...updatedConnections[index] };
-        updatedConnections[index] = {
-            ...updatedConnections[index],
-            interconnectDevicePort: newPort,
-        };
+    const handlePortChange = useCallback(async (connectionId: number, newPort: string) => {
+        const updatedConnections = connections.map(conn =>
+            conn.id === connectionId ? { ...conn, interconnectDevicePort: newPort } : conn
+        );
+        const previousConnection = connections.find(conn => conn.id === connectionId);
         setConnections(updatedConnections);
 
         try {
-            await authenticatedApiClient.updateConnection(updatedConnections[index].id, updatedConnections[index]);
+            const connectionToUpdate = updatedConnections.find(conn => conn.id === connectionId);
+            if (connectionToUpdate) {
+                await authenticatedApiClient.updateConnection(connectionId, connectionToUpdate);
+            }
         } catch (e) {
             console.error(e);
-            setConnections(prevConnections => {
-                const revertedConnections = [...prevConnections];
-                revertedConnections[index] = previousConnection;
-                return revertedConnections;
-            });
+            setConnections(prevConnections => prevConnections.map(conn =>
+                conn.id === connectionId ? previousConnection! : conn
+            ));
         }
-    };
+    }, [connections, authenticatedApiClient]);
 
-    const getFilteredPorts = (deviceName: string, selectedPort: string): string[] => {
+    const getFilteredPorts = useCallback((deviceName: string, selectedPort: string): string[] => {
         const allPorts = availablePortsMap[deviceName] || [];
         const usedPortsForDevice = deviceNameToUsedPortsMap[deviceName] || new Set();
 
         return allPorts.filter(port => port === selectedPort || !usedPortsForDevice.has(port));
-    };
+    }, [availablePortsMap, deviceNameToUsedPortsMap]);
 
-    const columns = [
+    const columns = useMemo(() => [
         {
             name: 'Lab Device',
             selector: (row: Connection) => row.labDeviceName,
@@ -272,17 +267,11 @@ function ConnectionsTable({ interconnectDevices, labDevices }: ConnectionsTableP
         },
         {
             name: 'Interconnect Device',
-            cell: (_, localIndex: number) => {
-                const globalIndex = currentPage * rowsPerPage + localIndex;
-
-                if (!connections[globalIndex]) {
-                    return null;
-                }
-
+            cell: (row: Connection) => {
                 return (
                     <select
-                        value={connections[globalIndex].interconnectDeviceName || ''}
-                        onChange={(e) => handleDeviceChange(globalIndex, e.target.value)}
+                        value={row.interconnectDeviceName || ''}
+                        onChange={(e) => handleDeviceChange(row.id, e.target.value)}
                         className="w-full bg-transparent focus:outline-none hover:cursor-pointer"
                     >
                         <option value="">Select Device</option>
@@ -297,20 +286,19 @@ function ConnectionsTable({ interconnectDevices, labDevices }: ConnectionsTableP
         },
         {
             name: 'Interconnect Port',
-            cell: (_, localIndex: number) => {
-                const globalIndex = currentPage * rowsPerPage + localIndex;
-                const selectedDevice = connections[globalIndex]?.interconnectDeviceName;
-                const selectedPort = connections[globalIndex]?.interconnectDevicePort;
+            cell: (row: Connection) => {
+                const selectedDevice = row.interconnectDeviceName;
+                const selectedPort = row.interconnectDevicePort;
                 const availablePorts = getFilteredPorts(selectedDevice, selectedPort);
 
                 if (!selectedDevice) {
-                    return;
+                    return null;
                 }
 
                 return (
                     <select
-                        value={connections[globalIndex].interconnectDevicePort || ''}
-                        onChange={(e) => handlePortChange(globalIndex, e.target.value)}
+                        value={row.interconnectDevicePort || ''}
+                        onChange={(e) => handlePortChange(row.id, e.target.value)}
                         disabled={!selectedDevice}
                         className="w-full bg-transparent focus:outline-none hover:cursor-pointer"
                     >
@@ -324,20 +312,16 @@ function ConnectionsTable({ interconnectDevices, labDevices }: ConnectionsTableP
                 );
             },
         },
-    ];
+    ], [handleDeviceChange, handlePortChange, interconnectDevices, getFilteredPorts]);
 
     return (
         <section className="p-4">
             <DataTable
                 columns={columns}
                 data={connections}
+                keyField="id"
                 pagination
                 paginationRowsPerPageOptions={[5, 10, 15]}
-                onChangePage={(page) => setCurrentPage(page - 1)}
-                onChangeRowsPerPage={(newRowsPerPage) => {
-                    setRowsPerPage(newRowsPerPage);
-                    setCurrentPage(0);
-                }}
                 customStyles={customStyles}
             />
         </section>
