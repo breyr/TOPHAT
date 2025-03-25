@@ -72,7 +72,10 @@ export default function NodePicker() {
     }, [on]);
 
     return (
-        <div className="fixed right-0 h-full flex flex-col justify-center">
+        <div
+            className="fixed right-0 h-full flex flex-col justify-center"
+            style={{ pointerEvents: showItems ? 'auto' : 'none' }}
+        >
             {/* Sliding Panel */}
             <div
                 className={`
@@ -102,6 +105,7 @@ export default function NodePicker() {
                 ${showItems ? 'translate-x-[-287px]' : 'translate-x-[75%]'}
                 `}
                 onClick={() => setShowItems(!showItems)}
+                style={{ pointerEvents: 'auto' }}
             >
                 {!showItems ? <CirclePlus className="mr-2" /> : <CircleMinus className="mr-2" />} Add Device
             </div>
