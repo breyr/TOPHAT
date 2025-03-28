@@ -4,7 +4,7 @@ import { useAuth } from "../../../hooks/useAuth";
 import { useTopology } from '../../../hooks/useTopology.ts';
 
 export default function TopologyName() {
-    const { topologyData, setIsSaving, isSaving, setLastUpdated, lastUpdated } = useTopology();
+    const { topologyData, setTopologyData, setIsSaving, isSaving, setLastUpdated, lastUpdated } = useTopology();
     const [topologyName, setTopologyName] = useState(topologyData?.name || "Topology Name");
     const [isEditing, setIsEditing] = useState(false);
     const [inputWidth, setInputWidth] = useState(0);
@@ -27,6 +27,7 @@ export default function TopologyName() {
                 if (res.data) {
                     const updatedAt = new Date(res.data.updatedAt);
                     setLastUpdated(updatedAt.toLocaleString());
+                    setTopologyData(res.data);
                 }
             }
             initialNameRef.current = topologyName; // Update the initial name reference

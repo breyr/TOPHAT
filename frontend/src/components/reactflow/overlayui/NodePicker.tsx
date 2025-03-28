@@ -1,7 +1,7 @@
 import { Node, useNodes } from "@xyflow/react";
+import { EmitTypes } from "common";
 import { CircleMinus, CirclePlus } from "lucide-react";
 import { useEffect, useState } from "react";
-import { EmitTypes } from "../../../../../common/src/index";
 import { useAuth } from "../../../hooks/useAuth";
 import { useSocket } from "../../../hooks/useSocket";
 import { Device } from "../../../models/Device";
@@ -41,9 +41,9 @@ export default function NodePicker() {
         setUsedDevices(new Set(deviceNames));
     }, [nodes]);
 
-    // socket listener for when devices get booked
+    // socket listeners
     useEffect(() => {
-        const unsubscribe = on(EmitTypes.BookDevice, (data) => {
+        const bookUnsubscribe = on(EmitTypes.BookDevice, (data) => {
             const bookedDevice = data.bookedDevice;
 
             if (bookedDevice) {
@@ -53,12 +53,8 @@ export default function NodePicker() {
                 })
             }
         });
-        return unsubscribe;
-    }, [on]);
 
-    // socket listener for when devices get unbooked
-    useEffect(() => {
-        const unsubscribe = on(EmitTypes.UnbookDevice, (data) => {
+        const unbookUnsubscribe = on(EmitTypes.UnbookDevice, (data) => {
             const unbookedDevice = data.unbookedDevice;
 
             if (unbookedDevice) {
@@ -68,11 +64,18 @@ export default function NodePicker() {
                 })
             }
         });
-        return unsubscribe;
+
+        return () => {
+            bookUnsubscribe();
+            unbookUnsubscribe();
+        }
     }, [on]);
 
     return (
-        <div className="fixed right-0 h-full flex flex-col justify-center">
+        <div
+            className="fixed right-0 h-full flex flex-col justify-center"
+            style={{ pointerEvents: showItems ? 'auto' : 'none' }}
+        >
             {/* Sliding Panel */}
             <div
                 className={`
@@ -92,7 +95,7 @@ export default function NodePicker() {
             {/* Tab Button */}
             <div
                 className={`
-                fixed right-0
+                fixed right-[-2px]
                 mt-20
                 transform -rotate-90 origin-top-left
                 bg-blue-500 text-[#ffffff] cursor-pointer 
@@ -102,6 +105,7 @@ export default function NodePicker() {
                 ${showItems ? 'translate-x-[-287px]' : 'translate-x-[75%]'}
                 `}
                 onClick={() => setShowItems(!showItems)}
+                style={{ pointerEvents: 'auto' }}
             >
                 {!showItems ? <CirclePlus className="mr-2" /> : <CircleMinus className="mr-2" />} Add Device
             </div>

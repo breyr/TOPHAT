@@ -1,9 +1,7 @@
 import { Topology } from 'common';
-import { Image, Trash } from "lucide-react";
-import React, { useEffect, useState } from 'react';
-import { useNavigate } from "react-router-dom";
+import { Trash } from "lucide-react";
+import React, { useState } from 'react';
 import { useAuth } from "../hooks/useAuth.ts";
-import useContextMenu from "../hooks/useContextMenu.ts";
 import DeletionModal from "./DeletionModal.tsx";
 
 interface TopologyProps extends Topology {
@@ -12,36 +10,23 @@ interface TopologyProps extends Topology {
   readOnly?: boolean;
 }
 
-const TopologyCard: React.FC<TopologyProps> = ({
+const TopologyDetailCard: React.FC<TopologyProps> = ({
   id,
   name,
-  thumbnail,
   archived: initialArchived,
   updatedAt,
   onDelete,
   onArchive,
-  readOnly,
-  userId
+  userId,
+  reactFlowState
 }) => {
-  const { menuOpen, hideMenu } = useContextMenu();
   const { user } = useAuth();
-  const navigateTo = useNavigate();
-  const [thumbnailSrc, setThumbnailSrc] = useState<string | null>(null);
   const [archived, setArchived] = useState(initialArchived);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const ownsTopology = user?.id === userId;
 
-  const handleClick = (event: React.MouseEvent) => {
-    if (archived) return;
-
-    if (readOnly && !(user?.accountType === "ADMIN" || user?.accountType === "OWNER")) return;
-    if (menuOpen) {
-      event.stopPropagation();
-      hideMenu();
-    } else {
-      navigateTo(`/topology/${id}`);
-    }
-  };
+  // get the devices on the topology
+  const devicesUsedInTopology = reactFlowState?.nodes.map(n => n.id);
 
   // toggle the archive state
   const toggleArchived = (event: React.MouseEvent) => {
@@ -60,30 +45,6 @@ const TopologyCard: React.FC<TopologyProps> = ({
     setIsModalOpen(false);
   };
 
-  // handle conversion of thumbnail
-  useEffect(() => {
-    if (!thumbnail) return;
-    try {
-      // convert the object to a Uint8Array
-      const byteArray = new Uint8Array(Object.values(thumbnail));
-
-      // convert Uint8Array to binary string
-      const binaryString = Array.from(byteArray)
-        .map(byte => String.fromCharCode(byte))
-        .join('');
-
-      // convert binary string to base64
-      const base64String = btoa(binaryString);
-      // check if empty
-      if (base64String !== "AA==") {
-        const thumbnailSourceString = `data:image/jpg;base64,${base64String}`;
-        setThumbnailSrc(thumbnailSourceString);
-      }
-    } catch (error) {
-      console.error('Error converting to base64:', error);
-    }
-  }, [thumbnail]);
-
   return (
     <div className="relative group">
       <button
@@ -93,23 +54,9 @@ const TopologyCard: React.FC<TopologyProps> = ({
       </button>
       <div
         key={id}
-        onClick={handleClick}
-        className={`my-5 rounded-lg size-56 border border-gray-200 bg-[#ffffff] shadow-sm transition-shadow duration-200 flex flex-col items-center text-gray-700 ${readOnly || archived ? "hover:cursor-default" : "hover:cursor-pointer hover:shadow-md"}`}
+        className={`my-5 rounded-lg border border-gray-200 bg-[#ffffff] shadow-sm transition-shadow duration-200 flex flex-col items-center text-gray-700`}
       >
-        <div className="w-full">
-          {thumbnailSrc ? (
-            <img
-              src={thumbnailSrc}
-              alt="Topology Thumbnail"
-              className="w-full h-36 object-cover bg-gray-100 rounded-t-md"
-            />
-          ) : (
-            <div className="w-full h-36 flex items-center justify-center bg-gray-100 rounded-t-md">
-              <Image size={80} className="text-gray-400" />
-            </div>
-          )}
-        </div>
-        <div className="w-full flex-1 rounded-b-md p-3">
+        <div className="w-full flex-1 rounded-b-md p-5">
           <p className="text-sm font-medium text-gray-900 mb-1">{name}</p>
           <div className="flex justify-between w-full items-center">
             <div className="flex flex-col">
@@ -128,6 +75,14 @@ const TopologyCard: React.FC<TopologyProps> = ({
               {archived ? "Archived" : "Active"}
             </span>
           </div>
+          <div className='mt-2'>
+            <p className='text-md text-gray-500'>Devices in Use</p>
+            <div className='flex flex-col'>
+              {devicesUsedInTopology?.map(d => (
+                <span key={d} className='text-xs'>{d}</span>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
       <DeletionModal
@@ -140,4 +95,4 @@ const TopologyCard: React.FC<TopologyProps> = ({
   );
 }
 
-export default TopologyCard;
+export default TopologyDetailCard;

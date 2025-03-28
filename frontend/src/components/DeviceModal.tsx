@@ -1,8 +1,9 @@
-import { X } from "lucide-react";
+import { Undo2} from "lucide-react";
 import React from "react";
 import { Device } from "../models/Device";
 import DeviceDescriptionTextArea from "./DeviceDescriptionTextArea";
 import DevicePortsTable from "./table/DevicePortsTable";
+import { useEscapeKey } from "../hooks/useEscapeKey";
 
 // deviceInformation is used for non-editing mode, viewing what is currently in the database
 // editingData is used for when a user is editing the device and hasn't saved the changes yet;
@@ -41,13 +42,16 @@ const DeviceModal: React.FC<DeviceModalProps> = ({
         setIsOpen(false);
     }
 
+    // close the modal when the escape key is pressed
+    useEscapeKey(() => setIsOpen(false));
+
     return (
         <section className="bg-zinc-950 bg-opacity-50 w-full h-full fixed top-0 left-0 flex items-center justify-center z-50">
             <div className="bg-[#ffffff] w-2/5 p-6 rounded-lg shadow-lg">
-                <div className="flex flex-row justify-between items-center">
-                    <h2 className="m-0">{deviceData?.name}{deviceData?.name !== '' ? "'s" : ''} {renderTable === true ? 'Ports' : 'Description'}</h2>
-                    <button onClick={() => setIsOpen(false)} className="r-btn text-red-500 hover:text-red-700">
-                        <X />
+                <div className="flex flex-row justify-between items-center mb-4">
+                    <h3 className="text-xl font-bold">{deviceData?.name}{deviceData?.name !== '' ? "'s" : ''} {renderTable === true ? 'Ports' : 'Description'}</h3>
+                    <button onClick={() => setIsOpen(false)} className="r-btn text-blue-400 hover:text-blue-500 flex items-center">
+                        Back <Undo2 className="ml-1" size={18}/>
                     </button>
                 </div>
                 {renderTable && <p>Enter interfaces that are utilized for cabling lab devices.</p>}

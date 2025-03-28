@@ -1,12 +1,13 @@
 import { Checkbox, Typography } from '@material-tailwind/react';
+import { useTopology } from '../hooks/useTopology';
 
 export interface Option {
     value: string;
     label: string;
     firstLabDevice: string;
     firstLabDevicePort: string;
-    secondLabDevice: string | null | undefined;
-    secondLabDevicePort: string | null | undefined;
+    secondLabDevice: string;
+    secondLabDevicePort: string;
 }
 
 interface MultiSelectProps {
@@ -16,19 +17,20 @@ interface MultiSelectProps {
 }
 
 export function MultiSelect({ options, isDeleting, onChange }: MultiSelectProps) {
+    const { isReinintializingLinks } = useTopology();
     const handleCheckboxChange = (option: Option) => {
         onChange(option);
     };
 
     return (
-        <div className="w-full min-h-32 overflow-y-auto flex flex-wrap items-start">
+        <div className="w-full min-h-32 p-4">
             {options.map(option => (
-                <div key={option.value} className="flex items-center gap-2">
+                <div key={option.value} className="flex items-center">
                     <Checkbox
                         id={`checkbox-${option.value}`}
                         color="error"
                         onChange={() => handleCheckboxChange(option)}
-                        disabled={isDeleting}
+                        disabled={isDeleting || isReinintializingLinks}
                     >
                         <Checkbox.Indicator />
                     </Checkbox>

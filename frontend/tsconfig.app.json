@@ -24,7 +24,12 @@
     "noImplicitAny": false,
     "types": [
       "vite-plugin-svgr/client"
-    ]
+    ],
+    "paths": {
+      "common/*": [
+        "../common/src/*"
+      ]
+    }
   },
   "references": [
     {

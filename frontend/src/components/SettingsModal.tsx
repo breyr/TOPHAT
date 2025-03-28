@@ -1,6 +1,7 @@
-import { Eye, EyeOff, X } from "lucide-react";
-import { useEffect, useState } from "react";
+import { Eye, EyeOff, Undo2 } from "lucide-react";
+import { useState } from "react";
 import { useAuth } from "../hooks/useAuth";
+import { useEscapeKey } from "../hooks/useEscapeKey";
 
 interface ModalProps {
   isOpen: boolean;
@@ -16,6 +17,8 @@ const SettingsModal: React.FC<ModalProps> = ({ isOpen, onClose }) => {
   const [serverMessage, setServerMessage] = useState("");
   const [showPassword, setShowPassword] = useState({ viewOldPassword: false, viewPassword: false, viewConfirmPassword: false });
 
+  useEscapeKey(onClose);
+
   const handleVisibilityChange = (e: React.MouseEvent<HTMLButtonElement>) => {
     const { name } = e.currentTarget;
     setShowPassword(prevState => ({
@@ -23,19 +26,6 @@ const SettingsModal: React.FC<ModalProps> = ({ isOpen, onClose }) => {
       [name]: !showPassword[name]
     }))
   }
-
-  //esc button functionality
-  useEffect(() => {
-    const handleEsc = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        handleClose();
-      }
-    };
-    document.addEventListener("keydown", handleEsc);
-    return () => {
-      document.removeEventListener("keydown", handleEsc);
-    };
-  }, []);
 
   const handleClose = () => {
     setOldPassword("");
@@ -82,14 +72,13 @@ const SettingsModal: React.FC<ModalProps> = ({ isOpen, onClose }) => {
   return (
     <section className="bg-zinc-950 bg-opacity-50 w-full h-full fixed top-0 left-0 flex items-center justify-center z-50">
       <div className="bg-[#ffffff] w-2/5 p-6 rounded-lg shadow-lg">
-        <div className="flex flex-row justify-between items-center">
-          <h2 className="m-0">Settings</h2>
-          <button onClick={handleClose} className="r-btn text-red-500 hover:text-red-700">
-            <X />
-          </button>
-        </div>
         <div className="flex flex-col space-y-4 p-5">
-          <h3 className="text-xl font-bold text-blue-400">Change Password</h3>
+          <div className="flex flex-row justify-between items-center">
+            <h3 className="text-xl font-bold">Change Password</h3>
+            <button onClick={handleClose} className="r-btn text-blue-400 hover:text-blue-500 flex items-center">
+              Back <Undo2 className="ml-1" size={18} />
+            </button>
+          </div>
           <form
             onSubmit={handleSubmitPassword}
             className="flex flex-col space-y-4"

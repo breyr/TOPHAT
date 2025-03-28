@@ -3,35 +3,50 @@ on:
     pull_request:
         branches:
             - main
+            - dev
         types:
             - closed
+    push:
+        branches:
+            - 'release/*'
+
 jobs:
     publish_image:
-        if: github.event.pull_request.merged == true && startsWith(github.head_ref, 'r')
         runs-on: ubuntu-latest
         steps:
           - name: checkout
             uses: actions/checkout@v4
 
-          - name: Extract branch name
-            id: extract_branch
-            run: echo "BRANCH_NAME=$(echo ${GITHUB_HEAD_REF})" >> $GITHUB_ENV
+          - name: Extract pull request ID
+            id: extract_pr_id
+            run: echo "PR_ID=${{ github.event.pull_request.number }}" >> $GITHUB_ENV
+
+          - name: Determine image tag
+            id: determine_tag
+            run: |
+              if [[ "${GITHUB_REF}" == refs/heads/release/* ]]; then
+                echo "IMAGE_TAG=$(echo ${GITHUB_REF} | sed 's/refs\/heads\/release\///')" >> $GITHUB_ENV
+              elif [[ "${GITHUB_REF}" == refs/heads/dev ]]; then
+                echo "IMAGE_TAG=dev-pr-${{ env.PR_ID }}" >> $GITHUB_ENV
+              else
+                echo "IMAGE_TAG=latest" >> $GITHUB_ENV
+              fi
 
           - name: build backend image
             run: |
-              docker build -f backend/Dockerfile -t breyr/top-backend:${{ env.BRANCH_NAME }} .
+              docker build -f backend/Dockerfile -t breyr/top-backend:${{ env.IMAGE_TAG }} .
             
           - name: build frontend image
             run: |
-              docker build -f frontend/Dockerfile -t breyr/top-frontend:${{ env.BRANCH_NAME }} .
+              docker build -f frontend/Dockerfile -t breyr/top-frontend:${{ env.IMAGE_TAG }} .
             
           - name: build interconnect-api image
             run: |
-              docker build -f interconnect-api/Dockerfile -t breyr/top-interconnectapi:${{ env.BRANCH_NAME }} .
+              docker build -f interconnect-api/Dockerfile -t breyr/top-interconnectapi:${{ env.IMAGE_TAG }} .
             
           - name: push images
             run: |
               docker login -u breyr -p ${{ secrets.DOCKER_HUB_TOKEN }}
-              docker push breyr/top-backend:${{ env.BRANCH_NAME }}
-              docker push breyr/top-frontend:${{ env.BRANCH_NAME }}
-              docker push breyr/top-interconnectapi:${{ env.BRANCH_NAME }}
+              docker push breyr/top-backend:${{ env.IMAGE_TAG }}
+              docker push breyr/top-frontend:${{ env.IMAGE_TAG }}
+              docker push breyr/top-interconnectapi:${{ env.IMAGE_TAG }}

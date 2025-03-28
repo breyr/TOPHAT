@@ -1,14 +1,16 @@
 import { Node } from "@xyflow/react";
+import type { Topology } from "common";
 import { Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
-import type { Topology } from "../../../common/src/index";
 import CreateTopology from "../components/CreateTopology";
 import TopologyCard from "../components/TopologyCard";
 import { useAuth } from "../hooks/useAuth";
+import { useLinkOperationsBase } from "../hooks/useLinkOperations";
 import { Device } from "../models/Device";
 
 export default function UserTopologiesPage() {
     const { token, authenticatedApiClient } = useAuth();
+    const { deleteLinkBulk } = useLinkOperationsBase();
     const [topologies, setTopologies] = useState([] as Topology[]);
     const [isLoading, setIsLoading] = useState(true);
 
@@ -47,7 +49,6 @@ export default function UserTopologiesPage() {
                 // if there are devices to unbook, wait for all requests to complete
                 if (devicePromises.length > 0) {
                     await Promise.all(devicePromises);
-                    console.log(`Unbooked ${devicePromises.length} devices from topology ${topologyData.id}`);
                 }
             }
         } catch (error) {
@@ -64,16 +65,49 @@ export default function UserTopologiesPage() {
             const topology = getResponse.data;
 
             if (topology) {
+                const deletedTopology = topologies.find((t) => t.id === topologyId);
+                const deletedTopologyIndex = topologies.findIndex((t) => t.id === topologyId);
+
+                // Update UI - remove the topology immediately
+                setTopologies((prevTopologies) =>
+                    prevTopologies.filter(t => t.id !== deletedTopology?.id)
+                );
+
                 // Unbook devices first
                 await unbookDevicesInTopology(topology);
 
-                // Then delete the topology
-                await authenticatedApiClient.deleteTopology(topologyId);
+                // Get a list of Options to pass into the clearLinkBulk function
+                const edgesForTopology = topology.reactFlowState?.edges.map(e => ({
+                    value: e.id,
+                    label: `(${e.source}) ${e.data?.sourcePort ?? ''} -> (${e.target}) ${e.data?.targetPort ?? ''}`,
+                    firstLabDevice: e.source,
+                    firstLabDevicePort: e.data?.sourcePort ?? '',
+                    secondLabDevice: e.target,
+                    secondLabDevicePort: e.data?.targetPort ?? '',
+                }));
 
-                // Update UI regardless of what the delete response contains
-                setTopologies((prevTopologies) =>
-                    prevTopologies.filter(t => t.id !== topologyId)
-                );
+                // Clear Links
+                const numFailures = await deleteLinkBulk(new Set(edgesForTopology));
+
+                if (numFailures === 0) {
+                    // then delete the topology
+                    await authenticatedApiClient.deleteTopology(topologyId);
+                } else {
+                    // add topology back
+                    setTopologies((prevTopologies) => {
+                        const newTopologies = [...prevTopologies];
+
+                        // if we have a valid index and a deleted topology
+                        if (deletedTopologyIndex >= 0 && deletedTopology) {
+                            // insert back at original position
+                            newTopologies.splice(deletedTopologyIndex, 0, deletedTopology);
+                        } else if (deletedTopology) {
+                            newTopologies.push(deletedTopology);
+                        }
+
+                        return newTopologies;
+                    });
+                }
             }
         } catch (error) {
             console.error('Error deleting topology:', error);
@@ -89,18 +123,53 @@ export default function UserTopologiesPage() {
             const topology = getResponse.data;
 
             if (topology) {
+                const archivedTopology = topologies.find((t) => t.id === topologyId);
+                const archivedTopologyIndex = topologies.findIndex((t) => t.id === topologyId);
+
+                // Update UI - remove the topology immediately
+                setTopologies((prevTopologies) =>
+                    prevTopologies.filter(t => t.id !== archivedTopology?.id)
+                );
+
+
                 // Unbook devices first
                 await unbookDevicesInTopology(topology);
 
-                // Then archive the topology
-                await authenticatedApiClient.updateTopology(topologyId, {
-                    archived: true
-                });
+                // Get a list of Options to pass into the clearLinkBulk function
+                const edgesForTopology = topology.reactFlowState?.edges.map(e => ({
+                    value: e.id,
+                    label: `(${e.source}) ${e.data?.sourcePort ?? ''} -> (${e.target}) ${e.data?.targetPort ?? ''}`,
+                    firstLabDevice: e.source,
+                    firstLabDevicePort: e.data?.sourcePort ?? '',
+                    secondLabDevice: e.target,
+                    secondLabDevicePort: e.data?.targetPort ?? '',
+                }));
 
-                // Update UI regardless of what the update response contains
-                setTopologies((prevTopologies) =>
-                    prevTopologies.filter(t => t.id !== topologyId)
-                );
+                // Clear Links
+                const numFailures = await deleteLinkBulk(new Set(edgesForTopology));
+
+                if (numFailures === 0) {
+                    // Then archive the topology
+                    await authenticatedApiClient.updateTopology(topologyId, {
+                        archived: true
+                    });
+                } else {
+                    // add topology back
+                    setTopologies((prevTopologies) => {
+                        const newTopologies = [...prevTopologies];
+
+                        // if we have a valid index and a deleted topology
+                        if (archivedTopologyIndex >= 0 && archivedTopology) {
+                            // insert back at original position
+                            newTopologies.splice(archivedTopologyIndex, 0, archivedTopology);
+                        } else if (archivedTopology) {
+                            newTopologies.push(archivedTopology);
+                        }
+
+                        return newTopologies;
+                    });
+                }
+
             }
         } catch (error) {
             console.error('Error archiving topology:', error);

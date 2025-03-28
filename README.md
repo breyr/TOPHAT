@@ -1,10 +1,8 @@
 # T.O.P. (Topology Orchestration Platform)
 
-Tasks can be found [here](https://redinfra.atlassian.net/jira/software/projects/RED/boards/1)
-
 ## Developing
 
-Use JIRA to create a new branch from `dev`
+Create a new branch from `dev`
 
 ### Setting Up
 
@@ -15,10 +13,7 @@ Use JIRA to create a new branch from `dev`
    DATABASE_URL="postgres://demo:demo@localhost:5432/demo"
    SECRET_KEY="my_secret_key"
    ```
-4. Run `npm install` in the following locations:
-   1. `/common`
-   2. `/backend`
-   3. `/frontend`
+3. Run `npm install` in the root directory of this project.
   
 ### Starting Development Environment
 
@@ -26,7 +21,7 @@ Use JIRA to create a new branch from `dev`
 
    This runs the postgres db and interconnect api container.
    
-2. Run `npm run dev` within `/backend` first and then `/frontend`, order matters.
+2. Run `npm run dev:backend` and `npm run dev:frontend` within the project root.
 
 ### Pull Requests
 
@@ -34,13 +29,22 @@ When you are ready to submit a pull request, make sure you merge from your branc
 
 ## Releases
 
-Peridocially we will create release branches from `dev`. These branches will follow these naming conventions:
+Peridocially we will create release branches from `dev`. These branches will follow these naming convention:
 
-`r-devtest` or `r-<Major>-<Minor>-<Build>`
+`release-<Major>-<Minor>-<Build>`
 
-**`devtest`** is used for rapid iteration for testing docker images, or you could test locally.
+**`<Major>-<Minor>-<Build>`** is used to create a new image per release, tagged with `release-<Major>-<Minor>-<Build>`
 
-**`<Major>-<Minor>-<Build>`** is used to create a new image per release, tagged with `r-<Major>-<Minor>-<Build>`
+### Steps for release:
+
+1. Create release branch from dev
+2. Make any changes in that release branch to make sure everything builds
+3. Merge release branch into main
+4. Merge main into dev
+
+### Notes on Using Production Compose File
+
+The `SECRET_KEY` value must be the same for **backend** and **interconnect-api**.
 
 ## Images
 

@@ -1,6 +1,6 @@
+import { Topology } from "common";
 import { Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
-import { Topology } from "../../../common/src/index";
 import TopologyCard from "../components/TopologyCard";
 import { useAuth } from "../hooks/useAuth";
 
@@ -65,7 +65,7 @@ export default function UserArchivedTopologiesPage() {
                         <TopologyCard key={topology.id} {...topology} onDelete={() => handleDelete(topology.id)} onArchive={() => handleArchive(topology.id)} readOnly={true} />
                     ))
                 ) : (
-                    <p>No archived topologies found.</p>
+                    <p className="pt-4">No archived topologies found.</p>
                 )
             )}
         </section>

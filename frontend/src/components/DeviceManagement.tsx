@@ -42,7 +42,6 @@ export default function DeviceManagement() {
     const { authenticatedApiClient } = useAuth();
     const [firstInterconnectDevice, setFirstInterconnectDevice] = useState<Device | null>(null);
     const [secondInterconnectDevice, setSecondInterconnectDevice] = useState<Device | null>(null);
-    const [mergedInterconnectDevices, setMergedInterconnectDevices] = useState<Device[]>([]);
     const [labDevices, setLabDevices] = useState<Device[]>([]);
 
     useEffect(() => {
@@ -68,12 +67,7 @@ export default function DeviceManagement() {
         fetchLabDevices();
     }, [authenticatedApiClient]);
 
-    useEffect(() => {
-        const devices: Device[] = [];
-        if (firstInterconnectDevice) devices.push(firstInterconnectDevice);
-        if (secondInterconnectDevice) devices.push(secondInterconnectDevice);
-        setMergedInterconnectDevices(devices);
-    }, [firstInterconnectDevice, secondInterconnectDevice]);
+    const mergedInterconnectDevices = [firstInterconnectDevice, secondInterconnectDevice].filter(Boolean) as Device[];
 
     return (
         <div className="flex-grow w-full">

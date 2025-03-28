@@ -10,15 +10,14 @@ import {
     addEdge,
     applyEdgeChanges,
     applyNodeChanges,
-    getNodesBounds,
     getViewportForBounds,
     useReactFlow
 } from "@xyflow/react";
 import "@xyflow/react/dist/base.css"; // use to make custom node css
+import { type ReactFlowState } from "common";
 import { toJpeg } from 'html-to-image';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
-import { type ReactFlowState } from "../../../../common/src/index";
 import { useAuth } from "../../hooks/useAuth.ts";
 import { useToast } from "../../hooks/useToast.ts";
 import { useTopology } from "../../hooks/useTopology.ts";
@@ -29,7 +28,7 @@ import ExternalNode from "./nodes/ExternalNode.tsx";
 import RouterNode from "./nodes/RouterNode.tsx";
 import ServerNode from "./nodes/ServerNode.tsx";
 import SwitchNode from "./nodes/SwitchNode.tsx";
-import ContextMenu, { ContextMenuProps } from "./overlayui/ContextMenu.tsx";
+import ContextMenu from "./overlayui/ContextMenu.tsx";
 import NodePicker from "./overlayui/NodePicker";
 
 const initialNodes = [] satisfies Node[];
@@ -54,17 +53,25 @@ const edgeTypes = {
     Custom: CustomEdge,
 };
 
+interface MenuState {
+    id: string;
+    top: number | false;
+    left: number | false;
+    right: number | false;
+    bottom: number | false;
+}
+
 const TopologyCanvas = () => {
     const [rfInstance, setRfInstance] = useState<ReactFlowInstance | null>(null); // reference to react flow instance
     const [nodes, setNodes] = useState<Node[]>(initialNodes);
     const [edges, setEdges] = useState<Edge[]>(initialEdges);
     const [isChangesPending, setIsChangesPending] = useState(false);
-    const [menu, setMenu] = useState<Partial<ContextMenuProps> | null>(null);
+    const [menu, setMenu] = useState<MenuState | null>(null);
     const ref = useRef<HTMLDivElement>(null);
     const { setIsSaving, topologyData, setLastUpdated } = useTopology();
     const { authenticatedApiClient } = useAuth();
     const { id } = useParams();
-    const { getNodes } = useReactFlow();
+    const { getNodes, getNodesBounds } = useReactFlow();
     const { addToast } = useToast();
 
     // logic to save a topology's react-flow state into the database
@@ -122,7 +129,7 @@ const TopologyCanvas = () => {
                 setIsSaving(false);
             }
         }
-    }, [id, rfInstance, getNodes, authenticatedApiClient, setIsSaving, setLastUpdated]);
+    }, [id, rfInstance, getNodes, getNodesBounds, authenticatedApiClient, setIsSaving, setLastUpdated]);
 
     // useMemo is required here because on component re-renders, debounce will be recreated
     // this causes issues like saves being spammed
@@ -170,7 +177,7 @@ const TopologyCanvas = () => {
     }, [isChangesPending, saveTopology]);
 
     const onNodeContextMenu = useCallback(
-        (event, node: Node) => {
+        (event, node) => {
             // Prevent native context menu from showing
             event.preventDefault();
 
@@ -178,16 +185,20 @@ const TopologyCanvas = () => {
             // doesn't get positioned off-screen.
             if (!ref.current) return;
             const pane = ref.current.getBoundingClientRect();
+            const top = Math.min(event.clientY - pane.top, pane.height - 200);
+            const left = Math.min(event.clientX - pane.left, pane.width - 200);
+
             setMenu({
-                deviceData: node.data.deviceData as Device,
-                top: event.clientY < pane.height - 200 && event.clientY,
-                left: event.clientX < pane.width - 200 && event.clientX,
+                id: node.id,
+                top,
+                left,
                 right: event.clientX >= pane.width - 200 ? pane.width - event.clientX : 0,
                 bottom: event.clientY >= pane.height - 200 ? pane.height - event.clientY : 0,
             });
         },
         [setMenu],
     );
+
     const onPaneClick = useCallback(() => setMenu(null), [setMenu]);
 
     const onNodesChange = useCallback(
@@ -320,7 +331,14 @@ const TopologyCanvas = () => {
                 onNodeContextMenu={onNodeContextMenu}
             >
                 <Background color="rgb(247, 247, 247)" variant={BackgroundVariant.Dots} size={3} />
-                {menu && <ContextMenu onClick={onPaneClick} {...menu} />}
+                {menu && (
+                    <ContextMenu
+                        onClick={onPaneClick}
+                        id={menu.id}
+                        top={menu.top !== false ? menu.top : 0}
+                        left={menu.left !== false ? menu.left : 0}
+                    />
+                )}
                 <Controls position="bottom-left" />
                 {/* Node Picker */}
                 <Panel position="top-right" className="p-0 m-0 relative">

@@ -1,7 +1,7 @@
 import type { AppUser } from '@prisma/client';
 import bcrypt from 'bcryptjs';
+import type { LoginRequestPayload, LoginResponsePayload, RegisterUserRequestPayload } from 'common';
 import { NextFunction, Request, Response } from "express";
-import type { LoginRequestPayload, LoginResponsePayload, RegisterUserRequestPayload } from '../../../common/src/index';
 import { DIContainer } from "../config/DIContainer";
 import { AuthenticatedRequest, CustomJwtPayload } from '../types/types';
 import { createJwtToken, createRefreshToken } from '../utils/jwt';
@@ -53,8 +53,8 @@ export class UserController {
 
     async refreshToken(req: AuthenticatedRequest, res: Response, next: NextFunction) {
         try {
-            const { userId, username, email, accountType, accountStatus } = req.jwt_payload as CustomJwtPayload;
-            const token = createJwtToken(userId, username, email, accountType, accountStatus);
+            const { id, username, email, accountType, accountStatus } = req.jwt_payload as CustomJwtPayload;
+            const token = createJwtToken(id, username, email, accountType, accountStatus);
 
             res.status(200).json({
                 message: 'Token refreshed successfully',

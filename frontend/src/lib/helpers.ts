@@ -66,3 +66,17 @@ export const getCurvedPath = (
     // Create a quadratic Bezier curve with one control point for a simple, smooth arc
     return `M ${sourceX} ${sourceY} Q ${cpX} ${cpY}, ${targetX} ${targetY}`;
 };
+
+export function substringFromFirstNumber(port: string) {
+    const idx = port.search(/\d/);
+    if (idx !== -1) {
+        return port.substring(0, 3) + port.substring(idx);
+    }
+    return "";
+};
+
+// validate email format
+export function validateEmail(email: string) {
+    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return re.test(String(email).toLowerCase());
+};

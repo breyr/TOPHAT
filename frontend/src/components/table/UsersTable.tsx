@@ -1,9 +1,9 @@
+import type { PartialAppUser } from 'common';
 import { CircleMinus, Download, Loader2, UserRoundPlus } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import DataTable from "react-data-table-component";
-import type { PartialAppUser } from '../../../../common/src/index';
 import { useAuth } from "../../hooks/useAuth";
-import { generateTempPassword } from "../../lib/helpers";
+import { generateTempPassword, validateEmail } from "../../lib/helpers";
 import { User } from "../../models/User";
 import customStyles from "./dataTableStyles";
 
@@ -15,12 +15,6 @@ export default function UsersTable() {
 
     // Store pending updates in a ref to prevent unnecessary re-renders
     const pendingUpdates = useRef<{ [key: string]: NodeJS.Timeout }>({});
-
-    // validate email format
-    const validateEmail = (email: string) => {
-        const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        return re.test(String(email).toLowerCase());
-    };
 
     // check if email is unique
     const isEmailUnique = async (email: string) => {
@@ -251,7 +245,7 @@ export default function UsersTable() {
         {
             name: 'Account Type',
             selector: row => row.accountType,
-            cell: (row, index) => 
+            cell: (row, index) =>
                 row.accountType === 'OWNER' ? (
                     <select
                         value={row.accountType}
@@ -262,16 +256,16 @@ export default function UsersTable() {
                         <option value="OWNER">Owner</option>
                     </select>
                 ) : (
-                <select
-                    value={row.accountType}
-                    name="accountType"
-                    onChange={(e) => handleTableInputChange(index, e)}
-                    className="w-full rounded bg-[#ffffff]"
-                >
-                    <option value="USER">User</option>
-                    <option value="ADMIN">Admin</option>
-                </select>
-            ),
+                    <select
+                        value={row.accountType}
+                        name="accountType"
+                        onChange={(e) => handleTableInputChange(index, e)}
+                        className="w-full rounded bg-[#ffffff]"
+                    >
+                        <option value="USER">User</option>
+                        <option value="ADMIN">Admin</option>
+                    </select>
+                ),
         },
         {
             name: 'Account Status',

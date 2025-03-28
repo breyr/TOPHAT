@@ -23,9 +23,9 @@ const AccordionItem = ({ header, children, ...rest }: AccordionItemProps) => (
     <Item
         {...rest}
         header={({ state: { isEnter } }) => (
-            <div className="flex flex-row justify-between items-center w-full py-2 border-b-2">
+            <div className="flex flex-row justify-between items-center w-full py-2">
                 <div className="flex-grow accordion-header">{header}</div>
-                <ChevronDown className={`transition-transform duration-200 ${isEnter ? "rotate-180" : ""}`} />
+                <ChevronDown className={`transition-transform duration-200 mr-4 ${isEnter ? "rotate-180" : ""}`} />
             </div>
         )}
         className="w-full"
@@ -81,16 +81,16 @@ export default function DeviceAccordion({ labDevices, usedDevices }: DeviceAccor
     return (
         <div className="flex-grow w-full">
             <Accordion allowMultiple transition transitionTimeout={200}>
-                <AccordionItem header={<div className="flex flex-row items-center gap-2"><RouterIcon className="mr-2 size-8" /> <span className="text-xl">Routers</span></div>} initialEntered>
+                <AccordionItem header={<div className="flex flex-row items-center gap-2 my-2 ml-4"><RouterIcon className="mr-2 size-8" /> <span className="text-xl">Routers</span></div>}>
                     <DragAndDropContainer devices={routers} />
                 </AccordionItem>
-                <AccordionItem header={<div className="flex flex-row items-center gap-2"><SwitchIcon className="mr-2 size-8" /> <span className="text-xl">Switches</span></div>} initialEntered>
+                <AccordionItem header={<div className="flex flex-row items-center gap-2 my-2 ml-4"><SwitchIcon className="mr-2 size-8" /> <span className="text-xl">Switches</span></div>}>
                     <DragAndDropContainer devices={switches} />
                 </AccordionItem>
-                <AccordionItem header={<div className="flex flex-row items-center gap-2"><ExternalIcon className="mr-2 size-8" /> <span className="text-xl">External</span></div>} initialEntered>
+                <AccordionItem header={<div className="flex flex-row items-center gap-2 my-2 ml-4"><ExternalIcon className="mr-2 size-8" /> <span className="text-xl">External</span></div>}>
                     <DragAndDropContainer devices={externalDevices} />
                 </AccordionItem>
-                <AccordionItem header={<div className="flex flex-row items-center gap-2"><ServerIcon className="mr-2 size-8" /> <span className="text-xl">Servers</span></div>} initialEntered>
+                <AccordionItem header={<div className="flex flex-row items-center gap-2 my-2 ml-4"><ServerIcon className="mr-2 size-8" /> <span className="text-xl">Servers</span></div>}>
                     <DragAndDropContainer devices={servers} />
                 </AccordionItem>
             </Accordion>

@@ -1,5 +1,5 @@
 import type { Topology } from "@prisma/client";
-import type { CreateTopologyRequestPayload } from "../../../common/src/index";
+import type { CreateTopologyRequestPayload } from "common";
 import type { ITopologyRepository, ITopologyService } from "../types/classInterfaces";
 import { UpdateTopologyDTO } from "../types/types";
 

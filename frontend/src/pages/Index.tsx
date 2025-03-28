@@ -11,11 +11,9 @@ export default function IndexPage() {
 
 
     // on mount if the token exists redirect to the dashboard
-    useEffect(() => {
-        if (user) {
-            navigate("/dashboard/")
-        }
-    }, [user, navigate]);
+    if (user && onboardComplete) {
+        navigate("/dashboard/")
+    }
 
     useEffect(() => {
         const fetchConfig = async () => {
@@ -36,13 +34,45 @@ export default function IndexPage() {
 
     return (
         <section className="h-lvh flex flex-col p-[1.875rem]">
+            {/* Animated background elements */}
+            <div className="absolute top-1/4 right-[40%] w-72 h-72 bg-blue-500/10 rounded-full filter blur-3xl animate-pulse-slow"></div>
+            <div className="absolute bottom-1/3 left-[17%] w-96 h-96 bg-blue-600/10 rounded-full filter blur-3xl animate-pulse-slow"></div>
             <section className="flex-1 flex flex-row gap-5">
-                <div className="w-2/3 relative r-card bg-gray-200 flex items-center justify-center">
-                    <h2 className="text-3xl font-bold text-gray-700">Placeholder Content</h2>
+                <div className="flex items-center justify-center w-2/3">
+                    <div>
+                        <div className="inline-block px-3 py-1 rounded-full bg-blue-200/50 text-blue-600 text-xs font-medium mb-6">
+                            Open Source Network Topology Platform
+                        </div>
+
+                        <h1 className="text-4xl md:text-5xl lg:text-6xl font-display font-bold tracking-tight mb-6">
+                            Physical Networks, <br /> <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#0070F3] to-[#0050A6] animate-gradient-x">Virtually Designed</span>
+                        </h1>
+
+                        <p className="text-lg text-gray-600 max-w-3xl mb-10">
+                            Transform digital network topologies into physical connections with ease.
+                            <br />
+                            Design, manage, and deploy with a user-friendly interface.
+                        </p>
+
+                        <div className="flex flex-col sm:flex-row items-start gap-4">
+                            <a href="https://docs.tophat.sh" target="_blank" rel="noopener noreferrer">
+                                <button className="r-btn primary flex flex-row items-center gap-2">
+                                    Read the Docs
+                                    <ArrowRight size={20} />
+                                </button>
+                            </a>
+
+                            <a href="https://github.com/breyr/TOPHAT" target="_blank" rel="noopener noreferrer">
+                                <button className="r-btn secondary flex flex-row items-center">
+                                    View on GitHub
+                                </button>
+                            </a>
+                        </div>
+                    </div>
                 </div>
                 <div className="flex-1 flex flex-col justify-center">
                     <section className="px-16">
-                        <h1 className="text-[2rem] mb-2">Capstone Testbed</h1>
+                        <h1 className="text-[2rem] mb-2">TOP<span className="text-blue-500">HAT</span></h1>
                         {!onboardComplete && <div className="flex flex-row items-center">
                             <p>First time setup?</p>
                             <p className="r-btn tertiary flex items-center hover:cursor-pointer" onClick={() => navigate("/onboard/users")}>
