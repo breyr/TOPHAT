@@ -18,7 +18,7 @@ export default function CreateLinkModal({ deviceData, currentDevicePorts, labDev
     const { user } = useAuth();
     const { getEdges, getNodes } = useReactFlow<Node<{ deviceData?: Device; }>, Edge>();
     const { createLink } = useLinkOperations();
-    const [selectedFirstDevice, setSelectedFirstDevice] = useState<string>("");
+    const [selectedFirstDevice, setSelectedFirstDevice] = useState<string>(deviceData?.name ?? "");
     const [selectedFirstDevicePort, setSelectedFirstDevicePort] = useState<string>("");
     const [selectedSecondDevice, setSelectedSecondDevice] = useState<string>("");
     const [selectedSecondDevicePort, setSelectedSecondDevicePort] = useState<string>("");
@@ -36,14 +36,14 @@ export default function CreateLinkModal({ deviceData, currentDevicePorts, labDev
     // get occupied ports when selectedFirstDevice changes
     useEffect(() => {
         const edges = getEdges();
-        const ports = edges.filter((edge: Edge) => edge.data?.source === selectedFirstDevice).map((edge: Edge) => edge.id.split('-').filter((port: string) => port !== 'edge'));
+        const ports = edges.filter((edge: Edge) => edge.source === selectedFirstDevice || edge.target === selectedFirstDevice).map((edge: Edge) => edge.id.split('-').filter((port: string) => port !== 'edge'));
         setFirstDeviceOccupiedPorts(ports.flat());
     }, [selectedFirstDevice, getEdges]);
 
     // get occupied ports when selectedSecondDevice changes
     useEffect(() => {
         const edges = getEdges();
-        const ports = edges.filter((edge: Edge) => edge.data?.source === selectedSecondDevice).map((edge: Edge) => edge.id.split('-').filter((port: string) => port !== 'edge'));
+        const ports = edges.filter((edge: Edge) => edge.source === selectedSecondDevice || edge.target === selectedSecondDevice).map((edge: Edge) => edge.id.split('-').filter((port: string) => port !== 'edge'));
         setSecondDeviceOccupiedPorts(ports.flat());
     }, [selectedSecondDevice, getEdges]);
 
