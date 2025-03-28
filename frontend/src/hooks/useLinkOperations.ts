@@ -265,7 +265,7 @@ export function useLinkOperations() {
 
         if (sourceNode && targetNode) {
             const newEdge: Edge = {
-                id: `edge-${firstDevicePort}-${secondDevicePort}`,
+                id: `edge-${firstDeviceName}-${firstDevicePort}-${secondDeviceName}-${secondDevicePort}`,
                 source: sourceNode.id,
                 target: targetNode.id,
                 sourceHandle: `source`,
@@ -301,7 +301,7 @@ export function useLinkOperations() {
 
     // Override the base methods to include ReactFlow operations
     const createLink = async (params: LinkOperationParams, createToastPerLink: boolean = true) => {
-        const edgeId = `edge-${params.firstDevicePort}-${params.secondDevicePort}`;
+        const edgeId = `edge-${params.firstDeviceName}-${params.firstDevicePort}-${params.secondDeviceName}-${params.secondDevicePort}`;
         createEdge(params);
         const result = await baseOperations.createLink(params, createToastPerLink);
         // Update edge status or remove edge based on the result
@@ -324,7 +324,7 @@ export function useLinkOperations() {
 
             const result = await baseOperations.createLink(linkOptionParams, false);
 
-            const edgeId = `edge-${linkOptionParams.firstDevicePort}-${linkOptionParams.secondDevicePort}`;
+            const edgeId = `edge-${sc.firstLabDevice}-${sc.firstLabDevicePort}-${sc.secondLabDevice}-${sc.secondLabDevicePort}`;
             createEdge(linkOptionParams);
 
             // Update edge status or remove edge based on the result
@@ -361,6 +361,7 @@ export function useLinkOperations() {
         });
 
         const deletePromises = Array.from(selectedConnections).map(async (sc) => {
+
             const params = {
                 firstDeviceName: sc.firstLabDevice,
                 firstDevicePort: sc.firstLabDevicePort,
