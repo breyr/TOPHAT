@@ -68,10 +68,16 @@ export const getCurvedPath = (
 };
 
 export function substringFromFirstNumber(port: string) {
-    const idx = port.search(/\d/); // find the index of the first number
-    if (idx !== -1) {
-        return port.substring(0, idx) + port.substring(idx); // concatenate prefix and the rest
+    // match up to the first 3 alphabetic characters followed by any numbers
+    const match = port.match(/^([a-zA-Z]{1,3})\D*(\d.*)$/);
+
+    if (match) {
+        const prefix = match[1]; // up to the first 3 alphabetic characters
+        const numbers = match[2]; // all numbers after the prefix
+        return prefix + numbers;
     }
+
+    // if no match, return an empty string
     return "";
 }
 
