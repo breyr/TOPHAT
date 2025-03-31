@@ -84,11 +84,17 @@ export default function ContextMenu({
             onClick(); // close the context menu
             setDisableDelete(true);
             // Check if the device has any edges
-            const edgesForDevice = edges.filter(e => e.source === node?.data.deviceData?.name || e.target === node?.data.deviceData?.name);
-            console.log(edgesForDevice);
+            const edgesForDevice = edges.filter(e => e.source === node?.data.deviceData?.name || e.target === node?.data.deviceData?.name).map(e => ({
+                value: e.id,
+                label: `(${e.source}) ${e.data?.sourcePort ?? ''} -> (${e.target}) ${e.data?.targetPort ?? ''}`,
+                firstLabDevice: e.source,
+                firstLabDevicePort: e.data?.sourcePort ?? '',
+                secondLabDevice: e.target,
+                secondLabDevicePort: e.data?.targetPort ?? '',
+            }));
             if (edgesForDevice.length > 0) {
                 // attempt to delete all links
-                const numFailures = await deleteLinkBulk(new Set(currentEdges));
+                const numFailures = await deleteLinkBulk(new Set(edgesForDevice));
 
                 // only remove the node if all links were successfully deleted
                 if (numFailures === 0) {
