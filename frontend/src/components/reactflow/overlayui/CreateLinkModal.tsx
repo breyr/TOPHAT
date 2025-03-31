@@ -109,11 +109,16 @@ export default function CreateLinkModal({ deviceData, currentDevicePorts, labDev
                                 disabled={!!deviceData?.name}
                             >
                                 <option value="">Select a Device</option>
-                                {labDevices.filter((device) => device.userId == null || device.userId == user?.id).map((device) => (
-                                    <option key={device.id} value={device.name} disabled={device.name === selectedSecondDevice}>
-                                        {device.name}
-                                    </option>
-                                ))}
+                                {labDevices.filter((device) => device.userId == null || device.userId == user?.id).map((device) => {
+                                    const portsArray = device.ports.split(',');
+                                    const generatedPorts = portsArray.flatMap(portDef => generatePorts(portDef));
+                                    const hasAvailablePorts = generatedPorts.some(port => !firstDeviceOccupiedPorts.includes(port));
+                                    return (
+                                        <option key={device.id} value={device.name} disabled={!hasAvailablePorts || device.name === selectedSecondDevice}>
+                                            {device.name} {!hasAvailablePorts ? '(no available ports)' : ''}
+                                        </option>
+                                    );
+                                })}
                             </select>
                         </div>
                         <div className="pb-2 border-b">
@@ -139,11 +144,16 @@ export default function CreateLinkModal({ deviceData, currentDevicePorts, labDev
                                 className="block w-full mt-1 rounded-md bg-[#ffffff] focus:outline-none"
                             >
                                 <option value="">Select a Device</option>
-                                {filteredLabDevices.filter((device) => (device.userId == null || device.userId == user?.id) && currentNodesInTopology.has(device.name)).map((device) => (
-                                    <option key={device.id} value={device.name} disabled={device.name === selectedFirstDevice}>
-                                        {device.name}
-                                    </option>
-                                ))}
+                                {filteredLabDevices.filter((device) => (device.userId == null || device.userId == user?.id) && currentNodesInTopology.has(device.name)).map((device) => {
+                                    const portsArray = device.ports.split(',');
+                                    const generatedPorts = portsArray.flatMap(portDef => generatePorts(portDef));
+                                    const hasAvailablePorts = generatedPorts.some(port => !secondDeviceOccupiedPorts.includes(port));
+                                    return (
+                                        <option key={device.id} value={device.name} disabled={!hasAvailablePorts || device.name === selectedFirstDevice}>
+                                            {device.name} {!hasAvailablePorts ? '(no available ports)' : ''}
+                                        </option>
+                                    );
+                                })}
                             </select>
                         </div>
                         <div className="pb-2 border-b">
