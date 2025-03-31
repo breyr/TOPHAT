@@ -68,12 +68,12 @@ export const getCurvedPath = (
 };
 
 export function substringFromFirstNumber(port: string) {
-    const idx = port.search(/\d/);
+    const idx = port.search(/\d/); // find the index of the first number
     if (idx !== -1) {
-        return port.substring(0, 3) + port.substring(idx);
+        return port.substring(0, idx) + port.substring(idx); // concatenate prefix and the rest
     }
     return "";
-};
+}
 
 // validate email format
 export function validateEmail(email: string) {
