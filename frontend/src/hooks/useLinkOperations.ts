@@ -61,7 +61,11 @@ export function useLinkOperationsBase() {
 
     const calculateOffsetPort = (port: string, deviceNumber: number) => {
         // splits off interface number and calculates offset
-        return Number(port.split('/').pop()) * deviceNumber;
+        let devicePort = Number(port.split('/').pop())
+        if (deviceNumber === 2) {
+            devicePort += 44 // For IDs being fed to the VLAN mapping algorithm.
+        }
+        return devicePort;
     };
 
     // API operations without ReactFlow dependencies
