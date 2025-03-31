@@ -162,7 +162,7 @@ export class DeviceController {
         try {
             const { id } = req.params;
             // will have a payload user id otherwise this request is not authenticated through middleware
-            const device = await this.deviceService.unbookDevice(parseInt(id), req.jwt_payload?.id!);
+            const device = await this.deviceService.unbookDevice(parseInt(id), req.jwt_payload?.id!, req.jwt_payload?.accountType!);
 
             // we successfully unbooked the device
             if (device) {

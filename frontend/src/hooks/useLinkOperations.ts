@@ -32,6 +32,8 @@ export function useLinkOperationsBase() {
         }
 
         const interconnectDevices = await authenticatedApiClient.getDevicesByType('INTERCONNECT');
+        // only two devices here so find is okay
+        // TODO might have to make this more robust
         return interconnectDevices.data?.find(d => d.name === connectionInfo.interconnectDeviceName);
     };
 

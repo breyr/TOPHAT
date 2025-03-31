@@ -1,4 +1,4 @@
-import { DeviceType, IconType, PrismaClient, type Device } from "@prisma/client";
+import { AccountType, DeviceType, IconType, PrismaClient, type Device } from "@prisma/client";
 import bcrypt from 'bcryptjs';
 import { IDeviceRepository } from "../types/classInterfaces";
 
@@ -108,7 +108,7 @@ export class PrismaDeviceRepository implements IDeviceRepository {
         });
     }
 
-    async unbookDevice(deviceId: number, userId: number): Promise<Device | null> {
+    async unbookDevice(deviceId: number, userId: number, accountType: AccountType): Promise<Device | null> {
         return await this.prisma.$transaction(async (tx) => {
             // check if device is already booked
             const current = await tx.device.findUnique({
@@ -116,8 +116,8 @@ export class PrismaDeviceRepository implements IDeviceRepository {
                 select: { userId: true }
             });
 
-            // only allow unbooking of device if userIds match
-            if (current?.userId !== userId) {
+            // only allow unbooking of device if userIds match AND account type is not admin or owner
+            if (accountType !== 'ADMIN' && accountType !== 'OWNER' && current?.userId !== userId) {
                 throw new Error("UNAUTHORIZED");
             }
 

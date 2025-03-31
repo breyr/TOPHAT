@@ -1,5 +1,5 @@
 // holds interfaces similar to C#
-import { AppConfig, AppUser, Connection, Device, DeviceType, IconType, Topology } from "@prisma/client";
+import { AccountType, AppConfig, AppUser, Connection, Device, DeviceType, IconType, Topology } from "@prisma/client";
 import type { CreateConnectionRequestPayload, CreateTopologyRequestPayload, RegisterUserRequestPayload } from "common";
 import { UpdateTopologyDTO } from "./types";
 
@@ -55,7 +55,7 @@ export interface IDeviceRepository {
     findByType(deviceType: DeviceType): Promise<Device[]>;
     findByIcon(deviceIcon: IconType): Promise<Device[]>;
     bookDevice(deviceId: number, userId: number): Promise<Device | null>;
-    unbookDevice(deviceId: number, userId: number): Promise<Device | null>;
+    unbookDevice(deviceId: number, userId: number, accountType: AccountType): Promise<Device | null>;
 }
 
 export interface IDeviceService {
@@ -69,7 +69,7 @@ export interface IDeviceService {
     getDevicesByType(deviceType: DeviceType): Promise<Device[]>;
     getDevicesByIcon(deviceIcon: IconType): Promise<Device[]>;
     bookDevice(deviceId: number, userId: number): Promise<Device | null>;
-    unbookDevice(deviceId: number, userId: number): Promise<Device | null>;
+    unbookDevice(deviceId: number, userId: number, accountType: AccountType): Promise<Device | null>;
 }
 
 export interface IConnectionRepository {

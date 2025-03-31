@@ -1,4 +1,4 @@
-import type { Device, DeviceType, IconType } from "@prisma/client";
+import type { AccountType, Device, DeviceType, IconType } from "@prisma/client";
 import { IDeviceRepository, IDeviceService } from "../types/classInterfaces";
 
 export class DeviceService implements IDeviceService {
@@ -58,7 +58,7 @@ export class DeviceService implements IDeviceService {
         return this.deviceRepository.bookDevice(deviceId, userId);
     }
 
-    async unbookDevice(deviceId: number, userId: number): Promise<Device | null> {
-        return this.deviceRepository.unbookDevice(deviceId, userId);
+    async unbookDevice(deviceId: number, userId: number, accountType: AccountType): Promise<Device | null> {
+        return this.deviceRepository.unbookDevice(deviceId, userId, accountType);
     }
 }
