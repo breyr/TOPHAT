@@ -329,6 +329,7 @@ const TopologyCanvas = () => {
                 selectionMode={SelectionMode.Partial}
                 onPaneClick={onPaneClick}
                 onNodeContextMenu={onNodeContextMenu}
+                snapToGrid={true}
             >
                 <Background color="rgb(247, 247, 247)" variant={BackgroundVariant.Dots} size={3} />
                 {menu && (
