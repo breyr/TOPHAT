@@ -1,5 +1,5 @@
 import { Topology } from 'common';
-import { Image, Trash } from "lucide-react";
+import { Archive, Image, Trash } from "lucide-react";
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth.ts";
@@ -21,7 +21,6 @@ const TopologyCard: React.FC<TopologyProps> = ({
   onDelete,
   onArchive,
   readOnly,
-  userId
 }) => {
   const { menuOpen, hideMenu } = useContextMenu();
   const { user } = useAuth();
@@ -29,7 +28,6 @@ const TopologyCard: React.FC<TopologyProps> = ({
   const [thumbnailSrc, setThumbnailSrc] = useState<string | null>(null);
   const [archived, setArchived] = useState(initialArchived);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const ownsTopology = user?.id === userId;
 
   const handleClick = (event: React.MouseEvent) => {
     if (archived) return;
@@ -87,9 +85,9 @@ const TopologyCard: React.FC<TopologyProps> = ({
   return (
     <div className="relative group">
       <button
-        onClick={handleDeleteClick}
-        className="hidden group-hover:block absolute top-0 right-[-20px] m-1 p-2 shadow-md text-red-500 bg-gray-50 rounded-full hover:bg-gray-100 z-10">
-        <Trash size={16} />
+        onClick={(e) => archived ? handleDeleteClick(e) : toggleArchived(e)}
+        className="hidden group-hover:block absolute top-0 right-[-20px] m-1 p-2 shadow-md bg-gray-50 rounded-full hover:bg-gray-100 z-10">
+        {archived ? <Trash size={16} className='text-red-500' /> : <Archive size={16} className='text-amber-500' />}
       </button>
       <div
         key={id}
@@ -119,10 +117,9 @@ const TopologyCard: React.FC<TopologyProps> = ({
               </p>
             </div>
             <span
-              onClick={!ownsTopology ? undefined : toggleArchived}
               className={`inline-flex items-center px-2 py-0.5 text-xs font-medium rounded-full ${archived
-                ? `bg-red-100 text-red-700 ${!ownsTopology ? "cursor-default" : "hover:bg-red-300 cursor-pointer"}`
-                : `bg-green-100 text-green-700 ${!ownsTopology ? "cursor-default" : "hover:bg-green-300 cursor-pointer"}`
+                ? `bg-red-100 text-red-700`
+                : `bg-green-100 text-green-700`
                 }`}
             >
               {archived ? "Archived" : "Active"}
