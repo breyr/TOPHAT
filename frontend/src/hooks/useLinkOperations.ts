@@ -32,6 +32,7 @@ export function useLinkOperationsBase() {
         }
 
         const interconnectDevices = await authenticatedApiClient.getDevicesByType('INTERCONNECT');
+        // only two devices here so find is okay
         return interconnectDevices.data?.find(d => d.name === connectionInfo.interconnectDeviceName);
     };
 
@@ -57,11 +58,15 @@ export function useLinkOperationsBase() {
         return true;
     };
 
-    const removePortNumber = (port: string) => port.replace(/\/\d+$/, '/');
+    const removePortNumber = (port?: string) => port?.split('|')[0];
 
     const calculateOffsetPort = (port: string, deviceNumber: number) => {
         // splits off interface number and calculates offset
-        return Number(port.split('/').pop()) * deviceNumber;
+        let devicePort = Number(port.split('/').pop())
+        if (deviceNumber === 2) {
+            devicePort += 44 // For IDs being fed to the VLAN mapping algorithm.
+        }
+        return devicePort;
     };
 
     // API operations without ReactFlow dependencies
@@ -99,29 +104,41 @@ export function useLinkOperationsBase() {
             }
 
             // Prepare link payload
-            const interconnect1Prefix = removePortNumber(firstConnectionInfo.interconnectDevicePort);
-            const interconnect2Prefix = removePortNumber(secondConnectionInfo.interconnectDevicePort);
+            // Get the correct interconnect information based on the device number for the interconnect
+            const [interconnect1, interconnect2] = firstInterconnectInfo?.deviceNumber === 1
+                ? [firstInterconnectInfo, secondInterconnectInfo]
+                : [secondInterconnectInfo, firstInterconnectInfo];
 
-            const offsetPort1 = calculateOffsetPort(
-                firstConnectionInfo.interconnectDevicePort,
-                firstInterconnectInfo!.deviceNumber!
-            );
+            const interconnect1Prefix = removePortNumber(interconnect1?.ports);
+            const interconnect2Prefix = removePortNumber(interconnect2?.ports);
 
-            const offsetPort2 = calculateOffsetPort(
-                secondConnectionInfo.interconnectDevicePort,
-                secondInterconnectInfo!.deviceNumber!
-            );
+            // if ports is undefined
+            if (!interconnect1Prefix || !interconnect2Prefix) {
+                return false;
+            }
+
+            const [offsetPort1, offsetPort2] = firstInterconnectInfo?.deviceNumber === 1
+                ?
+                [
+                    calculateOffsetPort(firstConnectionInfo.interconnectDevicePort, firstInterconnectInfo!.deviceNumber!),
+                    calculateOffsetPort(secondConnectionInfo.interconnectDevicePort, secondInterconnectInfo!.deviceNumber!)
+                ]
+                :
+                [
+                    calculateOffsetPort(secondConnectionInfo.interconnectDevicePort, secondInterconnectInfo!.deviceNumber!),
+                    calculateOffsetPort(firstConnectionInfo.interconnectDevicePort, firstInterconnectInfo!.deviceNumber!)
+                ]
 
             const linkPayload: LinkRequest = {
-                interconnect1IP: firstInterconnectInfo!.ipAddress,
+                interconnect1IP: interconnect1!.ipAddress,
                 interconnect1Prefix,
-                interconnect2IP: secondInterconnectInfo!.ipAddress,
+                interconnect2IP: interconnect2!.ipAddress,
                 interconnect2Prefix,
                 interconnectPortID1: offsetPort1,
                 interconnectPortID2: offsetPort2,
-                username: firstInterconnectInfo!.username!,
-                password: firstInterconnectInfo!.password!,
-                secret: firstInterconnectInfo!.secretPassword!
+                username: interconnect1!.username!,
+                password: interconnect1!.password!,
+                secret: interconnect1!.secretPassword!
             };
 
             // Perform the requested operation
@@ -301,6 +318,7 @@ export function useLinkOperations() {
 
     // Override the base methods to include ReactFlow operations
     const createLink = async (params: LinkOperationParams, createToastPerLink: boolean = true) => {
+        console.log(params);
         const edgeId = `edge-${params.firstDeviceName}-${params.firstDevicePort}-${params.secondDeviceName}-${params.secondDevicePort}`;
         createEdge(params);
         const result = await baseOperations.createLink(params, createToastPerLink);
