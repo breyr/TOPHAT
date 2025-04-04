@@ -55,14 +55,14 @@ export default function IndexPage() {
                         </p>
 
                         <div className="flex flex-col sm:flex-row items-start gap-4">
-                            <a href="https://docs.tophat.sh" target="_blank" rel="noopener noreferrer">
+                            <a href="https://github.com/breyr/TOPHAT/blob/main/README.md" target="_blank">
                                 <button className="r-btn primary flex flex-row items-center gap-2">
                                     Read the Docs
                                     <ArrowRight size={20} />
                                 </button>
                             </a>
 
-                            <a href="https://github.com/breyr/TOPHAT" target="_blank" rel="noopener noreferrer">
+                            <a href="https://github.com/breyr/TOPHAT" target="_blank">
                                 <button className="r-btn secondary flex flex-row items-center">
                                     View on GitHub
                                 </button>
