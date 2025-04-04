@@ -1,4 +1,4 @@
-# T.O.P. (Topology Orchestration Platform)
+# TOPHAT
 
 ## Installation
 
