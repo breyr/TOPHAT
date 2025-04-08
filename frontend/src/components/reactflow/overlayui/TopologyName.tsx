@@ -9,14 +9,26 @@ export default function TopologyName() {
     const [isEditing, setIsEditing] = useState(false);
     const [inputWidth, setInputWidth] = useState(0);
     const spanRef = useRef<HTMLSpanElement>(null);
-    const initialNameRef = useRef<string>(topologyData?.name || "");
+    const inputRef = useRef<HTMLInputElement>(null);
     const { authenticatedApiClient } = useAuth();
+
+    const prevRenderTopologyName = topologyData?.name || "Topology Name";
 
     useEffect(() => {
         if (spanRef.current) {
             setInputWidth(spanRef.current.offsetWidth);
         }
     }, [topologyName, isEditing]);
+
+    useEffect(() => {
+        if (!topologyData?.name) return;
+
+        document.title = topologyData.name;
+
+        return () => {
+            document.title = 'TOPHAT'
+        }
+    }, [topologyData?.name]);
 
     const updateTopologyName = useCallback(async () => {
         setIsSaving(true);
@@ -30,7 +42,6 @@ export default function TopologyName() {
                     setTopologyData(res.data);
                 }
             }
-            initialNameRef.current = topologyName; // Update the initial name reference
         } catch (error) {
             console.error("Failed to update topology name:", error);
         } finally {
@@ -44,7 +55,7 @@ export default function TopologyName() {
 
     const handleBlur = async () => {
         setIsEditing(false);
-        if (topologyName !== initialNameRef.current) {
+        if (topologyName !== prevRenderTopologyName) {
             await updateTopologyName();
         }
     };
@@ -53,14 +64,27 @@ export default function TopologyName() {
         setIsEditing(true);
     };
 
+    const handleKeyDown = async (e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            if (inputRef.current) {
+                inputRef.current.blur();
+            }
+            await updateTopologyName();
+        }
+    };
+
+
     return (
         <div className="flex flex-row items-center">
             {/* Topology Name Input */}
             {isEditing ? (
                 <input
+                    ref={inputRef}
                     value={topologyName}
                     onChange={handleInputChange}
                     onBlur={handleBlur}
+                    onKeyDown={handleKeyDown}
                     autoFocus
                     style={{ width: inputWidth }}
                     className="border rounded-sm p-2 text-black"
