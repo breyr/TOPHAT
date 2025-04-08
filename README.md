@@ -1,5 +1,13 @@
 # TOPHAT
 
+## Overview
+
+TOPHAT is an open-source Topology Orchestration Platform that transforms digital network topologies into physical connections. Its user-friendly interface lets users design and manage network topologies, with node-to-node links that create real-time transparent connections. 
+
+Built for enterprise and educational environments, TOPHAT combines the ease of virtual networking solutions with the reliability of physical infrastructure, making it ideal for network simulations, cybersecurity testing, and professional development. 
+
+For more info, checout our article on [LinkedIn](https://www.linkedin.com/pulse/tophat-topology-orchestration-platform-adam-spera-rx08e/).
+
 ## Installation
 
 ### STEP 1 - Interconnects
