@@ -130,16 +130,6 @@ const TopologyPageContent: React.FC = () => {
     }, [user, authenticatedApiClient, id, setTopologyData, setLastUpdated, navigateTo, bookDevices]);
 
     useEffect(() => {
-        if (!topologyData?.name) return;
-
-        document.title = topologyData.name;
-
-        return () => {
-            document.title = 'TOPHAT'
-        }
-    }, [topologyData?.name]);
-
-    useEffect(() => {
         if (!loading && topologyData?.reactFlowState?.edges && !hasReinitializedLinks.current) {
             hasReinitializedLinks.current = true;
             reinitializeLinks(topologyData.reactFlowState.edges);
