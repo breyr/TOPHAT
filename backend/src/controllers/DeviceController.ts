@@ -148,9 +148,13 @@ export class DeviceController {
                     bookedDevice: device
                 });
             }
+
             res.status(200).json(device);
         } catch (error) {
-            if (error instanceof Error && error.message === "ALREADY_BOOKED") {
+            if (error instanceof Error && error.message === "DEVICE_NOT_FOUND") {
+                // bypass as a success becuase it should just delete the topology
+                res.status(200);
+            } else if (error instanceof Error && error.message === "ALREADY_BOOKED") {
                 res.status(409).json({ error: "Device already booked" });
             } else {
                 next(error);
@@ -172,7 +176,10 @@ export class DeviceController {
             }
             res.status(200).json(device);
         } catch (error) {
-            if (error instanceof Error && error.message === "UNAUTHORIZED") {
+            if (error instanceof Error && error.message === "DEVICE_NOT_FOUND") {
+                // bypass as a success becuase it should just delete the topology
+                res.status(200);
+            } else if (error instanceof Error && error.message === "UNAUTHORIZED") {
                 res.status(401).json({ error: "You are not authorized to unbook this device." });
             } else {
                 next(error);

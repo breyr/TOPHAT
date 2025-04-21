@@ -23,7 +23,7 @@ export function useLinkOperationsBase() {
     const fetchConnectionDetails = async (deviceName: string, devicePort: string) => {
         const conns = await authenticatedApiClient.getConnectionsByDeviceName(deviceName);
         return conns.data?.find(c => c.labDevicePort === devicePort);
-    }
+    };
 
     // get interconnect information
     const fetchInterconnectDevice = async (connectionInfo: Connection) => {
@@ -69,6 +69,21 @@ export function useLinkOperationsBase() {
         return devicePort;
     };
 
+    const checkDevicesExist = async (firstDeviceName: string, secondDeviceName: string): Promise<boolean> => {
+        try {
+            const devices = await authenticatedApiClient.getAllDevices();
+            const firstDeviceMatches = devices.data?.filter(d => d.name === firstDeviceName) || [];
+            const secondDeviceMatches = devices.data?.filter(d => d.name === secondDeviceName) || [];
+
+            // Return true if one or both devices don't exist
+            return firstDeviceMatches.length === 0 || secondDeviceMatches.length === 0;
+        } catch (error) {
+            // In case of API error, assume devices don't exist for safety
+            console.error("Error checking device existence:", error);
+            return true;
+        }
+    };
+
     // API operations without ReactFlow dependencies
     const performLinkOperation = async (params: LinkOperationParams, operation: 'create' | 'delete', createToastPerLink: boolean = true) => {
         const { firstDeviceName, firstDevicePort, secondDeviceName, secondDevicePort } = params;
@@ -101,6 +116,13 @@ export function useLinkOperationsBase() {
             if (!validateInterconnectDevice(firstInterconnectInfo, toastId) ||
                 !validateInterconnectDevice(secondInterconnectInfo, toastId)) {
                 return false;
+            }
+
+            // Check to see if the devices exist, if one or both don't anymore
+            // just show the Toast as a success and do not perform the interconnect configs
+            const devicesNotFound = await checkDevicesExist(firstDeviceName, secondDeviceName);
+            if (devicesNotFound) {
+                return true; // return true to indicate success
             }
 
             // Prepare link payload
