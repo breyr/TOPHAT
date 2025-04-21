@@ -93,7 +93,10 @@ export class PrismaDeviceRepository implements IDeviceRepository {
                 where: { id: deviceId },
             });
 
-            if (current?.userId && current.userId !== userId) {
+            if (!current) {
+                // device not found
+                throw new Error("DEVICE_NOT_FOUND");
+            } else if (current?.userId && current.userId !== userId) {
                 throw new Error("ALREADY_BOOKED");
             } else if (current?.userId === userId) {
                 // device is already booked by the same user, return current device
@@ -115,6 +118,11 @@ export class PrismaDeviceRepository implements IDeviceRepository {
                 where: { id: deviceId },
                 select: { userId: true }
             });
+
+            // device not found
+            if (!current) {
+                throw new Error("DEVICE_NOT_FOUND");
+            }
 
             // only allow unbooking of device if userIds match AND account type is not admin or owner
             if (accountType !== 'ADMIN' && accountType !== 'OWNER' && current?.userId !== userId) {
